@@ -1,4 +1,14 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateBlogDto } from './create-blog.dto';
+import { IsString, Length, IsUrl } from 'class-validator';
 
-export class UpdateBlogDto extends PartialType(CreateBlogDto) {}
+export class UpdateBlogDto {
+    @IsString()
+    @Length(1, 50)
+    name: string;
+
+    @IsString()
+    @Length(1, 500)
+    description: string;
+
+    @IsUrl()
+    websiteUrl: string;
+}

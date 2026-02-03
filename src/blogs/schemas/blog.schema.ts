@@ -4,14 +4,20 @@ import {HydratedDocument} from "mongoose";
 
 @Schema({timestamps: true})
 export class Blog {
-    @Prop()
+    @Prop({ required: true })
     name: string;
 
-    @Prop()
+    @Prop({ required: true })
     description: string;
 
-    @Prop()
+    @Prop({ required: true })
     websiteUrl: string;
+
+    @Prop({ required: true, default: () => new Date() })
+    createdAt: Date;
+
+    @Prop({ required: true, default: false })
+    isMembership: boolean;
 }
 
 export const BlogSchema = SchemaFactory.createForClass(Blog);

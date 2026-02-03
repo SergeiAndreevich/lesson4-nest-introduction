@@ -12,7 +12,7 @@ export class BlogsController {
 
   @Post()
   createBlog(@Body() createBlogDto: CreateBlogDto) {
-    return this.blogsService.create(createBlogDto);
+    return this.blogsService.createBlog(createBlogDto);
   }
 
   @Post(':blogId/posts')
@@ -36,7 +36,7 @@ export class BlogsController {
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
+  updateBlogById(@Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
     return this.blogsService.updateBlogById(id, updateBlogDto);
   }
 
