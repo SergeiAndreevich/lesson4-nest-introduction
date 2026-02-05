@@ -1,13 +1,14 @@
-import { IsOptional, IsNumberString, IsString } from 'class-validator';
+import {IsOptional, IsNumberString, IsString, IsEnum} from 'class-validator';
+import {SortDirection, SortFields} from "../types/pagination.types";
 
 export class PaginationQueryDto {
     @IsOptional()
     @IsNumberString()
-    pageNumber = 1;
+    pageNumber?: string;
 
     @IsOptional()
     @IsNumberString()
-    pageSize = 10;
+    pageSize?: string;
 
     @IsOptional()
     @IsString()
@@ -15,9 +16,17 @@ export class PaginationQueryDto {
 
     @IsOptional()
     @IsString()
-    sortBy: string = 'createdAt';
+    searchLoginTerm?: string;
 
     @IsOptional()
     @IsString()
-    sortDirection: 'asc' | 'desc' = 'desc';
+    searchEmailTerm?: string;
+
+    @IsOptional()
+    @IsEnum(SortFields)
+    sortBy?: SortFields;
+
+    @IsOptional()
+    @IsEnum(SortDirection)
+    sortDirection?: SortDirection;
 }

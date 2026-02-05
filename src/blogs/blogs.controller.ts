@@ -3,12 +3,12 @@ import { BlogsService } from './blogs.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import {CreatePostForBlogDto} from "./dto/create-post-for-blog.dto";
-import {BlogsQueryRepository} from "./blogsQuery.repository";
+import {PaginationQueryDto} from "../dto/pagination-query.dto";
 
 @Controller('blogs')
 export class BlogsController {
   constructor(private readonly blogsService: BlogsService,
-              private readonly blogsQueryRepo: BlogsQueryRepository) {}
+  ) {}
 
   @Post()
   createBlog(@Body() createBlogDto: CreateBlogDto) {
@@ -22,17 +22,17 @@ export class BlogsController {
 
   @Get()
   findAll(@Query() query: PaginationQueryDto) {
-    return this.blogsQueryRepo.findAll(query);
+    return this.blogsService.findAllBlogsByQuery(query);
   }
 
   @Get(':id')
   findBlog(@Param('id') id: string) {
-    return this.blogsQueryRepo.findBlogById(id);
+    return this.blogsService.findBlogById(id);
   }
 
   @Get(':blogId/posts')
   findPostsForBlog(@Param('blogId') blogId: string, @Query() query: PaginationQueryDto){
-    return this.blogsQueryRepo.findPostsForBlog(blogId, query);
+    return this.blogsService.findPostsForBlog(blogId, query);
   }
 
   @Put(':id')

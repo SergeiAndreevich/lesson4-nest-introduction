@@ -1,4 +1,4 @@
-export type TypeBlog = {
+export type TypeBlogToView = {
     id: string,
     name: string,
     description: string,
