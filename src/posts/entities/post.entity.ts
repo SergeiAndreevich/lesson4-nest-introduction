@@ -1,1 +1,3 @@
-export class Post {}
+export class Post {
+
+}

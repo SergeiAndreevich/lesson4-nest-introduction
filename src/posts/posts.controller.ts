@@ -1,34 +1,40 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {Controller, Get, Post, Body, Param, Delete, Query, Put, Inject} from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import {PaginationQueryDto} from "../dto/pagination-query.dto";
 
 @Controller('posts')
 export class PostsController {
-  constructor(private readonly postsService: PostsService) {}
+  constructor(@Inject(PostsService) private readonly postsService: PostsService) {}
 
   @Post()
-  create(@Body() createPostDto: CreatePostDto) {
-    return this.postsService.create(createPostDto);
+  createPost(@Body() createPostDto: CreatePostDto) {
+    return this.postsService.createPost(createPostDto);
   }
 
   @Get()
-  findAll() {
-    return this.postsService.findAll();
+  findAllPostsByQuery(@Query()dto:PaginationQueryDto) {
+    return this.postsService.findAllPostsByQuery(dto);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postsService.findOne(+id);
+  findPostById(@Param('id') id: string) {
+    return this.postsService.findPostById(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postsService.update(+id, updatePostDto);
+  @Get(':postId/comments')
+  findCommentsForPost(@Param('postId') id: string, @Query() dto: PaginationQueryDto) {
+    return this.postsService.findCommentsForPost(id, dto);
+  }
+
+  @Put(':id')
+  updatePostById(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
+    return this.postsService.updatePostById(id, updatePostDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postsService.remove(+id);
+  removePostById(@Param('id') id: string) {
+    return this.postsService.removePostById(id);
   }
 }

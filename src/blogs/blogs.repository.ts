@@ -5,10 +5,11 @@ import {CreateBlogDto} from "./dto/create-blog.dto";
 import {mapBlogToView} from "../mappers/blog.mapper";
 import {UpdateBlogDto} from "./dto/update-blog.dto";
 import {CreatePostForBlogDto} from "./dto/create-post-for-blog.dto";
-import {PostDocument} from "../posts/schemas/post.schema";
-import {Post} from "@nestjs/common";
+import {Post, PostDocument} from "../posts/schemas/post.schema";
+import {Injectable} from "@nestjs/common";
 import {mapNewPostToView} from "../mappers/post.mapper";
 
+@Injectable()
 export class BlogsRepository {
     constructor(
         @InjectModel(Blog.name) private blogModel: Model<BlogDocument>,
