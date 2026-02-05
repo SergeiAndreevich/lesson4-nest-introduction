@@ -37,6 +37,6 @@ export class UsersService {
             //if deletedCount = 0
             throw new BadRequestException('User was not deleted');
         }
-        return {message: 'User deleted successfully'}
+        return
     }
 }

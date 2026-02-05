@@ -21,14 +21,23 @@ export class UsersQueryRepository {
         const {pageNumber, pageSize, sortBy, sortDirection,
             searchNameTerm, searchLoginTerm, searchEmailTerm} = pagination;
         const filter: any = {};
+
+        // Массив OR-условий для поиска
+        const orFilters :any = [];
+
         if (searchNameTerm) {
-            filter.name = { $regex: searchNameTerm, $options: "i" };
+            orFilters.push({ name: { $regex: searchNameTerm, $options: "i" } });
         }
         if (searchLoginTerm) {
-            filter.login = { $regex: searchLoginTerm, $options: "i" };
+            orFilters.push({ login: { $regex: searchLoginTerm, $options: "i" } });
         }
         if (searchEmailTerm) {
-            filter.email = { $regex: searchEmailTerm, $options: "i" };
+            orFilters.push({ email: { $regex: searchEmailTerm, $options: "i" } });
+        }
+
+        // Если есть хотя бы один searchTerm → добавляем $or
+        if (orFilters.length > 0) {
+            filter.$or = orFilters;
         }
         const skip = (pageNumber - 1) * pageSize;
         const users = await this.userModel

@@ -51,8 +51,7 @@ export class BlogsService {
       // если matchedCount = 0 или modifiedCount = 0
       throw new BadRequestException('Blog was not updated');
     }
-
-    return {message: 'Blog updated successfully'};
+    return
   }
 
   async removeBlogById(id: string) {
@@ -62,6 +61,6 @@ export class BlogsService {
       //if deletedCount = 0
       throw new BadRequestException('Blog was not deleted');
     }
-    return {message: 'Blog deleted successfully'};
+    return
   }
 }

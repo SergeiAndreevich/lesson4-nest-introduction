@@ -11,6 +11,6 @@ export class AppService {
   }
   async removeAll() {
     await this.appRepository.removeAll();
-    return {message: 'Data is cleared successfully'}
+    return
   }
 }

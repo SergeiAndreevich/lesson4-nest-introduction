@@ -49,8 +49,7 @@ export class PostsService {
       // если matchedCount = 0 или modifiedCount = 0
       throw new BadRequestException('Post was not updated');
     }
-
-    return {message: 'Post updated successfully'}
+    return
   }
 
   async removePostById(id: string) {
@@ -60,6 +59,6 @@ export class PostsService {
       //if deletedCount = 0
       throw new BadRequestException('Post was not deleted');
     }
-    return {message: 'Post deleted successfully'}
+    return
   }
 }

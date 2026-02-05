@@ -1,4 +1,4 @@
-import {Body, Controller, Inject, Post, Get, Query, Delete, Param} from '@nestjs/common';
+import {Body, Controller, Inject, Post, Get, Query, Delete, Param, HttpCode} from '@nestjs/common';
 import {CreateUserDto} from "./dto/create-user.dto";
 import {UsersService} from "./users.service";
 import {PaginationQueryDto} from "../dto/pagination-query.dto";
@@ -20,6 +20,7 @@ export class UsersController {
     }
 
     @Delete(':id')
+    @HttpCode(204)
     removeUserById(@Param('id') id: string){
         return this.usersService.removeUserById(id)
     }
