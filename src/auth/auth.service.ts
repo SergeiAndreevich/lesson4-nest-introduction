@@ -23,11 +23,11 @@ export class AuthService {
   }
 
   registration(createAuthDto: CreateAuthDto) {
-    return
+    return this.usersService.createUser(createAuthDto);
   }
 
   registrationConfirmation(codeInputDto: CodeInputDto) {
-    return
+    return this.usersService.registrationConfirmation(codeInputDto)
   }
 
   registrationEmailResending(emailInputDto: EmailInputDto) {

@@ -10,9 +10,6 @@ export class AccountData {
 
     @Prop({ required: true })
     email: string;
-
-    @Prop({ default: Date.now })
-    createdAt: string;
 }
 
 export const AccountDataSchema = SchemaFactory.createForClass(AccountData);

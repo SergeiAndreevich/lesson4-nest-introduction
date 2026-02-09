@@ -1,12 +1,11 @@
 import {Injectable} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
-import {User, UserDocument} from "./schemas/user.schema";
+import {User} from "./schemas/user.schema";
 import {Model} from "mongoose";
 import {IPaginationAndSorting, TypePaginatorObject} from "../types/pagination.types";
-import {mapCommentToView} from "../mappers/comment.mapper";
-import {mapPostToView} from "../mappers/post.mapper";
 import {mapUserToView} from "../mappers/user.mapper";
 import {TypeUserToView} from "../types/user.types";
+import {CodeInputDto} from "../auth/dto/code-input.dto";
 
 @Injectable()
 export class UsersQueryRepository {
@@ -17,6 +16,21 @@ export class UsersQueryRepository {
     async findUserById(id: string) {
         return this.userModel.findById(id).lean()
     }
+
+    async findUserByLoginOrEmail(loginOrEmail: string, emailOrLogin: string, ) {
+        return this.userModel.findOne({
+            $or: [
+                { 'accountData.login': loginOrEmail },
+                { 'accountData.email': emailOrLogin },]
+        }).lean()
+    }
+
+    async findUserByEmailCode(confirmationCode: string){
+        return this.userModel.findOne(
+            {'emailConfirmation.code': confirmationCode }
+        ).lean();
+    }
+
     async findAllUsersByQuery(pagination:IPaginationAndSorting):Promise<TypePaginatorObject<TypeUserToView[]>> {
         const {pageNumber, pageSize, sortBy, sortDirection,
             searchNameTerm, searchLoginTerm, searchEmailTerm} = pagination;

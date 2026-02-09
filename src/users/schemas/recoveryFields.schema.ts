@@ -6,10 +6,10 @@ export class RecoveryFields {
     code: string | null;
 
     @Prop({ default: false })
-    isRevoked: boolean;
+    isConfirmed: boolean;
 
     @Prop()
-    expiresAt: Date | null;
+    expiresAt: Date;
 }
 
 export const RecoveryFieldsSchema = SchemaFactory.createForClass(RecoveryFields);

@@ -1,7 +1,7 @@
 import {Injectable} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {User, UserDocument} from "./schemas/user.schema";
-import {Model} from "mongoose";
+import {Model, Types} from "mongoose";
 import {CreateUserDto} from "./dto/create-user.dto";
 
 @Injectable()
@@ -10,21 +10,22 @@ export class UsersRepository {
         @InjectModel(User.name) private readonly userModel: Model<UserDocument>
     ) {}
 
-    async createUser(dto:CreateUserDto) {
-        try{
-            const createdUser = await this.userModel.create({
-                ...dto,
-                createdAt: new Date(),
-
-            })
-            return createdUser
-        }
-        catch (e) {
-            console.error('CreateUser error:', e.message, e.stack);
-            throw e;
-        }
-
+    async createUser(userData: User) {
+        const createdUser = await this.userModel.create(userData)
+        return createdUser
     }
+
+    async confirmEmail(userId: string): Promise<boolean> {
+        const result = await this.userModel.updateOne(
+            { _id: userId },
+            {
+                $set: {
+                    "emailConfirmation.isConfirmed" : true
+                },
+            },
+        );
+
+        return result.matchedCount === 1 && result.modifiedCount === 1;    }
 
     async removeUserById(id:string) {
         const result = await this.userModel.deleteOne({ _id: id });
