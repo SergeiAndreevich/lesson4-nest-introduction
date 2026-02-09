@@ -6,7 +6,7 @@ import {PaginationQueryDto} from "../dto/pagination-query.dto";
 @Controller('users')
 export class UsersController {
     constructor(
-        @Inject(UsersService) private readonly usersService: UsersService
+        private readonly usersService: UsersService
     ) {}
 
     @Post()

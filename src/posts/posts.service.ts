@@ -11,10 +11,10 @@ import {BlogsQueryRepository} from "../blogs/blogsQuery.repository";
 
 @Injectable()
 export class PostsService {
-  constructor(@Inject(PostsRepository) private readonly postsRepo: PostsRepository,
-              @Inject(PostsQueryRepository) private readonly postsQueryRepo: PostsQueryRepository,
-              @Inject(BlogsQueryRepository) private readonly blogsQueryRepo: BlogsQueryRepository,
-              @Inject(CommentsService) private readonly commentsService: CommentsService
+  constructor(private readonly postsRepo: PostsRepository,
+              private readonly postsQueryRepo: PostsQueryRepository,
+              private readonly blogsQueryRepo: BlogsQueryRepository,
+              private readonly commentsService: CommentsService
   ) {}
   async createPost(dto: CreatePostDto) {
     await this.blogsQueryRepo.findBlogById(dto.blogId);

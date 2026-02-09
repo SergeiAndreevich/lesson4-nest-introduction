@@ -10,8 +10,8 @@ import {paginationHelper} from "../helpers/paginationQuery.helper";
 @Injectable()
 export class CommentsService {
   constructor(
-      @Inject(CommentsRepository) private readonly commentsRepository: CommentsRepository,
-      @Inject(CommentsQueryRepository) private readonly commentsQueryRepository: CommentsQueryRepository,
+      private readonly commentsRepository: CommentsRepository,
+      private readonly commentsQueryRepository: CommentsQueryRepository,
   ) {}
   async findCommentById(id: string) {
     const comment = await this.commentsQueryRepository.findCommentById(id);

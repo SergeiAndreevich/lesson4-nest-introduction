@@ -3,20 +3,16 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import {MongooseModule} from "@nestjs/mongoose";
 import {AppRepository} from "./app.repository";
-import {Blog, BlogSchema} from "./blogs/schemas/blog.schema";
-import {Post, PostSchema} from "./posts/schemas/post.schema";
-import {Comment, CommentSchema} from "./comments/schemas/comment.schema";
-import {User, UserSchema} from "./users/schemas/user.schema";
+
 import {BlogsModule} from "./blogs/blogs.module";
 import {PostsModule} from "./posts/posts.module";
 import {CommentsModule} from "./comments/comments.module";
 import {UsersModule} from "./users/users.module";
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [MongooseModule.forRoot('mongodb://localhost:27018', {dbName: 'lesson4'}),
-      MongooseModule.forFeature([{ name: Blog.name, schema: BlogSchema }, { name: Post.name, schema: PostSchema },
-        { name: Comment.name, schema: CommentSchema }, { name: User.name, schema: UserSchema }]),
-      BlogsModule, PostsModule,CommentsModule,UsersModule
+      BlogsModule, PostsModule,CommentsModule,UsersModule, AuthModule
   ],
   controllers: [AppController],
   providers: [AppService, AppRepository],

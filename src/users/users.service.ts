@@ -9,8 +9,8 @@ import {paginationHelper} from "../helpers/paginationQuery.helper";
 @Injectable()
 export class UsersService {
     constructor(
-       @Inject(UsersRepository) private readonly usersRepo: UsersRepository,
-       @Inject(UsersQueryRepository) private readonly usersQueryRepo: UsersQueryRepository,
+       private readonly usersRepo: UsersRepository,
+       private readonly usersQueryRepo: UsersQueryRepository,
     ) {}
 
     async createUser(dto: CreateUserDto) {

@@ -1,20 +1,19 @@
 import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
 import {HydratedDocument} from "mongoose";
+import {AccountData, AccountDataSchema} from "./accountData.schema";
+import {RecoveryFields, RecoveryFieldsSchema} from "./recoveryFields.schema";
 
 
 @Schema()
 export class User {
-    @Prop({required: true})
-    login: string;
+    @Prop({ type: AccountDataSchema, required: true })
+    accountData: AccountData;
 
-    @Prop({required: true})
-    email: string;
+    @Prop({ type: RecoveryFieldsSchema, default: {} })
+    passwordRecovery: RecoveryFields;
 
-    @Prop({required: true})
-    password: string;
-
-    @Prop({ default: Date.now })
-    createdAt: Date;
+    @Prop({ type: RecoveryFieldsSchema, default: {} })
+    emailConfirmation: RecoveryFields;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

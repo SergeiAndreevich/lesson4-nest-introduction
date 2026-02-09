@@ -12,9 +12,9 @@ import {PostsService} from "../posts/posts.service";
 @Injectable()
 export class BlogsService {
   constructor(
-      @Inject(BlogsRepository) private readonly blogsRepo: BlogsRepository,
-      @Inject(BlogsQueryRepository) private readonly blogsQueryRepo: BlogsQueryRepository,
-      @Inject(PostsService) private readonly postsService: PostsService,
+      private readonly blogsRepo: BlogsRepository,
+      private readonly blogsQueryRepo: BlogsQueryRepository,
+      private readonly postsService: PostsService,
   ) {}
 
   async createBlog(dto:CreateBlogDto){
