@@ -17,6 +17,10 @@ export class UsersQueryRepository {
         return this.userModel.findById(id).lean()
     }
 
+    async findUserByEmail(email: string) {
+        return this.userModel.findOne({'accountData.email': email }).lean()
+    }
+
     async findUserByLoginOrEmail(loginOrEmail: string, emailOrLogin: string, ) {
         return this.userModel.findOne({
             $or: [

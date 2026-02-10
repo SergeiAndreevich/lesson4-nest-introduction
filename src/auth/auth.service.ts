@@ -15,11 +15,13 @@ export class AuthService {
   }
 
   recoveryUserPassword(emailInputDto: EmailInputDto) {
-    return
+    //const confirmationCode = v4();
+    return this.usersService.sendPasswordRecoveryCode(emailInputDto.email, 'abcdef')
   }
 
   setNewPassword(newPasswordInputDto: NewPasswordInputDto) {
-    return
+    //const newPasswordHash = await bcryptHelper.generateHash(newPassword);
+    return this.usersService.setNewPassword(newPasswordInputDto.newPassword, newPasswordInputDto.recoveryCode);
   }
 
   registration(createAuthDto: CreateAuthDto) {
@@ -31,7 +33,7 @@ export class AuthService {
   }
 
   registrationEmailResending(emailInputDto: EmailInputDto) {
-    return
+    return this.usersService.registrationEmailResending(emailInputDto)
   }
 
   findMe() {

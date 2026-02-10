@@ -8,6 +8,8 @@ import {paginationHelper} from "../helpers/paginationQuery.helper";
 import {User} from "./schemas/user.schema";
 import {CreateAuthDto} from "../auth/dto/create-auth.dto";
 import {CodeInputDto} from "../auth/dto/code-input.dto";
+import {EmailInputDto} from "../auth/dto/email-input-dto";
+import {NewPasswordInputDto} from "../auth/dto/new-password-input.dto";
 
 @Injectable()
 export class UsersService {
@@ -41,6 +43,34 @@ export class UsersService {
         }
         throw new BadRequestException('Incorrect code confirmation');
     }
+    async registrationEmailResending(emailDto: EmailInputDto){
+        const user = await this.usersQueryRepo.findUserByEmail(emailDto.email);
+        if(!user ||  user.emailConfirmation.isConfirmed) {
+            throw new BadRequestException('User not found or already confirmed');
+        }
+        const isConfirmed = await this.usersRepo.confirmEmail(user._id.toString());
+        if(!isConfirmed){
+            throw new BadRequestException('User have not updated');
+        }
+        return
+    }
+    async sendPasswordRecoveryCode(email: string, confirmationCode: string){
+        const isUpdated = await this.usersRepo.recoveryPassword(email, confirmationCode);
+        if(!isUpdated){
+            throw new BadRequestException('User have not updated,');
+        }
+        //отправляем письмо на почту для подтверждения
+        //await nodemailerHelper.sendPasswordRecoveryCode(email, confirmationCode);
+        return
+    }
+    async setNewPassword(newPassword: string, recoveryCode: string){
+        const isUpdated = await this.usersRepo.setNewPassword(newPassword, recoveryCode);
+        if(isUpdated){
+            throw new BadRequestException('User have not updated');
+        }
+        return
+    }
+
 
     async findUserByLoginOrEmail(loginOrEmail:string, emailOrLogin: string){
         return this.usersQueryRepo.findUserByLoginOrEmail(loginOrEmail,emailOrLogin);

@@ -3,6 +3,7 @@ import {InjectModel} from "@nestjs/mongoose";
 import {User, UserDocument} from "./schemas/user.schema";
 import {Model, Types} from "mongoose";
 import {CreateUserDto} from "./dto/create-user.dto";
+import {add} from "date-fns";
 
 @Injectable()
 export class UsersRepository {
@@ -25,7 +26,37 @@ export class UsersRepository {
             },
         );
 
-        return result.matchedCount === 1 && result.modifiedCount === 1;    }
+        return result.matchedCount === 1 && result.modifiedCount === 1;
+    }
+
+    async recoveryPassword(email:string, recoveryCode: string) {
+        const result = await this.userModel.updateOne(
+            { "accountData.email": email },
+            {
+                $set: {
+                    "passwordRecovery.code" : recoveryCode,
+                    "passwordRecovery.isConfirmed" : false,
+                    "passwordRecovery.expiresAt" : add(new Date(),{hours: 1,}),
+                },
+            },
+        );
+
+        return result.matchedCount === 1 && result.modifiedCount === 1;
+    }
+
+    async setNewPassword(newPassword: string, recoveryCode: string): Promise<boolean> {
+        const result = await this.userModel.updateOne(
+            { "passwordRecovery.code" : recoveryCode, },
+            {
+                $set: {
+                    "accountData.password": newPassword,
+                    "passwordRecovery.isConfirmed" : true,
+                },
+            },
+        );
+
+        return result.matchedCount === 1 && result.modifiedCount === 1;
+    }
 
     async removeUserById(id:string) {
         const result = await this.userModel.deleteOne({ _id: id });
