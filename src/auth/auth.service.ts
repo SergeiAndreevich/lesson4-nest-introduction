@@ -6,17 +6,20 @@ import {EmailInputDto} from "./dto/email-input-dto";
 import {NewPasswordInputDto} from "./dto/new-password-input.dto";
 import {CodeInputDto} from "./dto/code-input.dto";
 import {UsersService} from "../users/users.service";
+import { v4 as uuidv4 } from "uuid";
+
 
 @Injectable()
 export class AuthService {
   constructor(private readonly usersService: UsersService) {}
   loginUser(loginInputDto: LoginInputDto) {
-    return
+    return this.usersService.loginUser(loginInputDto.loginOrEmail, loginInputDto.password);
   }
 
   recoveryUserPassword(emailInputDto: EmailInputDto) {
-    //const confirmationCode = v4();
-    return this.usersService.sendPasswordRecoveryCode(emailInputDto.email, 'abcdef')
+    const confirmationCode = uuidv4();
+    //const token = crypto.randomUUID();
+    return this.usersService.sendPasswordRecoveryCode(emailInputDto.email, confirmationCode)
   }
 
   setNewPassword(newPasswordInputDto: NewPasswordInputDto) {
@@ -36,7 +39,7 @@ export class AuthService {
     return this.usersService.registrationEmailResending(emailInputDto)
   }
 
-  findMe() {
-    return
+  findMe(userId:string) {
+    return this.usersService.findUserById(userId);
   }
 }

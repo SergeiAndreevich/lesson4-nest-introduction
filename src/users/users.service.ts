@@ -1,4 +1,4 @@
-import {BadRequestException, Inject, Injectable, NotFoundException} from '@nestjs/common';
+import {BadRequestException, Inject, Injectable, NotFoundException, UnauthorizedException} from '@nestjs/common';
 import {UsersRepository} from "./users.repository";
 import {UsersQueryRepository} from "./usersQuery.repository";
 import {CreateUserDto} from "./dto/create-user.dto";
@@ -9,13 +9,15 @@ import {User} from "./schemas/user.schema";
 import {CreateAuthDto} from "../auth/dto/create-auth.dto";
 import {CodeInputDto} from "../auth/dto/code-input.dto";
 import {EmailInputDto} from "../auth/dto/email-input-dto";
-import {NewPasswordInputDto} from "../auth/dto/new-password-input.dto";
+import {v4 as uuidv4} from "uuid";
+import {JwtService} from "@nestjs/jwt";
 
 @Injectable()
 export class UsersService {
     constructor(
        private readonly usersRepo: UsersRepository,
        private readonly usersQueryRepo: UsersQueryRepository,
+       private readonly jwtService: JwtService,
     ) {}
 
     async createUser(dto: CreateUserDto | CreateAuthDto) {
@@ -25,6 +27,7 @@ export class UsersService {
         }
         const userData = User.createNewUser(dto);
         const createdUser = await this.usersRepo.createUser(userData);
+        //const confirmationCode = uuidv4();
         //отправить сообщение с кодом подтверждения
 
         return mapUserToView(createdUser)
@@ -69,6 +72,22 @@ export class UsersService {
             throw new BadRequestException('User have not updated');
         }
         return
+    }
+    async loginUser(loginOrEmail:string, password:string){
+        //ищем юзера
+        const user = await this.usersQueryRepo.findUserByLoginOrEmail(loginOrEmail, loginOrEmail);
+        if(!user) {
+            throw new BadRequestException('User not found');
+        }
+        //проверяем пароль
+        //const isPasswordCorrect = await bcryptHelper.comparePassword(password,user.accountData.password);
+        if(user.accountData.password !== password) {
+            throw new UnauthorizedException('Invalid password');
+        }
+        //создаем аксес рефреш токены, создаем сессию и возвращаем токен
+        const accessToken = this.jwtService.sign({userId: user._id.toString()});
+        const deviceId = uuidv4();
+        return  {accessToken: accessToken}
     }
 
 
