@@ -5,14 +5,14 @@ import {MongooseModule} from "@nestjs/mongoose";
 import {User, UserSchema} from "./schemas/user.schema";
 import {UsersRepository} from "./users.repository";
 import {UsersQueryRepository} from "./usersQuery.repository";
-import {JwtModule} from "@nestjs/jwt";
+import {BasicGuard} from "../guards/basic.guard";
+import {JwtGlobalModule} from "../guards/jwt.module";
+import {EmailSenderHelper} from "../helpers/emailSender.helper";
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]), JwtModule.register({
-    secret: process.env.JWT_SECRET || 'secret',
-    signOptions: { expiresIn: '5m' },
-  }),],
-  providers: [UsersService, UsersRepository, UsersQueryRepository],
-  controllers: [UsersController]
+  imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]), JwtGlobalModule],
+  providers: [UsersService, UsersRepository, UsersQueryRepository, BasicGuard, EmailSenderHelper],
+  controllers: [UsersController],
+  exports:[UsersService]
 })
 export class UsersModule {}

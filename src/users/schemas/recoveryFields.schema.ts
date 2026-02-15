@@ -2,14 +2,14 @@ import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
 
 @Schema({ _id: false })
 export class RecoveryFields {
-    @Prop()
+    @Prop({ type: String, default: null })
     code: string | null;
 
-    @Prop({ default: false })
+    @Prop({ type: Boolean, default: false })
     isConfirmed: boolean;
 
-    @Prop()
-    expiresAt: Date;
+    @Prop({ type: Date, default: null })
+    expiresAt: Date | null;
 }
 
 export const RecoveryFieldsSchema = SchemaFactory.createForClass(RecoveryFields);

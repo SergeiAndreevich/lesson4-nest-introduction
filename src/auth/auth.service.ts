@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 import {LoginInputDto} from "./dto/login-input.dto";
 import {EmailInputDto} from "./dto/email-input-dto";
 import {NewPasswordInputDto} from "./dto/new-password-input.dto";
 import {CodeInputDto} from "./dto/code-input.dto";
 import {UsersService} from "../users/users.service";
 import { v4 as uuidv4 } from "uuid";
+import {mapUserToView} from "../mappers/user.mapper";
 
 
 @Injectable()
@@ -40,6 +40,12 @@ export class AuthService {
   }
 
   findMe(userId:string) {
-    return this.usersService.findUserById(userId);
+    const user = this.usersService.findUserById(userId);
+    const viewModel = mapUserToView(user);
+    return {
+      email: viewModel.email,
+      login: viewModel.login,
+      userId: viewModel.id,
+    }
   }
 }

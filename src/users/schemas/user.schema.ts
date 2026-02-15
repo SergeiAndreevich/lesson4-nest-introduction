@@ -2,25 +2,25 @@ import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
 import {HydratedDocument} from "mongoose";
 import {AccountData, AccountDataSchema} from "./accountData.schema";
 import {RecoveryFields, RecoveryFieldsSchema} from "./recoveryFields.schema";
-import {CreateUserDto} from "../dto/create-user.dto";
 import {add} from "date-fns";
+import {v4 as uuidv4} from "uuid";
+import {CreateUserDto} from "../dto/create-user.dto";
+import {CreateAuthDto} from "../../auth/dto/create-auth.dto";
 
 
 @Schema({timestamps: true})
 export class User {
-    createdAt: Date;
     @Prop({ type: AccountDataSchema, required: true })
     accountData: AccountData;
 
     @Prop({ type: RecoveryFieldsSchema, default: {} })
     passwordRecovery: RecoveryFields;
 
-    @Prop({ type: RecoveryFieldsSchema, default: {} })
+    @Prop({ type: RecoveryFieldsSchema, default:{}})
     emailConfirmation: RecoveryFields;
 
-    static createNewUser(dto: CreateUserDto): User {
+    static createNewUser(dto: CreateUserDto | CreateAuthDto): User {
         return {
-            createdAt: new Date(),
             accountData: {
                 login: dto.login,
                 email: dto.email,
@@ -32,11 +32,11 @@ export class User {
                 expiresAt: new Date(),
             },
             emailConfirmation: {
-                code: null,
+                code: uuidv4(),
                 isConfirmed: false,
                 expiresAt: add(new Date(),{hours: 1}),
             },
-        };
+        } as User
     }
 }
 

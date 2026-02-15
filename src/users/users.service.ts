@@ -1,4 +1,4 @@
-import {BadRequestException, Inject, Injectable, NotFoundException, UnauthorizedException} from '@nestjs/common';
+import {BadRequestException, Injectable, NotFoundException, UnauthorizedException} from '@nestjs/common';
 import {UsersRepository} from "./users.repository";
 import {UsersQueryRepository} from "./usersQuery.repository";
 import {CreateUserDto} from "./dto/create-user.dto";
@@ -11,6 +11,7 @@ import {CodeInputDto} from "../auth/dto/code-input.dto";
 import {EmailInputDto} from "../auth/dto/email-input-dto";
 import {v4 as uuidv4} from "uuid";
 import {JwtService} from "@nestjs/jwt";
+import {EmailSenderHelper} from "../helpers/emailSender.helper";
 
 @Injectable()
 export class UsersService {
@@ -18,6 +19,7 @@ export class UsersService {
        private readonly usersRepo: UsersRepository,
        private readonly usersQueryRepo: UsersQueryRepository,
        private readonly jwtService: JwtService,
+       private readonly emailSenderHelper: EmailSenderHelper,
     ) {}
 
     async createUser(dto: CreateUserDto | CreateAuthDto) {
@@ -27,9 +29,12 @@ export class UsersService {
         }
         const userData = User.createNewUser(dto);
         const createdUser = await this.usersRepo.createUser(userData);
-        //const confirmationCode = uuidv4();
+        const confirmationCode = createdUser.emailConfirmation.code;
+        if(!confirmationCode){
+            throw new BadRequestException('Smth wrong with received user and its emailConfirmationCode');
+        }
         //отправить сообщение с кодом подтверждения
-
+        await this.emailSenderHelper.sendEmailConfirmation(createdUser.accountData.email, confirmationCode);
         return mapUserToView(createdUser)
     }
     async registrationConfirmation(codeInputDto: CodeInputDto) {
@@ -37,7 +42,9 @@ export class UsersService {
         if(!user){
             throw new BadRequestException('User not found');
         }
-        if(user && user.emailConfirmation.isConfirmed === false && user.emailConfirmation.expiresAt > new Date()) {
+        if(user && user.emailConfirmation.isConfirmed === false &&
+            user.emailConfirmation.expiresAt &&
+            user.emailConfirmation.expiresAt > new Date()) {
             const isConfirmed = await this.usersRepo.confirmEmail(user._id.toString());
             if(!isConfirmed){
                 throw new BadRequestException('User have not updated');
@@ -55,6 +62,8 @@ export class UsersService {
         if(!isConfirmed){
             throw new BadRequestException('User have not updated');
         }
+        //вероятно здесь нужно добавить больше логики...
+        await this.emailSenderHelper.sendEmailConfirmation(user.accountData.email,user.emailConfirmation.code!);
         return
     }
     async sendPasswordRecoveryCode(email: string, confirmationCode: string){
@@ -63,7 +72,7 @@ export class UsersService {
             throw new BadRequestException('User have not updated,');
         }
         //отправляем письмо на почту для подтверждения
-        //await nodemailerHelper.sendPasswordRecoveryCode(email, confirmationCode);
+        await this.emailSenderHelper.sendRecoveryPassword(email, confirmationCode);
         return
     }
     async setNewPassword(newPassword: string, recoveryCode: string){
@@ -77,7 +86,7 @@ export class UsersService {
         //ищем юзера
         const user = await this.usersQueryRepo.findUserByLoginOrEmail(loginOrEmail, loginOrEmail);
         if(!user) {
-            throw new BadRequestException('User not found');
+            throw new UnauthorizedException('User not found');
         }
         //проверяем пароль
         //const isPasswordCorrect = await bcryptHelper.comparePassword(password,user.accountData.password);

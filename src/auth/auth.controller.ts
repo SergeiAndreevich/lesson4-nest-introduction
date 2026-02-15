@@ -13,6 +13,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
+  @HttpCode(200)
   loginUser(@Body() loginInputDto: LoginInputDto) {
     return this.authService.loginUser(loginInputDto);
   }
@@ -49,6 +50,7 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(BearerGuard)
+  @HttpCode(200)
   async findMe(@UserId()userId:string ) {
     return this.authService.findMe(userId)
   }

@@ -6,6 +6,7 @@ import {IPaginationAndSorting, TypePaginatorObject} from "../types/pagination.ty
 import {mapUserToView} from "../mappers/user.mapper";
 import {TypeUserToView} from "../types/user.types";
 import {CodeInputDto} from "../auth/dto/code-input.dto";
+import {escapeRegex} from "../helpers/escapeRegex.helper";
 
 @Injectable()
 export class UsersQueryRepository {
@@ -43,14 +44,11 @@ export class UsersQueryRepository {
         // Массив OR-условий для поиска
         const orFilters :any = [];
 
-        if (searchNameTerm) {
-            orFilters.push({ name: { $regex: searchNameTerm, $options: "i" } });
-        }
         if (searchLoginTerm) {
-            orFilters.push({ login: { $regex: searchLoginTerm, $options: "i" } });
+            orFilters.push({ 'accountData.login': { $regex: searchLoginTerm, $options: "i" } });
         }
         if (searchEmailTerm) {
-            orFilters.push({ email: { $regex: searchEmailTerm, $options: "i" } });
+            orFilters.push({ 'accountData.email': { $regex: searchEmailTerm, $options: "i" } });
         }
 
         // Если есть хотя бы один searchTerm → добавляем $or
