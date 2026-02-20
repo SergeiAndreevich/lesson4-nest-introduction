@@ -12,9 +12,10 @@ import {Blog, BlogSchema} from "./blogs/schemas/blog.schema";
 import {Post, PostSchema} from "./posts/schemas/post.schema";
 import {User, UserSchema} from "./users/schemas/user.schema";
 import {Comment, CommentSchema} from "./comments/schemas/comment.schema";
+import {configModule} from "./dynamic-config-module";
 
 @Module({
-  imports: [MongooseModule.forRoot('mongodb://localhost:27018', {dbName: 'lesson4'}),
+  imports: [configModule, MongooseModule.forRoot(process.env.MONGODB_URI ?? 'mongodb://localhost:27018/lesson4'),
       MongooseModule.forFeature([
           { name: Blog.name, schema: BlogSchema },
           { name: Post.name, schema: PostSchema },

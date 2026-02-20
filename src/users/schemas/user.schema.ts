@@ -13,10 +13,10 @@ export class User {
     @Prop({ type: AccountDataSchema, required: true })
     accountData: AccountData;
 
-    @Prop({ type: RecoveryFieldsSchema, default: {} })
+    @Prop({ type: RecoveryFieldsSchema })
     passwordRecovery: RecoveryFields;
 
-    @Prop({ type: RecoveryFieldsSchema, default:{}})
+    @Prop({ type: RecoveryFieldsSchema})
     emailConfirmation: RecoveryFields;
 
     static createNewUser(dto: CreateUserDto | CreateAuthDto): User {
@@ -27,7 +27,7 @@ export class User {
                 password: dto.password // лучше хэшировать в сервисе
             },
             passwordRecovery: {
-                code: null,
+                code: '1234',
                 isConfirmed: false,
                 expiresAt: new Date(),
             },

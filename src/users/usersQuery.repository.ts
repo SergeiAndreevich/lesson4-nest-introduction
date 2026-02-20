@@ -18,6 +18,10 @@ export class UsersQueryRepository {
         return this.userModel.findById(id).lean()
     }
 
+    async findUserByLogin(login:string){
+        return this.userModel.findOne({'accountData.login': login }).lean()
+    }
+
     async findUserByEmail(email: string) {
         return this.userModel.findOne({'accountData.email': email }).lean()
     }
@@ -55,10 +59,19 @@ export class UsersQueryRepository {
         if (orFilters.length > 0) {
             filter.$or = orFilters;
         }
+        // Маппинг sortBy в реальные поля Mongo
+        const sortFieldMap = {
+            login: 'accountData.login',
+            email: 'accountData.email',
+            createdAt: 'createdAt'
+        };
+
+        const mongoSortField = sortFieldMap[sortBy] ?? 'createdAt';
+
         const skip = (pageNumber - 1) * pageSize;
         const users = await this.userModel
             .find(filter)
-            .sort({ [sortBy]: sortDirection })
+            .sort({ [mongoSortField]: sortDirection })
             .skip(skip)
             .limit(pageSize)
             .lean();

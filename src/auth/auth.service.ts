@@ -27,8 +27,9 @@ export class AuthService {
     return this.usersService.setNewPassword(newPasswordInputDto.newPassword, newPasswordInputDto.recoveryCode);
   }
 
-  registration(createAuthDto: CreateAuthDto) {
-    return this.usersService.createUser(createAuthDto);
+  async registration(createAuthDto: CreateAuthDto) {
+     const user = await this.usersService.createUser(createAuthDto);
+     return
   }
 
   registrationConfirmation(codeInputDto: CodeInputDto) {

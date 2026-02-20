@@ -29,6 +29,21 @@ export class UsersRepository {
         return result.matchedCount === 1 && result.modifiedCount === 1;
     }
 
+    async updateEmailConfirmationCode(userId: string, newCode:string, expiresAt:Date) {
+        const result = await this.userModel.updateOne(
+            { _id: userId },
+            {
+                $set: {
+                    "emailConfirmation.code" : newCode,
+                    "emailConfirmation.isConfirmed" : false,
+                    "emailConfirmation.expiresAt" : expiresAt,
+                },
+            },
+        );
+
+        return result.matchedCount === 1 && result.modifiedCount === 1;
+    }
+
     async recoveryPassword(email:string, recoveryCode: string) {
         const result = await this.userModel.updateOne(
             { "accountData.email": email },

@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import {BadRequestException, ValidationPipe} from "@nestjs/common";
-import {HttpExceptionFilter} from "./filters/exceptionFilter.filter";
+import {AllExceptionsFilter} from "./filters/exceptionFilter.filter";
 import {ValidationError} from "class-validator";
 
 async function bootstrap() {
@@ -29,7 +29,7 @@ async function bootstrap() {
     }
   }));
   //ValidationPipe обрабатывает только ошибки, возникшие до входа в контроллер (на этапе валидации входных данных). Но в приложении могут быть и другие исключения:
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(new AllExceptionsFilter());
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

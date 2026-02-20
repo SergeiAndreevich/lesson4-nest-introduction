@@ -29,7 +29,7 @@ export class PostsService {
   async findPostById(id: string) {
     const post = await this.postsQueryRepo.findPostById(id);
     if (!post) {
-      throw new NotFoundException('Post not found');
+      throw new NotFoundException({message: 'Post not found', field: 'postId'});
     }
     return mapPostToView(post)
   }

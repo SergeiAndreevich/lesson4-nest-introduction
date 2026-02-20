@@ -23,25 +23,37 @@ export class UsersService {
     ) {}
 
     async createUser(dto: CreateUserDto | CreateAuthDto) {
-        const user = await this.findUserByLoginOrEmail(dto.login, dto.email);
-        if(user){
-            throw new BadRequestException('User already exists');
+        //специально для тестов так. Раньше был один метод
+        const userByLogin = await this.usersQueryRepo.findUserByLogin(dto.login);
+        if(userByLogin){
+            throw new BadRequestException({message: 'User already exists', field: 'login'});
         }
+        const userByEmail = await this.usersQueryRepo.findUserByEmail(dto.email);
+        if(userByEmail){
+            throw new BadRequestException({message: 'User already exists', field: 'email'});
+        }
+        //console.log('start creating user', dto);
+        //console.log('from DB', userByLogin, userByEmail);
         const userData = User.createNewUser(dto);
+        //console.log('userData:', userData);
         const createdUser = await this.usersRepo.createUser(userData);
         const confirmationCode = createdUser.emailConfirmation.code;
+        //console.log('emailConfirmationCode:', confirmationCode);
         if(!confirmationCode){
             throw new BadRequestException('Smth wrong with received user and its emailConfirmationCode');
         }
         //отправить сообщение с кодом подтверждения
         await this.emailSenderHelper.sendEmailConfirmation(createdUser.accountData.email, confirmationCode);
+        //console.log('end of creating user:', createdUser);
         return mapUserToView(createdUser)
     }
     async registrationConfirmation(codeInputDto: CodeInputDto) {
+        console.log('CODE_INPUT_DTO', codeInputDto);
         const user = await this.findUserByEmailCode(codeInputDto);
         if(!user){
-            throw new BadRequestException('User not found');
+            throw new BadRequestException({message: 'User not found', field: 'code'});
         }
+        console.log('EMAIL_CONFIRMATION', user);
         if(user && user.emailConfirmation.isConfirmed === false &&
             user.emailConfirmation.expiresAt &&
             user.emailConfirmation.expiresAt > new Date()) {
@@ -51,50 +63,60 @@ export class UsersService {
             }
             return
         }
-        throw new BadRequestException('Incorrect code confirmation');
+        throw new BadRequestException({message: 'Incorrect code confirmation', field: 'code'});
     }
     async registrationEmailResending(emailDto: EmailInputDto){
         const user = await this.usersQueryRepo.findUserByEmail(emailDto.email);
-        if(!user ||  user.emailConfirmation.isConfirmed) {
-            throw new BadRequestException('User not found or already confirmed');
+        if(!user ||  user.emailConfirmation.isConfirmed === true) {
+            throw new BadRequestException({message:'User not found or already confirmed' , field: 'email'});
         }
-        const isConfirmed = await this.usersRepo.confirmEmail(user._id.toString());
-        if(!isConfirmed){
+        const newCode = uuidv4();
+        const expiresAt = new Date(Date.now() + 1000 * 60 * 3);
+
+        const isUpdated = await this.usersRepo.updateEmailConfirmationCode(
+            user._id.toString(),
+            newCode,
+            expiresAt
+        );
+        if(!isUpdated){
             throw new BadRequestException('User have not updated');
         }
         //вероятно здесь нужно добавить больше логики...
-        await this.emailSenderHelper.sendEmailConfirmation(user.accountData.email,user.emailConfirmation.code!);
+        await this.emailSenderHelper.sendEmailConfirmation(user.accountData.email,newCode);
         return
     }
     async sendPasswordRecoveryCode(email: string, confirmationCode: string){
         const isUpdated = await this.usersRepo.recoveryPassword(email, confirmationCode);
         if(!isUpdated){
-            throw new BadRequestException('User have not updated,');
+            throw new BadRequestException('User have not updated');
         }
         //отправляем письмо на почту для подтверждения
-        await this.emailSenderHelper.sendRecoveryPassword(email, confirmationCode);
+        await this.emailSenderHelper.sendPasswordRecovery(email, confirmationCode);
         return
     }
     async setNewPassword(newPassword: string, recoveryCode: string){
         const isUpdated = await this.usersRepo.setNewPassword(newPassword, recoveryCode);
-        if(isUpdated){
+        if(!isUpdated){
             throw new BadRequestException('User have not updated');
         }
         return
     }
     async loginUser(loginOrEmail:string, password:string){
+        console.log('LOGIN_USER_DTO',  loginOrEmail, password);
         //ищем юзера
-        const user = await this.usersQueryRepo.findUserByLoginOrEmail(loginOrEmail, loginOrEmail);
-        if(!user) {
-            throw new UnauthorizedException('User not found');
+        const user = await this.findUserByLoginOrEmail(loginOrEmail,loginOrEmail);
+        console.log('LOGIN_USER', user)
+        if(!user){
+            throw new UnauthorizedException({message: 'User not found', field: 'loginOrEmail'});
         }
         //проверяем пароль
         //const isPasswordCorrect = await bcryptHelper.comparePassword(password,user.accountData.password);
         if(user.accountData.password !== password) {
-            throw new UnauthorizedException('Invalid password');
+            throw new UnauthorizedException({message: 'Invalid password', field: 'password'});
         }
         //создаем аксес рефреш токены, создаем сессию и возвращаем токен
         const accessToken = this.jwtService.sign({userId: user._id.toString()});
+        console.log('accessToken:', accessToken);
         const deviceId = uuidv4();
         return  {accessToken: accessToken}
     }
@@ -115,7 +137,9 @@ export class UsersService {
         return user
     }
     async findUserByEmailCode(confirmationCode: CodeInputDto) {
-        return this.usersQueryRepo.findUserByEmailCode(confirmationCode.code)
+        const user = await this.usersQueryRepo.findUserByEmailCode(confirmationCode.code)
+        console.log('USER_BY_EMAIL_CODE',user)
+        return user
     }
 
     async removeUserById(id: string){
