@@ -12,7 +12,7 @@ import {DomainExceptionCode} from "./types/domain-exception";
 //https://docs.nestjs.com/exception-filters#exception-filters-1
 //Все ошибки
 @Catch()
-export class AllHttpExceptionsFilter implements ExceptionFilter {
+export class OtherHttpExceptionsFilter implements ExceptionFilter {
     catch(exception: any, host: ArgumentsHost): void {
         //ctx нужен, чтобы получить request и response (express). Это из документации, делаем по аналогии
         const ctx = host.switchToHttp();

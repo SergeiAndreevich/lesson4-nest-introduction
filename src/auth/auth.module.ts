@@ -4,10 +4,11 @@ import { AuthController } from './auth.controller';
 import {UsersModule} from "../users/users.module";
 import {BearerGuard} from "../guards/bearer.guard";
 import {JwtGlobalModule} from "../guards/jwt.module";
+import {NotificationsModule} from "../helpers/emailHelper/notification.module";
 
 @Module({
   controllers: [AuthController],
   providers: [AuthService, BearerGuard],
-  imports: [UsersModule, JwtGlobalModule],
+  imports: [UsersModule, JwtGlobalModule, NotificationsModule],
 })
 export class AuthModule {}

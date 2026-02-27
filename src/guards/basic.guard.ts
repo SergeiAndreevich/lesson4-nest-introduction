@@ -12,7 +12,7 @@ export class BasicGuard implements CanActivate {
         }
         //Basic-авторизация это строка Basic gfsladfasj:sfhdksdfh
         const [header,  body] = auth.split(' ');
-        if(header !== 'Basic' || !body){
+        if(!header || header.toLowerCase() !== 'basic' || !body){
             throw new UnauthorizedException()
         }
         const decodedBody = Buffer.from(body, 'base64').toString('utf-8');

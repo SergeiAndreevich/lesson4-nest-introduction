@@ -8,10 +8,11 @@ import {UsersQueryRepository} from "./usersQuery.repository";
 import {BasicGuard} from "../guards/basic.guard";
 import {JwtGlobalModule} from "../guards/jwt.module";
 import {EmailSenderHelper} from "../helpers/emailSender.helper";
+import {NotificationsModule} from "../helpers/emailHelper/notification.module";
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]), JwtGlobalModule],
-  providers: [UsersService, UsersRepository, UsersQueryRepository, BasicGuard, EmailSenderHelper],
+  imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]), JwtGlobalModule, NotificationsModule],
+  providers: [UsersService, UsersRepository, UsersQueryRepository, BasicGuard ],
   controllers: [UsersController],
   exports:[UsersService]
 })

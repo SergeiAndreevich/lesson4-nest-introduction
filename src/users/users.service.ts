@@ -12,6 +12,7 @@ import {EmailInputDto} from "../auth/dto/email-input-dto";
 import {v4 as uuidv4} from "uuid";
 import {JwtService} from "@nestjs/jwt";
 import {EmailSenderHelper} from "../helpers/emailSender.helper";
+import {EmailService} from "../helpers/emailHelper/mailNotification.service";
 
 
 @Injectable()
@@ -20,7 +21,7 @@ export class UsersService {
        private readonly usersRepo: UsersRepository,
        private readonly usersQueryRepo: UsersQueryRepository,
        private readonly jwtService: JwtService,
-       private readonly emailSenderHelper: EmailSenderHelper,
+       private readonly emailSenderHelper: EmailService,
     ) {}
 
     async createUser(dto: CreateUserDto | CreateAuthDto) {
@@ -33,38 +34,27 @@ export class UsersService {
         if(userByEmail){
             throw new BadRequestException({message: 'User already exists', field: 'email'});
         }
-        //console.log('start creating user', dto);
-        //console.log('from DB', userByLogin, userByEmail);
         const userData = User.createNewUser(dto);
-        //console.log('userData:', userData);
+        console.log('userData:', userData);
         const createdUser = await this.usersRepo.createUser(userData);
-        const confirmationCode = createdUser.emailConfirmation.code;
-        //console.log('emailConfirmationCode:', confirmationCode);
-        if(!confirmationCode){
-            throw new BadRequestException('Smth wrong with received user and its emailConfirmationCode');
-        }
-        //отправить сообщение с кодом подтверждения
-        await this.emailSenderHelper.sendEmailConfirmation(createdUser.accountData.email,'email confirmation', confirmationCode);
-        //console.log('end of creating user:', createdUser);
         return mapUserToView(createdUser)
     }
     async registrationConfirmation(codeInputDto: CodeInputDto) {
-        console.log('CODE_INPUT_DTO', codeInputDto);
+        //нашли юзера по коду, значит точно код совпадает
         const user = await this.findUserByEmailCode(codeInputDto);
         if(!user){
             throw new BadRequestException({message: 'User not found', field: 'code'});
         }
-        console.log('EMAIL_CONFIRMATION', user);
-        if(user && user.emailConfirmation.isConfirmed === false &&
-            user.emailConfirmation.expiresAt &&
-            user.emailConfirmation.expiresAt > new Date()) {
-            const isConfirmed = await this.usersRepo.confirmEmail(user._id.toString());
-            if(!isConfirmed){
-                throw new BadRequestException('User have not updated');
-            }
-            return
+        //далее проверяем, если почта уже подтверждена или если код истек, то выкидываем ошибку
+        if(user.emailConfirmation.isConfirmed === true || user.emailConfirmation.expiresAt < new Date()) {
+            throw new BadRequestException({message: 'Incorrect confirmation info', field: 'code'});
         }
-        throw new BadRequestException({message: 'Incorrect code confirmation', field: 'code'});
+        const isConfirmed = await this.usersRepo.confirmEmail(user._id.toString());
+        if(!isConfirmed){
+            throw new BadRequestException('User have not updated');
+        }
+        return
+
     }
     async registrationEmailResending(emailDto: EmailInputDto){
         const user = await this.usersQueryRepo.findUserByEmail(emailDto.email);
@@ -83,7 +73,7 @@ export class UsersService {
             throw new BadRequestException('User have not updated');
         }
         //вероятно здесь нужно добавить больше логики...
-        await this.emailSenderHelper.sendEmailConfirmation(user.accountData.email,'email confirmation', newCode);
+        await this.emailSenderHelper.sendConfirmationEmail(user.accountData.email, newCode);
         return
     }
     async sendPasswordRecoveryCode(email: string, confirmationCode: string){
@@ -92,7 +82,8 @@ export class UsersService {
             throw new BadRequestException('User have not updated');
         }
         //отправляем письмо на почту для подтверждения
-        await this.emailSenderHelper.sendPasswordRecovery(email,'password recovery', confirmationCode);
+        //this.emailSenderHelper.sendPasswordRecovery(email,'password recovery', confirmationCode);
+        await this.emailSenderHelper.sendConfirmationEmail(email, confirmationCode);
         return
     }
     async setNewPassword(newPassword: string, recoveryCode: string){
@@ -102,29 +93,10 @@ export class UsersService {
         }
         return
     }
-    async loginUser(loginOrEmail:string, password:string){
-        console.log('LOGIN_USER_DTO',  loginOrEmail, password);
-        //ищем юзера
-        const user = await this.findUserByLoginOrEmail(loginOrEmail,loginOrEmail);
-        console.log('LOGIN_USER', user)
-        if(!user){
-            throw new UnauthorizedException({message: 'User not found', field: 'loginOrEmail'});
-        }
-        //проверяем пароль
-        //const isPasswordCorrect = await bcryptHelper.comparePassword(password,user.accountData.password);
-        if(user.accountData.password !== password) {
-            throw new UnauthorizedException({message: 'Invalid password', field: 'password'});
-        }
-        //создаем аксес рефреш токены, создаем сессию и возвращаем токен
-        const accessToken = this.jwtService.sign({userId: user._id.toString()});
-        console.log('accessToken:', accessToken);
-        const deviceId = uuidv4();
-        return  {accessToken: accessToken}
-    }
 
 
-    async findUserByLoginOrEmail(loginOrEmail:string, emailOrLogin: string){
-        return this.usersQueryRepo.findUserByLoginOrEmail(loginOrEmail,emailOrLogin);
+    async findUserByLoginOrEmail(loginOrEmail:string){
+        return this.usersQueryRepo.findUserByLoginOrEmail(loginOrEmail);
     }
     async findAllUsersByQuery(query:PaginationQueryDto) {
         const pagination = paginationHelper(query);
@@ -139,7 +111,6 @@ export class UsersService {
     }
     async findUserByEmailCode(confirmationCode: CodeInputDto) {
         const user = await this.usersQueryRepo.findUserByEmailCode(confirmationCode.code)
-        console.log('USER_BY_EMAIL_CODE',user)
         return user
     }
 

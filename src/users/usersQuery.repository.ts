@@ -26,11 +26,11 @@ export class UsersQueryRepository {
         return this.userModel.findOne({'accountData.email': email }).lean()
     }
 
-    async findUserByLoginOrEmail(loginOrEmail: string, emailOrLogin: string, ) {
+    async findUserByLoginOrEmail(loginOrEmail: string ) {
         return this.userModel.findOne({
             $or: [
                 { 'accountData.login': loginOrEmail },
-                { 'accountData.email': emailOrLogin },]
+                { 'accountData.email': loginOrEmail }]
         }).lean()
     }
 
