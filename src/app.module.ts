@@ -13,6 +13,9 @@ import {Post, PostSchema} from "./posts/schemas/post.schema";
 import {User, UserSchema} from "./users/schemas/user.schema";
 import {Comment, CommentSchema} from "./comments/schemas/comment.schema";
 import {configModule} from "./dynamic-config-module";
+import {APP_FILTER} from "@nestjs/core";
+import {DomainHttpExceptionsFilter} from "../setup/domain-filter";
+import {AllHttpExceptionsFilter} from "../setup/all-http-filter";
 
 @Module({
   imports: [configModule, MongooseModule.forRoot(process.env.MONGODB_URI ?? 'mongodb://localhost:27018/lesson4'),
@@ -25,6 +28,15 @@ import {configModule} from "./dynamic-config-module";
       BlogsModule, PostsModule,CommentsModule,UsersModule, AuthModule
   ],
   controllers: [AppController],
-  providers: [AppService, AppRepository],
+  providers: [AppService, AppRepository,
+      {
+          provide: APP_FILTER,
+          useClass: AllHttpExceptionsFilter,
+      },
+      {
+          provide: APP_FILTER,
+          useClass: DomainHttpExceptionsFilter,
+      },
+  ],
 })
 export class AppModule {}

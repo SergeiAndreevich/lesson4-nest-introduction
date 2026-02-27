@@ -5,7 +5,6 @@ import {UsersQueryRepository} from "./usersQuery.repository";
 import {EmailSenderHelper} from "../helpers/emailSender.helper";
 import {CreateUserDto} from "./dto/create-user.dto";
 import {User} from "./schemas/user.schema";
-import {v4 as uuidv4} from "uuid";
 import {add} from "date-fns";
 import {BadRequestException} from "@nestjs/common";
 

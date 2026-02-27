@@ -13,6 +13,7 @@ import {v4 as uuidv4} from "uuid";
 import {JwtService} from "@nestjs/jwt";
 import {EmailSenderHelper} from "../helpers/emailSender.helper";
 
+
 @Injectable()
 export class UsersService {
     constructor(
@@ -43,7 +44,7 @@ export class UsersService {
             throw new BadRequestException('Smth wrong with received user and its emailConfirmationCode');
         }
         //отправить сообщение с кодом подтверждения
-        await this.emailSenderHelper.sendEmailConfirmation(createdUser.accountData.email, confirmationCode);
+        await this.emailSenderHelper.sendEmailConfirmation(createdUser.accountData.email,'email confirmation', confirmationCode);
         //console.log('end of creating user:', createdUser);
         return mapUserToView(createdUser)
     }
@@ -82,7 +83,7 @@ export class UsersService {
             throw new BadRequestException('User have not updated');
         }
         //вероятно здесь нужно добавить больше логики...
-        await this.emailSenderHelper.sendEmailConfirmation(user.accountData.email,newCode);
+        await this.emailSenderHelper.sendEmailConfirmation(user.accountData.email,'email confirmation', newCode);
         return
     }
     async sendPasswordRecoveryCode(email: string, confirmationCode: string){
@@ -91,7 +92,7 @@ export class UsersService {
             throw new BadRequestException('User have not updated');
         }
         //отправляем письмо на почту для подтверждения
-        await this.emailSenderHelper.sendPasswordRecovery(email, confirmationCode);
+        await this.emailSenderHelper.sendPasswordRecovery(email,'password recovery', confirmationCode);
         return
     }
     async setNewPassword(newPassword: string, recoveryCode: string){

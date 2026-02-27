@@ -67,21 +67,24 @@ export class EmailSenderHelper {
         });
     }
 
-    async sendEmailConfirmation(email: string, code: string) {
+    async sendEmailConfirmation(email: string, subject:string, code: string) {
         // const info = await this.transporter.sendMail({
         //     to: email,
         //     subject: 'Email confirmation (TEST)',
         //     text: `Your confirmation code: ${code}`,
         // });
-        console.log(`Email sent to ${email} with subject: "email confirmation code" and body: "${code}"`);
+        console.log(`Email sent to ${email} with ${subject}: "email confirmation code" and body: "${code}"`);
         //Logger.log(`Mock email sent: ${nodemailer.getTestMessageUrl(info)}`);
         //return
+        // 2. ВАЖНО: записать код в тестовое хранилище
+
+        return true
     }
 
-    async sendPasswordRecovery(email: string, code: string) {
+    async sendPasswordRecovery(email: string, subject: string, code: string) {
         const info = await this.transporter.sendMail({
             to: email,
-            subject: 'Password recovery (TEST)',
+            subject: `${subject}`,
             text: `Your recovery code: ${code}`,
         });
 
