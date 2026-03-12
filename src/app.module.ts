@@ -3,19 +3,21 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import {MongooseModule} from "@nestjs/mongoose";
 import {AppRepository} from "./app.repository";
-import {BlogsModule} from "./blogs/blogs.module";
-import {PostsModule} from "./posts/posts.module";
-import {CommentsModule} from "./comments/comments.module";
-import {UsersModule} from "./users/users.module";
-import { AuthModule } from './auth/auth.module';
-import {Blog, BlogSchema} from "./blogs/schemas/blog.schema";
-import {Post, PostSchema} from "./posts/schemas/post.schema";
-import {User, UserSchema} from "./users/schemas/user.schema";
-import {Comment, CommentSchema} from "./comments/schemas/comment.schema";
+import {BlogsModule} from "./blogsLogic/blogs/blogs.module";
+import {PostsModule} from "./blogsLogic/posts/posts.module";
+import {CommentsModule} from "./blogsLogic/comments/comments.module";
+import {UsersModule} from "./sessionLogic/users/users.module";
+import { AuthModule } from './sessionLogic/auth/auth.module';
+
 import {configModule} from "./dynamic-config-module";
 import {APP_FILTER} from "@nestjs/core";
-import {DomainHttpExceptionsFilter} from "../setup/domain-filter";
-import {OtherHttpExceptionsFilter} from "../setup/other-http-filter";
+import {DomainHttpExceptionsFilter} from "../setup/exception-filter/domain-filter";
+import {OtherHttpExceptionsFilter} from "../setup/exception-filter/other-http-filter";
+import {CqrsModule} from "@nestjs/cqrs";
+import {Blog, BlogSchema} from "./blogsLogic/blogs/schema/blog.schema";
+import {Post, PostSchema} from "./blogsLogic/posts/shema/post.schema";
+import {Comment,CommentSchema} from "./blogsLogic/comments/schema/comment.schema";
+import {User, UserSchema} from "./sessionLogic/users/schema/user.schema";
 
 @Module({
   imports: [configModule, MongooseModule.forRoot('mongodb://localhost:27018/lesson4'),
@@ -25,7 +27,7 @@ import {OtherHttpExceptionsFilter} from "../setup/other-http-filter";
           { name: Comment.name, schema: CommentSchema },
           { name: User.name, schema: UserSchema },
       ]),
-      BlogsModule, PostsModule,CommentsModule,UsersModule, AuthModule
+      BlogsModule, PostsModule,CommentsModule,UsersModule, AuthModule, CqrsModule
   ],
   controllers: [AppController],
   providers: [AppService, AppRepository,

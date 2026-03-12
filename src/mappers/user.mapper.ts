@@ -1,4 +1,4 @@
-import {UserDocument} from "../users/schemas/user.schema";
+import {UserDocument} from "../sessionLogic/users/types-and-schemas/user.schema";
 import {TypeUserToView} from "../types/user.types";
 
 export function mapUserToView(dto:any):TypeUserToView{

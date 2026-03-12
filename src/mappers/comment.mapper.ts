@@ -1,4 +1,4 @@
-import {CommentDocument} from "../comments/schemas/comment.schema";
+import {CommentDocument} from "../blogsLogic/comments/types-and-schemas/comment.schema";
 import {ReactionType} from "../types/reaction.types";
 
 export function mapCommentToView(dto){

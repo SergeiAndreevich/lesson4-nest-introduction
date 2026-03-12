@@ -1,6 +1,6 @@
 import {TypePostView} from "../types/post.types";
 import {ReactionType} from "../types/reaction.types";
-import {PostDocument} from "../posts/schemas/post.schema";
+import {PostDocument} from "../blogsLogic/posts/shema/post.schema";
 
 export function mapNewPostToView(dto: PostDocument):TypePostView {
     return {
