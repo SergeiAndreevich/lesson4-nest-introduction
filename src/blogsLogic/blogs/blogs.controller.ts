@@ -9,6 +9,11 @@ import {CreateNewBlogCommand} from "./useCase/createNewBlog.use-case";
 import {CommandBus} from "@nestjs/cqrs";
 import {CreatePostForBlogCommand} from "./useCase/createPostForBlog.use-case";
 import {PostsQueryRepository} from "../posts/postsQuery.reposiroty";
+import {TypeBlogToView} from "../../types/blog.types";
+import {TypePostView} from "../../types/post.types";
+import {FindPostsForBlogCommand} from "./useCase/findPostsForBlog.use-case";
+import {TypePaginatorObject} from "../../types/pagination.types";
+import {FindAllBlogsCommand} from "./useCase/findAllBlogs.use-case";
 
 @Controller('blogs')
 export class BlogsController {
@@ -19,31 +24,30 @@ export class BlogsController {
   ) {}
 
   @Post()
-  async createBlog(@Body() createBlogDto: CreateBlogDto) {
-    const createdBlogId = await this.commandBus.execute(new CreateNewBlogCommand(createBlogDto));
+  async createBlog(@Body() createBlogDto: CreateBlogDto): Promise<TypeBlogToView> {
+    const createdBlogId:string = await this.commandBus.execute(new CreateNewBlogCommand(createBlogDto));
     return this.blogsQueryRepo.findBlogByIdOrFail(createdBlogId)
   }
 
   @Post(':blogId/posts')
-  async createPostForBlog(@Param('blogId') blogId:string, @Body() dto:CreatePostForBlogDto){
-    const blog = await this.blogsQueryRepo.findBlogByIdOrFail(blogId);
-    const createdPostId = await this.commandBus.execute(new CreatePostForBlogCommand(blog,dto));
+  async createPostForBlog(@Param('blogId') blogId:string, @Body() dto:CreatePostForBlogDto): Promise<TypePostView>{
+    const createdPostId = await this.commandBus.execute(new CreatePostForBlogCommand(blogId,dto));
     return this.postsQueryRepo.findPostByIdOrFail(createdPostId)
   }
 
   @Get()
-  findAll(@Query() query: PaginationQueryDto) {
-    return this.blogsService.findAllBlogsByQuery(query);
+  findAll(@Query() query: PaginationQueryDto):Promise<TypePaginatorObject<TypeBlogToView[]>> {
+    return this.commandBus.execute(new FindAllBlogsCommand(query))
   }
 
   @Get(':id')
-  findBlog(@Param('id') id: string) {
+  findBlog(@Param('id') id: string):Promise<TypeBlogToView> {
     return this.blogsQueryRepo.findBlogByIdOrFail(id);
   }
 
   @Get(':blogId/posts')
-  findPostsForBlog(@Param('blogId') blogId: string, @Query() query: PaginationQueryDto){
-    return this.blogsService.findPostsForBlog(blogId, query);
+  findPostsForBlog(@Param('blogId') blogId: string, @Query() query: PaginationQueryDto):Promise<TypePaginatorObject<TypePostView[]>>{
+    return this.commandBus.execute(new FindPostsForBlogCommand(blogId,query));
   }
 
   @Put(':id')

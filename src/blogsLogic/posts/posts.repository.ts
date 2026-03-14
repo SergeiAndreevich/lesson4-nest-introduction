@@ -1,23 +1,19 @@
 import {InjectModel} from "@nestjs/mongoose";
-import {Post, PostDocument} from "./types-and-schemas/post.schema";
 import {Model} from "mongoose";
 import {Injectable} from "@nestjs/common";
-import {CreatePostDto} from "./dto/create-post.dto";
 import {UpdatePostDto} from "./dto/update-post.dto";
+import {Post, PostDocument} from "./shema/post.schema";
 
 @Injectable()
 export class PostsRepository {
     constructor(
         @InjectModel(Post.name) private readonly postModel: Model<PostDocument>
     ) {}
-    async createPost(dto: CreatePostDto) {
-        const createdPost: PostDocument = await this.postModel.create({
-            ...dto,
-            blogName: dto.blogId,
-            createdAt: new Date()
-        })
-        return createdPost;
+    async createPost(post: Post): Promise<string> {
+        const createdPost: PostDocument = await this.postModel.create(post)
+        return createdPost._id.toString();
     }
+
     async updatePostById(id: string, dto: UpdatePostDto) {
         const result = await this.postModel.updateOne(
             { _id: id },

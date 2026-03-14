@@ -12,7 +12,7 @@ export class PostsQueryRepository{
         @InjectModel(Post.name) private readonly postModel: Model<PostDocument>,
     ) {}
 
-    async findPostByIdOrFail(id: string) {
+    async findPostByIdOrFail(id: string):Promise<TypePostView> {
         const post = await this.postModel.findById(id).lean();
         if(!post){
             throw new NotFoundException("Post not found");

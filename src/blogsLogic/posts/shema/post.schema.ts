@@ -1,5 +1,7 @@
 import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
 import {HydratedDocument} from "mongoose";
+import {CreatePostForBlogDto} from "../../blogs/dto/create-post-for-blog.dto";
+import {TypeBlogToView} from "../../../types/blog.types";
 
 export type TypePostInput = {
     title: string,
@@ -30,16 +32,17 @@ export class Post {
     @Prop({ default: Date.now })
     createdAt: Date;
 
-    static createNewPostForBlog(dto: TypePostInput): Post {
+    static createNewPostForBlog(dto: CreatePostForBlogDto, blog: TypeBlogToView): Post {
         return {
             title: dto.title,
             shortDescription: dto.shortDescription,
             content: dto.content,
-            blogId: dto.blogId,
-            blogName: dto.blogName,
-            createdAt: dto.createdAt
+            blogId: blog.id,
+            blogName: blog.name,
+            createdAt: new Date()
         } as Post
     }
+
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);

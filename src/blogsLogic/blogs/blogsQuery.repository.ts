@@ -5,6 +5,8 @@ import {mapBlogToView} from "../../mappers/blog.mapper";
 import {TypeBlogToView} from "../../types/blog.types";
 import {Injectable, NotFoundException, Post} from "@nestjs/common";
 import {Blog, BlogDocument} from "./schema/blog.schema";
+import {PaginationQueryDto} from "../../dto/pagination-query.dto";
+import {paginationHelper} from "../../helpers/paginationQuery.helper";
 
 
 @Injectable()
@@ -19,7 +21,8 @@ export class BlogsQueryRepository{
          }
          return mapBlogToView(blog);
     }
-    async findAllBlogsByQuery(pagination: IPaginationAndSorting) : Promise<TypePaginatorObject<TypeBlogToView[]>>{
+
+    async findAllBlogsByQuery(pagination:IPaginationAndSorting) : Promise<TypePaginatorObject<TypeBlogToView[]>>{
         const filter: any = {};
         const {pageNumber, pageSize, sortBy, sortDirection,
             searchNameTerm, searchLoginTerm, searchEmailTerm} = pagination;

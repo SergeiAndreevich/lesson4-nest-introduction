@@ -18,10 +18,10 @@ export class CreateNewBlogUseCase implements ICommandHandler<CreateNewBlogComman
     ) {}
     async execute(command: CreateNewBlogCommand){
         const blog = Blog.createNewBlog(command.createBlogDto)
-        const createdBlog = await this.blogsRepo.createBlog(blog);
-        if(!createdBlog){
+        const createdBlogId:string = await this.blogsRepo.createBlog(blog);
+        if(!createdBlogId){
             throw new BadRequestException({message: 'Blog has not been created', field: 'blog'});
         }
-        return
+        return createdBlogId
     }
 }

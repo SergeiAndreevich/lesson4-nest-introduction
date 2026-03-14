@@ -1,12 +1,10 @@
 import {Injectable} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
-import {User} from "./types-and-schemas/user.schema";
 import {Model} from "mongoose";
 import {IPaginationAndSorting, TypePaginatorObject} from "../../types/pagination.types";
 import {mapUserToView} from "../../mappers/user.mapper";
 import {TypeUserToView} from "../../types/user.types";
-import {CodeInputDto} from "../auth/dto/code-input.dto";
-import {escapeRegex} from "../../helpers/escapeRegex.helper";
+import {User} from "./schema/user.schema";
 
 @Injectable()
 export class UsersQueryRepository {

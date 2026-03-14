@@ -16,26 +16,10 @@ export class PostsService {
               private readonly blogsQueryRepo: BlogsQueryRepository,
               private readonly commentsService: CommentsService
   ) {}
-  async createPost(dto: CreatePostDto) {
-    await this.blogsQueryRepo.findBlogById(dto.blogId);
-    const createdPost = await this.postsRepo.createPost(dto);
-    return mapNewPostToView(createdPost);
-  }
 
   async findAllPostsByQuery(query: PaginationQueryDto) {
     const pagination = paginationHelper(query);
     return await this.postsQueryRepo.findAllPostsByQuery(pagination);
-  }
-  async findPostById(id: string) {
-    const post = await this.postsQueryRepo.findPostById(id);
-    if (!post) {
-      throw new NotFoundException({message: 'Post not found', field: 'postId'});
-    }
-    return mapPostToView(post)
-  }
-  async findPostsForBlog(blogId: string, query: PaginationQueryDto) {
-    const pagination = paginationHelper(query);
-    return await this.postsQueryRepo.findPostsForBlog(blogId, pagination);
   }
   async findCommentsForPost(postId: string, query: PaginationQueryDto) {
     await this.findPostById(postId);
