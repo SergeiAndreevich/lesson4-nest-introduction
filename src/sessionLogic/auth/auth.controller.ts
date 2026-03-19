@@ -1,4 +1,5 @@
-import {Controller, Get, Post, Body, HttpCode, UseGuards} from '@nestjs/common';
+import {Controller, Get, Post, Body, HttpCode, UseGuards, Res, Req} from '@nestjs/common';
+import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import {LoginInputDto} from "./dto/login-input.dto";
@@ -8,14 +9,38 @@ import {CodeInputDto} from "./dto/code-input.dto";
 import {BearerGuard} from "../../../setup/guard/bearer.guard";
 import {UserId} from "../../customDecorators/userId.decorator";
 
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
   @HttpCode(200)
-  loginUser(@Body() loginInputDto: LoginInputDto) {
-    return this.authService.loginUser(loginInputDto);
+  async login(
+      @Body() dto: LoginInputDto,
+      @Res({ passthrough: true }) res: Response
+  ) {
+    const { accessToken, refreshToken } = await this.authService.loginUser(dto);
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true, // true на проде (https)
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 1000 * 60 * 60 * 24 * 7 // 7 дней
+    });
+
+    return { accessToken };
+  }
+  // loginUser(@Body() loginInputDto: LoginInputDto) {
+  //   return this.authService.loginUser(loginInputDto);
+  // }
+  @Post('refresh-token')
+  async refresh(@Req() req: Request) {
+    const refreshToken = req.cookies.refreshToken;
+
+    // проверка токена
+    return
   }
 
   @Post('password-recovery')

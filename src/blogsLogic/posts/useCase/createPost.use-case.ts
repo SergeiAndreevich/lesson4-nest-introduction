@@ -4,7 +4,6 @@ import {CreatePostDto} from "../dto/create-post.dto";
 import {PostsRepository} from "../posts.repository";
 import {Post} from "../shema/post.schema";
 import {BlogsQueryRepository} from "../../blogs/blogsQuery.repository";
-import {mapPostToView} from "../../../mappers/post.mapper";
 
 
 export class CreateNewPostCommand{

@@ -18,6 +18,7 @@ import {Blog, BlogSchema} from "./blogsLogic/blogs/schema/blog.schema";
 import {Post, PostSchema} from "./blogsLogic/posts/shema/post.schema";
 import {Comment,CommentSchema} from "./blogsLogic/comments/schema/comment.schema";
 import {User, UserSchema} from "./sessionLogic/users/schema/user.schema";
+import { ReactionsModule } from './reactionsLogic/reactions.module';
 
 @Module({
   imports: [configModule, MongooseModule.forRoot('mongodb://localhost:27018/lesson4'),
@@ -27,7 +28,7 @@ import {User, UserSchema} from "./sessionLogic/users/schema/user.schema";
           { name: Comment.name, schema: CommentSchema },
           { name: User.name, schema: UserSchema },
       ]),
-      BlogsModule, PostsModule,CommentsModule,UsersModule, AuthModule, CqrsModule
+      BlogsModule, PostsModule,CommentsModule,UsersModule, AuthModule, CqrsModule, ReactionsModule
   ],
   controllers: [AppController],
   providers: [AppService, AppRepository,

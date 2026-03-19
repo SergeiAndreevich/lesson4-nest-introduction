@@ -4,9 +4,11 @@ import {appSetup} from "../setup/app.setup";
 import {BadRequestException, ValidationPipe} from "@nestjs/common";
 import {ValidationError} from "class-validator";
 import {AllExceptionsFilter} from "../setup/exception-filter/exceptionFilter.filter";
+import cookieParser from "cookie-parser";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use(cookieParser())
   app.useGlobalPipes(new ValidationPipe({
     //игнорирует все поля, у которых нет декораторов
     whitelist: true,

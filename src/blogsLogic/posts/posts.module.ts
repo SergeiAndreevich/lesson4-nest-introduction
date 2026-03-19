@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { PostsController } from './posts.controller';
-import {Post, PostSchema} from "./types-and-schemas/post.schema";
 import {MongooseModule} from "@nestjs/mongoose";
 import {PostsRepository} from "./posts.repository";
 import {PostsQueryRepository} from "./postsQuery.reposiroty";
 import {CommentsModule} from "../comments/comments.module";
-import {Blog, BlogSchema} from "../blogs/types-and-schemas/blog.schema";
 import {BlogsQueryRepository} from "../blogs/blogsQuery.repository";
+import {Post, PostSchema} from "./shema/post.schema";
+import {Blog, BlogSchema} from "../blogs/schema/blog.schema";
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }, { name: Blog.name, schema: BlogSchema } // для проверки blogId

@@ -17,17 +17,14 @@ export class PostsService {
               private readonly commentsService: CommentsService
   ) {}
 
-  async findAllPostsByQuery(query: PaginationQueryDto) {
-    const pagination = paginationHelper(query);
-    return await this.postsQueryRepo.findAllPostsByQuery(pagination);
-  }
+
   async findCommentsForPost(postId: string, query: PaginationQueryDto) {
-    await this.findPostById(postId);
+    await this.postsQueryRepo.findPostByIdOrFail(postId);
     return this.commentsService.findCommentsForPost(postId, query);
   }
 
   async updatePostById(id: string, dto: UpdatePostDto) {
-    await this.findPostById(id);
+    await this.postsQueryRepo.findPostByIdOrFail(id);
     const updated = await this.postsRepo.updatePostById(id, dto);
     if (!updated) {
       // если matchedCount = 0 или modifiedCount = 0
@@ -37,7 +34,7 @@ export class PostsService {
   }
 
   async removePostById(id: string) {
-    await this.findPostById(id);
+    await this.postsQueryRepo.findPostByIdOrFail(id);
     const deleted = await this.postsRepo.removePostById(id);
     if (!deleted) {
       //if deletedCount = 0

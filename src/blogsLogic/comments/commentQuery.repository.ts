@@ -1,17 +1,21 @@
-import {Injectable} from "@nestjs/common";
+import {Injectable, NotFoundException} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
-import {Comment, CommentDocument} from "./types-and-schemas/comment.schema";
 import {Model} from "mongoose";
 import {IPaginationAndSorting} from "../../types/pagination.types";
 import {mapCommentToView} from "../../mappers/comment.mapper";
+import {Comment, CommentDocument} from "./schema/comment.schema";
 
 @Injectable()
 export class CommentsQueryRepository{
     constructor(
         @InjectModel(Comment.name) private readonly commentModel: Model<Comment>
     ) {}
-    async findCommentById(id: string) {
-        return this.commentModel.findById(id).lean<CommentDocument>()
+    async findCommentByIdOrFail(id: string) {
+        const comment = await this.commentModel.findById(id).lean();
+        if(!comment){
+            throw new NotFoundException({message: 'Comment not found', field: 'commentId'});
+        }
+        return mapCommentToView(comment);
     }
     async findCommentsForPost(postId:string, pagination: IPaginationAndSorting) {
         const {pageNumber, pageSize, sortBy, sortDirection,

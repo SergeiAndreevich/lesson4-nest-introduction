@@ -1,5 +1,7 @@
 import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
 import {HydratedDocument} from "mongoose";
+import {CreateCommentDto} from "../dto/create-comment.dto";
+import {TypePostView} from "../../../types/post.types";
 
 export class CommentatorInfo {
     @Prop({ required: true })
@@ -23,6 +25,18 @@ export class Comment {
 
     @Prop({ default: Date.now })
     createdAt: Date;
+
+    static createCommentForPost(userId: string, userLogin: string, dto: CreateCommentDto, post: TypePostView): Comment {
+        return {
+            postId: post.id,
+            content: dto.content,
+            commentatorInfo: {
+                userId: userId,
+                userLogin: userLogin,
+            },
+            createdAt: new Date()
+        } as Comment
+    }
 }
 
 export const CommentSchema = SchemaFactory.createForClass(Comment);

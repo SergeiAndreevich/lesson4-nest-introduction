@@ -28,8 +28,11 @@ export class AuthService {
         throw new UnauthorizedException({message: 'Invalid password', field: 'password'});
       }
       //создаем аксес рефреш токены, создаем сессию и возвращаем токен
-      const accessToken = this.jwtService.sign({userId: user._id.toString()});
-      return  {accessToken: accessToken}
+      const accessToken = this.jwtService.sign({userId: user._id.toString(), userLogin: user.accountData.login});
+      const refreshToken = this.jwtService.sign({userId: user._id.toString(), userLogin: user.accountData.login}, {
+        expiresIn: '7d'
+      })
+      return  {accessToken: accessToken, refreshToken: refreshToken}
   }
 
   recoveryUserPassword(emailInputDto: EmailInputDto) {

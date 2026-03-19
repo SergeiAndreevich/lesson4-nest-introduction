@@ -14,7 +14,7 @@ export class CommentsService {
       private readonly commentsQueryRepository: CommentsQueryRepository,
   ) {}
   async findCommentById(id: string) {
-    const comment = await this.commentsQueryRepository.findCommentById(id);
+    const comment = await this.commentsQueryRepository.findCommentByIdOrFail(id);
     if (!comment) {
       throw new NotFoundException('Comment not found');
     }

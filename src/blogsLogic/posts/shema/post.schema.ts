@@ -32,6 +32,12 @@ export class Post {
     @Prop({ default: Date.now })
     createdAt: Date;
 
+    @Prop({ default: 0 })
+    likesCount: number;
+
+    @Prop({ default: 0 })
+    dislikesCount: number;
+
     static createNewPostForBlog(dto: CreatePostForBlogDto, blog: TypeBlogToView): Post {
         return {
             title: dto.title,
@@ -39,7 +45,9 @@ export class Post {
             content: dto.content,
             blogId: blog.id,
             blogName: blog.name,
-            createdAt: new Date()
+            createdAt: new Date(),
+            likesCount: 0,
+            dislikesCount: 0
         } as Post
     }
 
