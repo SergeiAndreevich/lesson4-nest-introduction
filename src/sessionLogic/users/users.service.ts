@@ -5,7 +5,6 @@ import {CreateUserDto} from "./dto/create-user.dto";
 import {mapUserToView} from "../../mappers/user.mapper";
 import {PaginationQueryDto} from "../../dto/pagination-query.dto";
 import {paginationHelper} from "../../helpers/paginationQuery.helper";
-import {User} from "./types-and-schemas/user.schema";
 import {CreateAuthDto} from "../auth/dto/create-auth.dto";
 import {CodeInputDto} from "../auth/dto/code-input.dto";
 import {EmailInputDto} from "../auth/dto/email-input-dto";
@@ -13,6 +12,7 @@ import {v4 as uuidv4} from "uuid";
 import {JwtService} from "@nestjs/jwt";
 import {EmailSenderHelper} from "../../helpers/emailSender.helper";
 import {EmailService} from "../../helpers/emailHelper/mailNotification.service";
+import {User} from "./schema/user.schema";
 
 
 @Injectable()

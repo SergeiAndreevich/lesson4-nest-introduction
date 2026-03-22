@@ -26,6 +26,12 @@ export class Comment {
     @Prop({ default: Date.now })
     createdAt: Date;
 
+    @Prop({ default: 0 })
+    likesCount: number;
+
+    @Prop({ default: 0 })
+    dislikesCount: number;
+
     static createCommentForPost(userId: string, userLogin: string, dto: CreateCommentDto, post: TypePostView): Comment {
         return {
             postId: post.id,
@@ -34,7 +40,9 @@ export class Comment {
                 userId: userId,
                 userLogin: userLogin,
             },
-            createdAt: new Date()
+            createdAt: new Date(),
+            likesCount: 0,
+            dislikesCount: 0
         } as Comment
     }
 }

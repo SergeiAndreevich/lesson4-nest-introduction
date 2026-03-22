@@ -20,7 +20,8 @@ export class PostsRepository {
         if(!post){
             throw new NotFoundException("Post not found");
         }
-        return post;    }
+        return post;
+    }
 
     async updatePostById(id: string, dto: UpdatePostDto) {
         const result = await this.postModel.updateOne(
@@ -37,30 +38,7 @@ export class PostsRepository {
 
         return result.matchedCount === 1 && result.modifiedCount === 1;
     }
-    async updatePostLikesCount(id: string, dto: number) {
-        const result = await this.postModel.updateOne(
-            { _id: id },
-            {
-                $set: {
-                    likesCount: dto
-                },
-            },
-        );
 
-        return result.matchedCount === 1 && result.modifiedCount === 1;
-    }
-    async updatePostDislikesCount(id: string, dto: number) {
-        const result = await this.postModel.updateOne(
-            { _id: id },
-            {
-                $set: {
-                    dislikesCount: dto
-                },
-            },
-        );
-
-        return result.matchedCount === 1 && result.modifiedCount === 1;
-    }
     async updatePostCounters(postId:string, likesCount: number, dislikesCount: number) {
         const result = await this.postModel.updateOne(
             { _id: postId },

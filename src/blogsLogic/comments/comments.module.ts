@@ -4,7 +4,7 @@ import { CommentsController } from './comments.controller';
 import {CommentsRepository} from "./comments.repository";
 import {CommentsQueryRepository} from "./commentQuery.repository";
 import {MongooseModule} from "@nestjs/mongoose";
-import {Comment, CommentSchema} from "./types-and-schemas/comment.schema";
+import {Comment, CommentSchema} from "./schema/comment.schema";
 
 @Module({
   imports: [MongooseModule.forFeature([{name: Comment.name, schema: CommentSchema}])],

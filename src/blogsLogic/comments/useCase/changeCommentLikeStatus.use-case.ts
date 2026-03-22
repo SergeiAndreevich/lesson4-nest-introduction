@@ -1,36 +1,34 @@
+import {CommentsRepository} from "../comments.repository";
 import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
-import {ReactionsRepository} from "../../../reactionsLogic/reactions.repository";
 import {ReactionInputDto} from "../../../reactionsLogic/dto/reaction-input.dto";
+import {ReactionsRepository} from "../../../reactionsLogic/reactions.repository";
 import {ReactionsQueryRepository} from "../../../reactionsLogic/reactionsQuery.repository";
 import {EntitiesForReaction, ReactionType} from "../../../types/reaction.types";
 import {Reaction} from "../../../reactionsLogic/schema/reaction.schema";
-import {PostsRepository} from "../posts.repository";
 
-
-export class ChangePostLikeStatusCommand{
+export class ChangeCommentLikeStatusCommand{
     constructor(
         public userId: string,
-        public userLogin: string,
-        public postId: string,
+        public commentId: string,
         public dto: ReactionInputDto
     ){}
 }
 
-@CommandHandler(ChangePostLikeStatusCommand)
-export class ChangePostLikeStatusUseCase implements ICommandHandler<ChangePostLikeStatusCommand>{
+@CommandHandler(ChangeCommentLikeStatusCommand)
+export class ChangeCommentLikeStatusUseCase implements ICommandHandler<ChangeCommentLikeStatusCommand>{
     constructor(
         private readonly reactionsRepo: ReactionsRepository,
         private readonly reactionsQueryRepo: ReactionsQueryRepository,
-        private readonly postsRepo: PostsRepository,
+        private readonly commentsRepo: CommentsRepository,
     ) {}
-    async execute(command: ChangePostLikeStatusCommand){
-        //check post by postId
-        const post = await this.postsRepo.findPostByIdOrFail(command.postId);
-        let likesCount = post.likesCount;
-        let dislikesCount = post.dislikesCount;
+    async execute(command: ChangeCommentLikeStatusCommand){
+        //check comment by commentId
+        const comment = await this.commentsRepo.findCommentByIdOrFail(command.commentId);
+        let likesCount = comment.likesCount;
+        let dislikesCount = comment.dislikesCount;
         //find reaction
         const reaction = await this.reactionsQueryRepo.findReactionById_EntityType_UserId_OrFail(
-            command.postId, EntitiesForReaction.post, command.userId
+            command.commentId, EntitiesForReaction.comment, command.userId
         )
         //check status
         const oldStatus = reaction?.status ?? ReactionType.none;
@@ -39,7 +37,7 @@ export class ChangePostLikeStatusUseCase implements ICommandHandler<ChangePostLi
 
         //if no reaction
         if (!reaction && newStatus !== ReactionType.none) {
-            const newReaction = Reaction.createReaction(command.postId, EntitiesForReaction.post, command.userId, command.dto.likeStatus)
+            const newReaction = Reaction.createReaction(command.commentId, EntitiesForReaction.comment, command.userId, command.dto.likeStatus)
             const newReactionId = await this.reactionsRepo.createReaction(newReaction);
         }
 
@@ -60,9 +58,8 @@ export class ChangePostLikeStatusUseCase implements ICommandHandler<ChangePostLi
         if (newStatus === ReactionType.dislike) dislikesCount++;
 
         //save changes
-        await this.postsRepo.updatePostCounters(command.postId,likesCount,dislikesCount);
+        await this.commentsRepo.updateCommentsCounters(command.commentId,likesCount,dislikesCount);
         return
     }
 
 }
-
