@@ -17,6 +17,7 @@ import {UserId} from "../../customDecorators/userId.decorator";
 import {UserLogin} from "../../customDecorators/userLogin.decorator";
 import {ReactionInputDto} from "../../reactionsLogic/dto/reaction-input.dto";
 import {ChangePostLikeStatusCommand} from "./useCase/changePostLikeStatus.use-case";
+import {FindCommentsForPostCommand} from "../comments/useCase/findCommentsForPost.use-case";
 
 @Controller('posts')
 export class PostsController {
@@ -52,7 +53,8 @@ export class PostsController {
 
   @Get(':postId/comments')
   findCommentsForPost(@Param('postId') id: string, @Query() dto: PaginationQueryDto) {
-    return this.postsService.findCommentsForPost(id, dto);
+    return this.commandBus.execute(new FindCommentsForPostCommand(id, dto));
+
   }
 
   @Put(':postId/like-status')

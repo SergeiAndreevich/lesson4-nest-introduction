@@ -7,11 +7,11 @@ import {PaginationQueryDto} from "../../dto/pagination-query.dto";
 import {BlogsQueryRepository} from "./blogsQuery.repository";
 import {CreateNewBlogCommand} from "./useCase/createNewBlog.use-case";
 import {CommandBus} from "@nestjs/cqrs";
-import {CreatePostForBlogCommand} from "./useCase/createPostForBlog.use-case";
+import {CreatePostForBlogCommand} from "../posts/useCase/createPostForBlog.use-case";
 import {PostsQueryRepository} from "../posts/postsQuery.reposiroty";
 import {TypeBlogToView} from "../../types/blog.types";
 import {TypePostView} from "../../types/post.types";
-import {FindPostsForBlogCommand} from "./useCase/findPostsForBlog.use-case";
+import {FindPostsForBlogCommand} from "../posts/useCase/findPostsForBlog.use-case";
 import {TypePaginatorObject} from "../../types/pagination.types";
 import {FindAllBlogsCommand} from "./useCase/findAllBlogs.use-case";
 

@@ -8,7 +8,7 @@ import {NotificationsModule} from "../../helpers/emailHelper/notification.module
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, BearerGuard],
-  imports: [UsersModule, JwtGlobalModule, NotificationsModule],
+  providers: [AuthService],
+  imports: [UsersModule, NotificationsModule],
 })
 export class AuthModule {}

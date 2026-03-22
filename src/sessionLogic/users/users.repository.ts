@@ -76,4 +76,8 @@ export class UsersRepository {
         const result = await this.userModel.deleteOne({ _id: id });
         return result.deletedCount === 1
     }
+    async removeAllUsersForTest(){
+        await this.userModel.deleteMany({})
+        return
+    }
 }

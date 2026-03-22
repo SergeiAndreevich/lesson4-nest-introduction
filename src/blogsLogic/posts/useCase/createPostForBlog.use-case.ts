@@ -1,9 +1,9 @@
 import {BadRequestException} from "@nestjs/common";
 import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
-import {CreatePostForBlogDto} from "../dto/create-post-for-blog.dto";
-import {Post} from "../../posts/shema/post.schema";
-import {PostsRepository} from "../../posts/posts.repository";
-import {BlogsQueryRepository} from "../blogsQuery.repository";
+import {CreatePostForBlogDto} from "../../blogs/dto/create-post-for-blog.dto";
+import {Post} from "../shema/post.schema";
+import {PostsRepository} from "../posts.repository";
+import {BlogsQueryRepository} from "../../blogs/blogsQuery.repository";
 
 
 export class CreatePostForBlogCommand{

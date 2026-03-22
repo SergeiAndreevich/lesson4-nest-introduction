@@ -5,11 +5,18 @@ import {CommentsRepository} from "./comments.repository";
 import {CommentsQueryRepository} from "./commentQuery.repository";
 import {MongooseModule} from "@nestjs/mongoose";
 import {Comment, CommentSchema} from "./schema/comment.schema";
+import {ChangeCommentLikeStatusUseCase} from "./useCase/changeCommentLikeStatus.use-case";
+import {CreateCommentForPostUseCase} from "./useCase/createCommentForPost.use-case";
+import {UpdateCommentUseCase} from "./useCase/updateCommentCommand.use-case";
+import {RemoveCommentUseCase} from "./useCase/removeComment.use-case";
+import {PostsModule} from "../posts/posts.module";
+import {ReactionsModule} from "../../reactionsLogic/reactions.module";
 
 @Module({
-  imports: [MongooseModule.forFeature([{name: Comment.name, schema: CommentSchema}])],
+  imports: [MongooseModule.forFeature([{name: Comment.name, schema: CommentSchema}]), PostsModule, ReactionsModule],
   controllers: [CommentsController],
-  providers: [CommentsService, CommentsRepository, CommentsQueryRepository],
-  exports: [CommentsService, CommentsRepository, CommentsQueryRepository],
+  providers: [CommentsService, CommentsRepository, CommentsQueryRepository,
+  ChangeCommentLikeStatusUseCase, CreateCommentForPostUseCase,UpdateCommentUseCase, RemoveCommentUseCase,],
+  exports: [CommentsRepository, CommentsQueryRepository],
 })
 export class CommentsModule {}

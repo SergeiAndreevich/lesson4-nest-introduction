@@ -28,4 +28,7 @@ export class BlogsService {
     }
     return
   }
+  async removeAllBlogsForTest(){
+    return this.blogsRepo.removeAllBlogsForTest()
+  }
 }

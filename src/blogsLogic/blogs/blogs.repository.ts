@@ -13,21 +13,10 @@ import {PostDocument} from "../posts/shema/post.schema";
 export class BlogsRepository {
     constructor(
         @InjectModel(Blog.name) private blogModel: Model<BlogDocument>,
-        @InjectModel(Post.name) private postModel: Model<PostDocument>,
     ) {}
     async createBlog(blog: Blog) {
         const created: BlogDocument = await this.blogModel.create(blog);
         return created._id.toString()
-    }
-    async createPostForBlog(blogId: string, blogName: string, dto: CreatePostForBlogDto) {
-        const created = await this.postModel.create({
-            title: dto.title,
-            shortDescription: dto.shortDescription,
-            content: dto.content,
-            blogId,
-            blogName
-        })
-        return mapNewPostToView(created);
     }
 
     async updateBlogById(id: string, dto: UpdateBlogDto) {
@@ -47,5 +36,9 @@ export class BlogsRepository {
     async removeBlogById(id: string){
         const result = await this.blogModel.deleteOne({ _id: id });
         return result.deletedCount === 1;
+    }
+    async removeAllBlogsForTest(){
+        await this.blogModel.deleteMany({});
+        return
     }
 }

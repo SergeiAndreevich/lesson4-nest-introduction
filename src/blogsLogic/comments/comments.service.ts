@@ -1,27 +1,13 @@
-import {Inject, Injectable, NotFoundException} from '@nestjs/common';
-import { CreateCommentDto } from './dto/create-comment.dto';
-import { UpdateCommentDto } from './dto/update-comment.dto';
+import { Injectable} from '@nestjs/common';
 import {CommentsRepository} from "./comments.repository";
-import {CommentsQueryRepository} from "./commentQuery.repository";
-import {mapCommentToView} from "../../mappers/comment.mapper";
-import {PaginationQueryDto} from "../../dto/pagination-query.dto";
-import {paginationHelper} from "../../helpers/paginationQuery.helper";
+
 
 @Injectable()
 export class CommentsService {
   constructor(
-      private readonly commentsRepository: CommentsRepository,
-      private readonly commentsQueryRepository: CommentsQueryRepository,
+      private readonly commentsRepo: CommentsRepository,
   ) {}
-  async findCommentById(id: string) {
-    const comment = await this.commentsQueryRepository.findCommentByIdOrFail(id);
-    if (!comment) {
-      throw new NotFoundException('Comment not found');
-    }
-    return mapCommentToView(comment)
-  }
-  async findCommentsForPost(postId: string, query: PaginationQueryDto) {
-    const pagination = paginationHelper(query);
-    return await this.commentsQueryRepository.findCommentsForPost(postId, pagination);
+  async removeAllCommentsForTest(){
+    return this.commentsRepo.removeAllCommentsForTest()
   }
 }

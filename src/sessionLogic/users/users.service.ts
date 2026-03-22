@@ -20,7 +20,6 @@ export class UsersService {
     constructor(
        private readonly usersRepo: UsersRepository,
        private readonly usersQueryRepo: UsersQueryRepository,
-       private readonly jwtService: JwtService,
        private readonly emailSenderHelper: EmailService,
     ) {}
 
@@ -122,5 +121,8 @@ export class UsersService {
             throw new BadRequestException('User was not deleted');
         }
         return
+    }
+    async removeAllUsersForTest(){
+        return this.usersRepo.removeAllUsersForTest()
     }
 }

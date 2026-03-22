@@ -1,14 +1,15 @@
 import {Injectable, NotFoundException} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {Model} from "mongoose";
-import {IPaginationAndSorting} from "../../types/pagination.types";
 import {mapCommentToView} from "../../mappers/comment.mapper";
 import {Comment, CommentDocument} from "./schema/comment.schema";
+import {PaginationQueryDto} from "../../dto/pagination-query.dto";
+import {paginationHelper} from "../../helpers/paginationQuery.helper";
 
 @Injectable()
 export class CommentsQueryRepository{
     constructor(
-        @InjectModel(Comment.name) private readonly commentModel: Model<Comment>
+        @InjectModel(Comment.name) private readonly commentModel: Model<CommentDocument>
     ) {}
     async findCommentByIdOrFail(id: string) {
         const comment = await this.commentModel.findById(id).lean();
@@ -17,7 +18,8 @@ export class CommentsQueryRepository{
         }
         return mapCommentToView(comment);
     }
-    async findCommentsForPost(postId:string, pagination: IPaginationAndSorting) {
+    async findCommentsForPost(postId:string, query: PaginationQueryDto) {
+        const pagination = paginationHelper(query);
         const {pageNumber, pageSize, sortBy, sortDirection,
             searchNameTerm, searchLoginTerm, searchEmailTerm} = pagination;
         const filter: any = {postId: postId};

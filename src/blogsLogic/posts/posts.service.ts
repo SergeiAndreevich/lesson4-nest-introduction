@@ -8,20 +8,13 @@ import {paginationHelper} from "../../helpers/paginationQuery.helper";
 import {mapNewPostToView, mapPostToView} from "../../mappers/post.mapper";
 import {CommentsService} from "../comments/comments.service";
 import {BlogsQueryRepository} from "../blogs/blogsQuery.repository";
+import {CommentsQueryRepository} from "../comments/commentQuery.repository";
 
 @Injectable()
 export class PostsService {
   constructor(private readonly postsRepo: PostsRepository,
               private readonly postsQueryRepo: PostsQueryRepository,
-              private readonly blogsQueryRepo: BlogsQueryRepository,
-              private readonly commentsService: CommentsService
   ) {}
-
-
-  async findCommentsForPost(postId: string, query: PaginationQueryDto) {
-    await this.postsQueryRepo.findPostByIdOrFail(postId);
-    return this.commentsService.findCommentsForPost(postId, query);
-  }
 
   async updatePostById(id: string, dto: UpdatePostDto) {
     await this.postsQueryRepo.findPostByIdOrFail(id);
@@ -41,5 +34,9 @@ export class PostsService {
       throw new BadRequestException('Post was not deleted');
     }
     return
+  }
+
+  async removeAllPostsForTest(){
+    return await this.postsRepo.removeAllPostsForTest()
   }
 }

@@ -57,4 +57,8 @@ export class PostsRepository {
         const result = await this.postModel.deleteOne({ _id: id });
         return result.deletedCount === 1;
     }
+    async removeAllPostsForTest(){
+        await this.postModel.deleteMany({});
+        return
+    }
 }

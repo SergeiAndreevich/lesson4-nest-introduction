@@ -4,19 +4,18 @@ import { BlogsController } from './blogs.controller';
 import {MongooseModule} from "@nestjs/mongoose";
 import {BlogsRepository} from "./blogs.repository";
 import {BlogsQueryRepository} from "./blogsQuery.repository";
-import {PostsModule} from "../posts/posts.module";
 import {Blog, BlogSchema} from "./schema/blog.schema";
 import {PostSchema} from "../posts/shema/post.schema";
 import {CreateNewBlogUseCase} from "./useCase/createNewBlog.use-case";
-import {PostsQueryRepository} from "../posts/postsQuery.reposiroty";
+import {FindAllBlogsUseCase} from "./useCase/findAllBlogs.use-case";
 
 @Module({
   imports: [MongooseModule.forFeature([
-      {name: Blog.name, schema: BlogSchema}, {name: Post.name, schema: PostSchema}]),
-      PostsModule
+      {name: Blog.name, schema: BlogSchema}])
   ],
   controllers: [BlogsController],
-  providers: [BlogsService, BlogsRepository, BlogsQueryRepository, PostsQueryRepository,
-      CreateNewBlogUseCase]
+  providers: [BlogsService, BlogsRepository, BlogsQueryRepository,
+      CreateNewBlogUseCase, FindAllBlogsUseCase],
+    exports: [BlogsQueryRepository, BlogsRepository],
 })
 export class BlogsModule {}

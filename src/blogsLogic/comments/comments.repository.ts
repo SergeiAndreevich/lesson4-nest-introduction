@@ -53,4 +53,8 @@ export class CommentsRepository{
         const result = await this.commentModel.deleteOne({ _id: commentId });
         return result.deletedCount === 1;
     }
+    async removeAllCommentsForTest(){
+        await this.commentModel.deleteMany({});
+        return
+    }
 }
