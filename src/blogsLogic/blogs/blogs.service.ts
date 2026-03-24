@@ -14,7 +14,7 @@ export class BlogsService {
     const updated = await this.blogsRepo.updateBlogById(id, dto);
     if (!updated) {
       // если matchedCount = 0 или modifiedCount = 0
-      throw new BadRequestException('Blog was not updated');
+      throw new BadRequestException({message:'Blog was not updated' , field: 'blogId'});
     }
     return
   }
@@ -24,7 +24,7 @@ export class BlogsService {
     const deleted = await this.blogsRepo.removeBlogById(id);
     if (!deleted) {
       //if deletedCount = 0
-      throw new BadRequestException('Blog was not deleted');
+      throw new BadRequestException({message:'Blog was not deleted' , field: 'blogId'});
     }
     return
   }

@@ -51,7 +51,7 @@ export class AuthService {
     const user = await this.usersService.findUserById(createdUser.id);
     const confirmationCode = user.emailConfirmation.code;
     if(!confirmationCode){
-      throw new BadRequestException('Smth wrong with received user and its emailConfirmationCode');
+      throw new BadRequestException({message: 'Smth wrong with received user and its emailConfirmationCode', field: 'code'});
     }
     await this.emailSenderHelper.sendConfirmationEmail(createdUser.email, confirmationCode);
     return

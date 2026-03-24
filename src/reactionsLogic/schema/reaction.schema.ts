@@ -14,18 +14,22 @@ export class Reaction {
     @Prop({ required: true })
     userId:  string;
 
+    @Prop({ required: true })
+    userLogin:  string;
+
     @Prop({ required: true, enum: ReactionType })
-    status: string;
+    status: ReactionType;
 
     @Prop({ required: true })
     addedAt:  Date;
 
 
-    static createReaction(entityId: string, entityType: EntitiesForReaction, userId: string, status: ReactionType): Reaction {
+    static createReaction(entityId: string, entityType: EntitiesForReaction, userId: string, userLogin: string, status: ReactionType): Reaction {
         return {
             entityId: entityId,
             entityType: entityType,
             userId:  userId,
+            userLogin: userLogin,
             status:  status,
             addedAt:  new Date()
         } as Reaction

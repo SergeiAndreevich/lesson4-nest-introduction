@@ -1,4 +1,5 @@
 import {ReactionType} from "../types/reaction.types";
+import {CommentDocument} from "../blogsLogic/comments/schema/comment.schema";
 
 export function mapCommentToView(dto){
         return{
@@ -15,4 +16,22 @@ export function mapCommentToView(dto){
                 myStatus: ReactionType.none
             }
         }
+}
+
+
+export function mapCommentToFront(dto: CommentDocument, myStatus: ReactionType) {
+    return{
+        id: dto._id.toString(),
+        content: dto.content,
+        commentatorInfo: {
+            userId: dto.commentatorInfo.userId,
+            userLogin: dto.commentatorInfo.userLogin
+        },
+        createdAt: dto.createdAt.toISOString(),
+        likesInfo: {
+            likesCount: dto.likesCount,
+            dislikesCount: dto.dislikesCount,
+            myStatus: myStatus
+        }
     }
+}

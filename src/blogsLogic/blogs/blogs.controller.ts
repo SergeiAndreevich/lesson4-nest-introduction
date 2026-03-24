@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Body, Param, Delete, Put, Query, HttpCode} from '@nestjs/common';
+import {Controller, Get, Post, Body, Param, Delete, Put, Query, HttpCode, UseGuards} from '@nestjs/common';
 import { BlogsService } from './blogs.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
@@ -14,6 +14,7 @@ import {TypePostView} from "../../types/post.types";
 import {FindPostsForBlogCommand} from "../posts/useCase/findPostsForBlog.use-case";
 import {TypePaginatorObject} from "../../types/pagination.types";
 import {FindAllBlogsCommand} from "./useCase/findAllBlogs.use-case";
+import {BasicGuard} from "../../../setup/guard/basic.guard";
 
 @Controller('blogs')
 export class BlogsController {
@@ -24,12 +25,16 @@ export class BlogsController {
   ) {}
 
   @Post()
+  @UseGuards(BasicGuard)
+  @HttpCode(201)
   async createBlog(@Body() createBlogDto: CreateBlogDto): Promise<TypeBlogToView> {
     const createdBlogId:string = await this.commandBus.execute(new CreateNewBlogCommand(createBlogDto));
     return this.blogsQueryRepo.findBlogByIdOrFail(createdBlogId)
   }
 
   @Post(':blogId/posts')
+  @UseGuards(BasicGuard)
+  @HttpCode(201)
   async createPostForBlog(@Param('blogId') blogId:string, @Body() dto:CreatePostForBlogDto): Promise<TypePostView>{
     const createdPostId = await this.commandBus.execute(new CreatePostForBlogCommand(blogId,dto));
     return this.postsQueryRepo.findPostByIdOrFail(createdPostId)
@@ -51,12 +56,14 @@ export class BlogsController {
   }
 
   @Put(':id')
+  @UseGuards(BasicGuard)
   @HttpCode(204)
   updateBlogById(@Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
     return this.blogsService.updateBlogById(id, updateBlogDto);
   }
 
   @Delete(':id')
+  @UseGuards(BasicGuard)
   @HttpCode(204)
   removeBlog(@Param('id') id: string) {
     return this.blogsService.removeBlogById(id);

@@ -10,7 +10,7 @@ export enum ReactionType  {
     none='None'
 }
 export type TypeLikeDetails = {
-    addedAt:Date,
+    addedAt:string,
     userId:string,
     login: string
 }

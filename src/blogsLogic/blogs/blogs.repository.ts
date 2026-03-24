@@ -1,13 +1,8 @@
 import {InjectModel} from "@nestjs/mongoose";
 import {Model} from "mongoose";
-import {CreateBlogDto} from "./dto/create-blog.dto";
-import {mapBlogToView} from "../../mappers/blog.mapper";
 import {UpdateBlogDto} from "./dto/update-blog.dto";
-import {CreatePostForBlogDto} from "./dto/create-post-for-blog.dto";
-import {Injectable, Post} from "@nestjs/common";
-import {mapNewPostToView} from "../../mappers/post.mapper";
+import {Injectable} from "@nestjs/common";
 import {Blog, BlogDocument} from "./schema/blog.schema";
-import {PostDocument} from "../posts/shema/post.schema";
 
 @Injectable()
 export class BlogsRepository {

@@ -26,8 +26,8 @@ export class CommentsController {
   @Put(':commentId/like-status')
   @UseGuards(BearerGuard)
   @HttpCode(204)
-  async changeCommentLikeStatus(@UserId()userId:string, @Param('commentId') commentId: string, @Body() dto: ReactionInputDto){
-    return this.commandBus.execute(new ChangeCommentLikeStatusCommand(userId, commentId, dto));
+  async changeCommentLikeStatus(@UserId()userId:string, @UserLogin()userLogin: string, @Param('commentId') commentId: string, @Body() dto: ReactionInputDto){
+    return this.commandBus.execute(new ChangeCommentLikeStatusCommand(userId, userLogin, commentId, dto));
   }
 
   @Put(':commentId')

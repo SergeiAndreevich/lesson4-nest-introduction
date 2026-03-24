@@ -39,7 +39,7 @@ export class ChangePostLikeStatusUseCase implements ICommandHandler<ChangePostLi
 
         //if no reaction
         if (!reaction && newStatus !== ReactionType.none) {
-            const newReaction = Reaction.createReaction(command.postId, EntitiesForReaction.post, command.userId, command.dto.likeStatus)
+            const newReaction = Reaction.createReaction(command.postId, EntitiesForReaction.post, command.userId, command.userLogin, command.dto.likeStatus)
             const newReactionId = await this.reactionsRepo.createReaction(newReaction);
         }
 

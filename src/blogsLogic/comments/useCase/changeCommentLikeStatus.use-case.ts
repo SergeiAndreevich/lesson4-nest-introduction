@@ -9,6 +9,7 @@ import {Reaction} from "../../../reactionsLogic/schema/reaction.schema";
 export class ChangeCommentLikeStatusCommand{
     constructor(
         public userId: string,
+        public userLogin: string,
         public commentId: string,
         public dto: ReactionInputDto
     ){}
@@ -37,7 +38,7 @@ export class ChangeCommentLikeStatusUseCase implements ICommandHandler<ChangeCom
 
         //if no reaction
         if (!reaction && newStatus !== ReactionType.none) {
-            const newReaction = Reaction.createReaction(command.commentId, EntitiesForReaction.comment, command.userId, command.dto.likeStatus)
+            const newReaction = Reaction.createReaction(command.commentId, EntitiesForReaction.comment, command.userId, command.userLogin, command.dto.likeStatus)
             const newReactionId = await this.reactionsRepo.createReaction(newReaction);
         }
 

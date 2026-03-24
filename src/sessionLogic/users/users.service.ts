@@ -50,7 +50,7 @@ export class UsersService {
         }
         const isConfirmed = await this.usersRepo.confirmEmail(user._id.toString());
         if(!isConfirmed){
-            throw new BadRequestException('User have not updated');
+            throw new BadRequestException({message:'User has not been updated' , field: 'email'});
         }
         return
 
@@ -69,7 +69,7 @@ export class UsersService {
             expiresAt
         );
         if(!isUpdated){
-            throw new BadRequestException('User have not updated');
+            throw new BadRequestException({message:'User has not been updated' , field: 'email'});
         }
         //вероятно здесь нужно добавить больше логики...
         await this.emailSenderHelper.sendConfirmationEmail(user.accountData.email, newCode);
@@ -78,17 +78,16 @@ export class UsersService {
     async sendPasswordRecoveryCode(email: string, confirmationCode: string){
         const isUpdated = await this.usersRepo.recoveryPassword(email, confirmationCode);
         if(!isUpdated){
-            throw new BadRequestException('User have not updated');
+            throw new BadRequestException({message: 'User has not been updated', field: 'emailCode'});
         }
         //отправляем письмо на почту для подтверждения
-        //this.emailSenderHelper.sendPasswordRecovery(email,'password recovery', confirmationCode);
         await this.emailSenderHelper.sendConfirmationEmail(email, confirmationCode);
         return
     }
     async setNewPassword(newPassword: string, recoveryCode: string){
         const isUpdated = await this.usersRepo.setNewPassword(newPassword, recoveryCode);
         if(!isUpdated){
-            throw new BadRequestException('User have not updated');
+            throw new BadRequestException({message: 'User has not been updated', field: 'recoveryCode'});
         }
         return
     }
@@ -104,7 +103,7 @@ export class UsersService {
     async findUserById(id: string){
         const user = await this.usersQueryRepo.findUserById(id);
         if(!user){
-            throw new NotFoundException("User not found");
+            throw new NotFoundException({message: 'User not found', field: 'userId'});
         }
         return user
     }
@@ -118,7 +117,7 @@ export class UsersService {
         const deleted = await this.usersRepo.removeUserById(id);
         if (!deleted) {
             //if deletedCount = 0
-            throw new BadRequestException('User was not deleted');
+            throw new BadRequestException({message: 'User was not deleted', field: 'userId'});
         }
         return
     }

@@ -18,6 +18,7 @@ import {UserLogin} from "../../customDecorators/userLogin.decorator";
 import {ReactionInputDto} from "../../reactionsLogic/dto/reaction-input.dto";
 import {ChangePostLikeStatusCommand} from "./useCase/changePostLikeStatus.use-case";
 import {FindCommentsForPostCommand} from "../comments/useCase/findCommentsForPost.use-case";
+import {BasicGuard} from "../../../setup/guard/basic.guard";
 
 @Controller('posts')
 export class PostsController {
@@ -27,6 +28,7 @@ export class PostsController {
               private readonly commentsQueryRepo: CommentsQueryRepository,) {}
 
   @Post()
+  @UseGuards(BasicGuard)
   @HttpCode(201)
   async createPost(@Body() createPostDto: CreatePostDto):Promise<TypePostView> {
     const postId = await this.commandBus.execute(new CreateNewPostCommand(createPostDto));
@@ -65,12 +67,14 @@ export class PostsController {
   }
 
   @Put(':id')
+  @UseGuards(BasicGuard)
   @HttpCode(204)
   updatePostById(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
     return this.postsService.updatePostById(id, updatePostDto);
   }
 
   @Delete(':id')
+  @UseGuards(BasicGuard)
   @HttpCode(204)
   removePostById(@Param('id') id: string) {
     return this.postsService.removePostById(id);

@@ -27,34 +27,16 @@ export class ReactionsRepository {
             if(result.matchedCount === 1 && result.modifiedCount === 1){
                 return
             }
-            throw new BadRequestException("The reaction was not updated");
+            throw new BadRequestException({message:'The reaction was not updated' , field: 'reactionId'});
     }
 
     async removeReactionByIdOrFail(id:string):Promise<void>{
         const result = await this.reactionModel.deleteOne({ _id: id });
         if(result.deletedCount !== 1){
-            throw new BadRequestException("The reaction was not deleted!");
+            throw new BadRequestException({message:'The reaction was not deleted' , field: 'reactionId'});
         }
         return
     }
 
-    // async updatePostById(id: string, dto: UpdatePostDto) {
-    //     const result = await this.postModel.updateOne(
-    //         { _id: id },
-    //         {
-    //             $set: {
-    //                 title: dto.title,
-    //                 shortDescription: dto.shortDescription,
-    //                 content: dto.content,
-    //                 blogId: dto.blogId,
-    //             },
-    //         },
-    //     );
-    //
-    //     return result.matchedCount === 1 && result.modifiedCount === 1;
-    // }
-    // async removePostById(id: string){
-    //     const result = await this.postModel.deleteOne({ _id: id });
-    //     return result.deletedCount === 1;
-    // }
+
 }

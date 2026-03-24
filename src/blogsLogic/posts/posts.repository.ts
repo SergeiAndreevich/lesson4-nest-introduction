@@ -3,7 +3,6 @@ import {Model} from "mongoose";
 import {Injectable, NotFoundException} from "@nestjs/common";
 import {UpdatePostDto} from "./dto/update-post.dto";
 import {Post, PostDocument} from "./shema/post.schema";
-import {mapPostToView} from "../../mappers/post.mapper";
 
 @Injectable()
 export class PostsRepository {
@@ -18,7 +17,7 @@ export class PostsRepository {
     async findPostByIdOrFail(id: string): Promise<Post> {
         const post = await this.postModel.findById(id).lean();
         if(!post){
-            throw new NotFoundException("Post not found");
+            throw new NotFoundException({message:'Post not found' , field: 'postId'});
         }
         return post;
     }

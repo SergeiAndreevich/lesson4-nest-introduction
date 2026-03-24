@@ -22,19 +22,12 @@ export class BlogsQueryRepository{
     }
 
     async findAllBlogsByQuery(pagination:IPaginationAndSorting) : Promise<TypePaginatorObject<TypeBlogToView[]>>{
-        const filter: any = {};
         const {pageNumber, pageSize, sortBy, sortDirection,
             searchNameTerm, searchLoginTerm, searchEmailTerm} = pagination;
+        const filter: any = {};
         if (searchNameTerm) {
             filter.name = { $regex: searchNameTerm, $options: "i" };
         }
-        if (searchLoginTerm) {
-            filter.login = { $regex: searchLoginTerm, $options: "i" };
-        }
-        if (searchEmailTerm) {
-            filter.email = { $regex: searchEmailTerm, $options: "i" };
-        }
-
         const totalCount = await this.blogModel.countDocuments(filter);
 
         const blogs = await this.blogModel

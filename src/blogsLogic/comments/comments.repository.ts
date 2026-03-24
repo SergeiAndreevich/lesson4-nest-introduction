@@ -18,7 +18,7 @@ export class CommentsRepository{
     async findCommentByIdOrFail(id:string):Promise<Comment> {
         const comment = await this.commentModel.findById(id).lean();
         if(!comment){
-            throw new NotFoundException("Post not found");
+            throw new NotFoundException({message:"Comment not found" , field: 'commentId'});
         }
         return comment
     }
