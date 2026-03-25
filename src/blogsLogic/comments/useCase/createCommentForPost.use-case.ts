@@ -4,6 +4,7 @@ import {PostsQueryRepository} from "../../posts/postsQuery.reposiroty";
 import {CommentsRepository} from "../comments.repository";
 import {BadRequestException} from "@nestjs/common";
 import {Comment} from "../schema/comment.schema";
+import {CommentsQueryRepository} from "../commentQuery.repository";
 
 
 export class CreateCommentForPostCommand{
@@ -19,7 +20,8 @@ export class CreateCommentForPostCommand{
 export class CreateCommentForPostUseCase implements ICommandHandler<CreateCommentForPostCommand>{
     constructor(
         private readonly postsQueryRepository: PostsQueryRepository,
-        private readonly commentsRepo: CommentsRepository
+        private readonly commentsRepo: CommentsRepository,
+        private readonly commentsQueryRepo: CommentsQueryRepository,
     ) {}
     async execute(command: CreateCommentForPostCommand){
         const post = await this.postsQueryRepository.findPostByIdOrFail(command.postId);
@@ -28,7 +30,7 @@ export class CreateCommentForPostUseCase implements ICommandHandler<CreateCommen
         if(!createdCommentId){
             throw new BadRequestException({message: 'Comment has not been created', field: 'comment'});
         }
-        return createdCommentId
+        return await this.commentsQueryRepo.findCommentByIdOrFail(createdCommentId)
     }
 }
 

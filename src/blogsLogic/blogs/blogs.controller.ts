@@ -20,7 +20,6 @@ import {BasicGuard} from "../../../setup/guard/basic.guard";
 export class BlogsController {
   constructor(private readonly blogsService: BlogsService,
               private readonly blogsQueryRepo: BlogsQueryRepository,
-              private readonly postsQueryRepo: PostsQueryRepository,
               private readonly commandBus: CommandBus
   ) {}
 
@@ -36,8 +35,8 @@ export class BlogsController {
   @UseGuards(BasicGuard)
   @HttpCode(201)
   async createPostForBlog(@Param('blogId') blogId:string, @Body() dto:CreatePostForBlogDto): Promise<TypePostView>{
-    const createdPostId = await this.commandBus.execute(new CreatePostForBlogCommand(blogId,dto));
-    return this.postsQueryRepo.findPostByIdOrFail(createdPostId)
+    return await this.commandBus.execute(new CreatePostForBlogCommand(blogId,dto));
+
   }
 
   @Get()

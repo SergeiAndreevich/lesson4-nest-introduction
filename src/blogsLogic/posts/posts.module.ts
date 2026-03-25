@@ -12,10 +12,11 @@ import {ChangePostLikeStatusUseCase} from "./useCase/changePostLikeStatus.use-ca
 import {ReactionsModule} from "../../reactionsLogic/reactions.module";
 import {FindPostsForBlogUseCase} from "./useCase/findPostsForBlog.use-case";
 import {CreatePostForBlogUseCase} from "./useCase/createPostForBlog.use-case";
+import {CqrsModule} from "@nestjs/cqrs";
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Post.name, schema: PostSchema } // для проверки blogId
-  ]), BlogsModule, ReactionsModule],
+  imports: [MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }
+  ]), CqrsModule, BlogsModule, ReactionsModule],
   controllers: [PostsController],
   providers: [PostsService, PostsRepository, PostsQueryRepository,
   FindAllPostsUseCase, FindPostsForBlogUseCase, CreateNewPostUseCase, CreatePostForBlogUseCase, ChangePostLikeStatusUseCase],

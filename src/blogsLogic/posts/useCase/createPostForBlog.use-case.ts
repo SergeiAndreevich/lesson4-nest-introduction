@@ -4,6 +4,7 @@ import {CreatePostForBlogDto} from "../../blogs/dto/create-post-for-blog.dto";
 import {Post} from "../shema/post.schema";
 import {PostsRepository} from "../posts.repository";
 import {BlogsQueryRepository} from "../../blogs/blogsQuery.repository";
+import {PostsQueryRepository} from "../postsQuery.reposiroty";
 
 
 export class CreatePostForBlogCommand{
@@ -17,7 +18,8 @@ export class CreatePostForBlogCommand{
 export class CreatePostForBlogUseCase implements ICommandHandler<CreatePostForBlogCommand>{
     constructor(
         private readonly postsRepo: PostsRepository,
-        private readonly blogsQueryRepo: BlogsQueryRepository
+        private readonly blogsQueryRepo: BlogsQueryRepository,
+        private readonly postsQueryRepo: PostsQueryRepository,
     ) {}
     async execute(command: CreatePostForBlogCommand){
         const blog = await this.blogsQueryRepo.findBlogByIdOrFail(command.blogId);
@@ -26,6 +28,6 @@ export class CreatePostForBlogUseCase implements ICommandHandler<CreatePostForBl
         if(!createdPostId){
             throw new BadRequestException({message: 'Post has not been created', field: 'post'});
         }
-        return createdPostId
+        return this.postsQueryRepo.findPostByIdOrFail(createdPostId)
     }
 }

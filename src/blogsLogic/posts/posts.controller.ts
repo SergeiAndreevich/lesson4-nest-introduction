@@ -24,8 +24,7 @@ import {BasicGuard} from "../../../setup/guard/basic.guard";
 export class PostsController {
   constructor(@Inject(PostsService) private readonly postsService: PostsService,
               private readonly commandBus: CommandBus,
-              private readonly postsQueryRepo: PostsQueryRepository,
-              private readonly commentsQueryRepo: CommentsQueryRepository,) {}
+              private readonly postsQueryRepo: PostsQueryRepository,) {}
 
   @Post()
   @UseGuards(BasicGuard)
@@ -39,8 +38,7 @@ export class PostsController {
   @UseGuards(BearerGuard)
   @HttpCode(201)
   async createCommentForPost(@UserId()userId:string, @UserLogin()userLogin:string, @Param('postId') postId: string, @Body() dto: CreateCommentDto) {
-    const createdCommentId = await this.commandBus.execute(new CreateCommentForPostCommand(userId, userLogin, postId, dto));
-    return this.commentsQueryRepo.findCommentByIdOrFail(createdCommentId)
+    return  await this.commandBus.execute(new CreateCommentForPostCommand(userId, userLogin, postId, dto));
   }
 
   @Get()
