@@ -2,7 +2,7 @@ import {InjectModel} from "@nestjs/mongoose";
 import {Model} from "mongoose";
 import {BadRequestException, Injectable, NotFoundException} from "@nestjs/common";
 import {Reaction, ReactionDocument} from "./schema/reaction.schema";
-import { ReactionType} from "../types/reaction.types";
+import {EntitiesForReaction, ReactionType} from "../types/reaction.types";
 
 
 @Injectable()
@@ -13,6 +13,14 @@ export class ReactionsRepository {
     async createReaction(reaction:Reaction):Promise<string>{
         const createdReaction:ReactionDocument = await this.reactionModel.create(reaction)
         return createdReaction._id.toString()
+    }
+
+    async findReactionById_EntityType_UserId_OrNull(entityId: string,entityType:EntitiesForReaction, userId:string):Promise<ReactionDocument | null> {
+        const reaction = await this.reactionModel.findOne({ entityId, entityType, userId }).lean();
+        if(!reaction){
+            return null
+        }
+        return reaction
     }
 
     async updateReactionByIdOrFail(id:string, dto: ReactionType):Promise<void>{

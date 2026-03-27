@@ -49,3 +49,6 @@ export class Comment {
 
 export const CommentSchema = SchemaFactory.createForClass(Comment);
 export type CommentDocument = HydratedDocument<Comment>;
+
+//напиши кастомный декоратор Trim()
+//напиши глобальный optionalBearerGuard или его аналог, чтобы при чтении тоже учитывался userId

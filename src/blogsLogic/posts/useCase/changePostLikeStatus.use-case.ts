@@ -20,7 +20,6 @@ export class ChangePostLikeStatusCommand{
 export class ChangePostLikeStatusUseCase implements ICommandHandler<ChangePostLikeStatusCommand>{
     constructor(
         private readonly reactionsRepo: ReactionsRepository,
-        private readonly reactionsQueryRepo: ReactionsQueryRepository,
         private readonly postsRepo: PostsRepository,
     ) {}
     async execute(command: ChangePostLikeStatusCommand){
@@ -29,19 +28,13 @@ export class ChangePostLikeStatusUseCase implements ICommandHandler<ChangePostLi
         let likesCount = post.likesCount;
         let dislikesCount = post.dislikesCount;
         //find reaction
-        const reaction = await this.reactionsQueryRepo.findReactionById_EntityType_UserId_OrFail(
+        const reaction = await this.reactionsRepo.findReactionById_EntityType_UserId_OrNull(
             command.postId, EntitiesForReaction.post, command.userId
         )
         //check status
         const oldStatus = reaction?.status ?? ReactionType.none;
         const newStatus = command.dto.likeStatus;
         if (oldStatus === newStatus) return;
-
-        //if no reaction
-        if (!reaction && newStatus !== ReactionType.none) {
-            const newReaction = Reaction.createReaction(command.postId, EntitiesForReaction.post, command.userId, command.userLogin, command.dto.likeStatus)
-            const newReactionId = await this.reactionsRepo.createReaction(newReaction);
-        }
 
         //if new reaction is none
         if(reaction && newStatus === ReactionType.none) {
@@ -50,6 +43,12 @@ export class ChangePostLikeStatusUseCase implements ICommandHandler<ChangePostLi
         //if reaction is toggled
         if (reaction && newStatus !== ReactionType.none) {
             await this.reactionsRepo.updateReactionByIdOrFail(reaction._id.toString(), newStatus);
+        }
+
+        //if no reaction
+        if (!reaction && newStatus !== ReactionType.none) {
+            const newReaction = Reaction.createReaction(command.postId, EntitiesForReaction.post, command.userId, command.userLogin, command.dto.likeStatus)
+            const newReactionId = await this.reactionsRepo.createReaction(newReaction);
         }
 
         //change counters

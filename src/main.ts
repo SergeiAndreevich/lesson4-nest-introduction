@@ -14,7 +14,7 @@ async function bootstrap() {
     whitelist: true,
 
     //выбрасывает ошибку, если передали те поля, у которых нет декораторов
-    forbidNonWhitelisted: true,
+    forbidNonWhitelisted: false,
 
     //нужно ли остановить валидацию после обнаружения первой ошибки или продолжить собирать все
     stopAtFirstError: false,

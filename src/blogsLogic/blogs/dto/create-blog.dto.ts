@@ -2,7 +2,7 @@ import { IsString, Length, IsUrl } from 'class-validator';
 
 export class CreateBlogDto {
     @IsString()
-    @Length(1, 50)
+    @Length(1, 15)
     name: string;
 
     @IsString()
@@ -10,5 +10,6 @@ export class CreateBlogDto {
     description: string;
 
     @IsUrl()
+    @Length(8, 100)
     websiteUrl: string;
 }
