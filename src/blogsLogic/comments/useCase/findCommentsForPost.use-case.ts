@@ -19,7 +19,7 @@ export class FindCommentsForPostUseCase implements ICommandHandler<FindCommentsF
         private readonly commentsQueryRepo: CommentsQueryRepository
     ) {}
     async execute(command: FindCommentsForPostCommand){
-        const comment = await this.postsQueryRepo.findPostByIdOrFail(command.postId);
+        const post = await this.postsQueryRepo.findPostByIdOrFail(command.postId);
         return this.commentsQueryRepo.findCommentsForPost(command.postId, command.query, command.userId);
     }
 }

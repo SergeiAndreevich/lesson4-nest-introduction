@@ -40,7 +40,7 @@ export class ReactionsQueryRepository {
                 entityType: entityType,
                 status: ReactionType.like
             })
-            .sort({ createdAt: -1 }) // сначала новые
+            .sort({ addedAt: -1 }) // сначала новые
             .limit(3)
             .lean();
 

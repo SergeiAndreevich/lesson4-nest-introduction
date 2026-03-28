@@ -15,6 +15,7 @@ export type TypePaginatorObject<T> = {
     totalCount: number
     items: T
 }
+//'asc'  'desc'
 export enum SortDirection {
     DESC = 'desc',
     ASC = 'asc',

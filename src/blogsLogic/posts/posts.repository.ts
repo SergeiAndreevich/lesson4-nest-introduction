@@ -1,5 +1,5 @@
 import {InjectModel} from "@nestjs/mongoose";
-import {Model} from "mongoose";
+import {Model, Types} from "mongoose";
 import {Injectable, NotFoundException} from "@nestjs/common";
 import {UpdatePostDto} from "./dto/update-post.dto";
 import {Post, PostDocument} from "./shema/post.schema";
@@ -15,6 +15,9 @@ export class PostsRepository {
     }
 
     async findPostByIdOrFail(id: string): Promise<Post> {
+        if (!Types.ObjectId.isValid(id)) {
+            throw new NotFoundException({ message: 'PostId must be ObjectId', field: 'postId' });
+        }
         const post = await this.postModel.findById(id).lean();
         if(!post){
             throw new NotFoundException({message:'Post not found' , field: 'postId'});

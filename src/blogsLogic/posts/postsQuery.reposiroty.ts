@@ -7,6 +7,7 @@ import {mapPostToFront} from "../../mappers/post.mapper";
 import {Post, PostDocument} from "./shema/post.schema";
 import {ReactionsQueryRepository} from "../../reactionsLogic/reactionsQuery.repository";
 import {EntitiesForReaction, ReactionType, TypeLikeDetails} from "../../types/reaction.types";
+import {Types} from 'mongoose';
 
 @Injectable()
 export class PostsQueryRepository{
@@ -16,6 +17,9 @@ export class PostsQueryRepository{
     ) {}
 
     async findPostByIdOrFail(id: string, userId?: string):Promise<TypePostView> {
+        if (!Types.ObjectId.isValid(id)) {
+            throw new NotFoundException({ message: 'PostId must be ObjectId', field: 'postId' });
+        }
         const post = await this.postModel.findById(id).lean();
         if(!post){
             throw new NotFoundException({message:'Post not found' , field: 'postId'});

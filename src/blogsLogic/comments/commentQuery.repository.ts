@@ -1,6 +1,6 @@
 import {Injectable, NotFoundException} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
-import {Model} from "mongoose";
+import {Model, Types} from "mongoose";
 import {mapCommentToFront} from "../../mappers/comment.mapper";
 import {Comment, CommentDocument} from "./schema/comment.schema";
 import {PaginationQueryDto} from "../../dto/pagination-query.dto";
@@ -16,6 +16,9 @@ export class CommentsQueryRepository{
         private  readonly reactionsQueryRepo: ReactionsQueryRepository
     ) {}
     async findCommentByIdOrFail(id: string, userId?: string) {
+        if (!Types.ObjectId.isValid(id)) {
+            throw new NotFoundException({ message: 'CommentId must be ObjectId', field: 'commentId' });
+        }
         const comment = await this.commentModel.findById(id).lean();
         if(!comment){
             throw new NotFoundException({message: 'Comment not found', field: 'commentId'});

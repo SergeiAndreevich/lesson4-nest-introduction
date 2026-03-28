@@ -1,5 +1,5 @@
 import {IPaginationAndSorting, TypePaginatorObject} from "../../types/pagination.types";
-import {Model} from "mongoose";
+import {Model, Types} from "mongoose";
 import {InjectModel} from "@nestjs/mongoose";
 import {mapBlogToView} from "../../mappers/blog.mapper";
 import {TypeBlogToView} from "../../types/blog.types";
@@ -14,7 +14,10 @@ export class BlogsQueryRepository{
         @InjectModel(Blog.name) private readonly blogModel: Model<BlogDocument>
     ) {}
     async findBlogByIdOrFail(id: string) {
-         const blog = await this.blogModel.findById(id).lean();
+        if (!Types.ObjectId.isValid(id)) {
+            throw new NotFoundException({ message: 'BlogId must be ObjectId', field: 'blogId' });
+        }
+        const blog = await this.blogModel.findById(id).lean();
          if(!blog){
              throw new NotFoundException({message: 'Blog not found', field: 'blogId'});
          }
