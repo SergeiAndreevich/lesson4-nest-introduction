@@ -19,6 +19,8 @@ async function bootstrap() {
     //нужно ли остановить валидацию после обнаружения первой ошибки или продолжить собирать все
     stopAtFirstError: false,
 
+    //чтобы кастомный декоратор @Trim() работал в dto
+    transform: true,
     //эта функция вызывается, когда валидация не пройдена и возвращается какой-то Exception
     exceptionFactory: (errors:ValidationError[]) => {
       //на вход этой функции (даже без нашего вмешательства) подается ValidationError[]

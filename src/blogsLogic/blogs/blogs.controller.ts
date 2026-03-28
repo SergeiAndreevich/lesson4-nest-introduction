@@ -15,6 +15,8 @@ import {FindPostsForBlogCommand} from "../posts/useCase/findPostsForBlog.use-cas
 import {TypePaginatorObject} from "../../types/pagination.types";
 import {FindAllBlogsCommand} from "./useCase/findAllBlogs.use-case";
 import {BasicGuard} from "../../../setup/guard/basic.guard";
+import {OptionalBearerGuard} from "../../../setup/guard/optionalBearer.guard";
+import {UserId} from "../../customDecorators/userId.decorator";
 
 @Controller('blogs')
 export class BlogsController {
@@ -36,7 +38,6 @@ export class BlogsController {
   @HttpCode(201)
   async createPostForBlog(@Param('blogId') blogId:string, @Body() dto:CreatePostForBlogDto): Promise<TypePostView>{
     return await this.commandBus.execute(new CreatePostForBlogCommand(blogId,dto));
-
   }
 
   @Get()
@@ -49,9 +50,11 @@ export class BlogsController {
     return this.blogsQueryRepo.findBlogByIdOrFail(id);
   }
 
+  //Вот здесь нужен optionalBearer, тк получаем посты и возможно на каком-то есть наша реакция
   @Get(':blogId/posts')
-  findPostsForBlog(@Param('blogId') blogId: string, @Query() query: PaginationQueryDto):Promise<TypePaginatorObject<TypePostView[]>>{
-    return this.commandBus.execute(new FindPostsForBlogCommand(blogId,query));
+  @UseGuards(OptionalBearerGuard)
+  findPostsForBlog(@Param('blogId') blogId: string, @Query() query: PaginationQueryDto, @UserId() userId?:string):Promise<TypePaginatorObject<TypePostView[]>>{
+    return this.commandBus.execute(new FindPostsForBlogCommand(blogId,query, userId));
   }
 
   @Put(':id')

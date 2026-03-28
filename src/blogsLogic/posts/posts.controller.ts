@@ -19,6 +19,7 @@ import {ReactionInputDto} from "../../reactionsLogic/dto/reaction-input.dto";
 import {ChangePostLikeStatusCommand} from "./useCase/changePostLikeStatus.use-case";
 import {FindCommentsForPostCommand} from "../comments/useCase/findCommentsForPost.use-case";
 import {BasicGuard} from "../../../setup/guard/basic.guard";
+import {OptionalBearerGuard} from "../../../setup/guard/optionalBearer.guard";
 
 @Controller('posts')
 export class PostsController {
@@ -41,19 +42,25 @@ export class PostsController {
     return  await this.commandBus.execute(new CreateCommentForPostCommand(userId, userLogin, postId, dto));
   }
 
+  //Вот здесь нужен optionalBearer, тк получаем посты и возможно на каком-то есть наша реакция
   @Get()
-  findAllPostsByQuery(@Query()dto:PaginationQueryDto):Promise<TypePaginatorObject<TypePostView[]>> {
-    return this.commandBus.execute(new FindAllPostsCommand(dto))
+  @UseGuards(OptionalBearerGuard)
+  findAllPostsByQuery(@Query()dto:PaginationQueryDto, userId?:string):Promise<TypePaginatorObject<TypePostView[]>> {
+    return this.commandBus.execute(new FindAllPostsCommand(dto, userId))
   }
 
+  //Вот здесь нужен optionalBearer, тк получаем посты и возможно на каком-то есть наша реакция
   @Get(':id')
-  findPostById(@Param('id') id: string):Promise<TypePostView> {
-    return this.postsQueryRepo.findPostByIdOrFail(id)
+  @UseGuards(OptionalBearerGuard)
+  findPostById(@Param('id') id: string, @UserId() userId?: string):Promise<TypePostView> {
+    return this.postsQueryRepo.findPostByIdOrFail(id, userId)
   }
 
+  //Вот здесь нужен optionalBearer, тк получаем посты и возможно на каком-то есть наша реакция
   @Get(':postId/comments')
-  findCommentsForPost(@Param('postId') id: string, @Query() dto: PaginationQueryDto) {
-    return this.commandBus.execute(new FindCommentsForPostCommand(id, dto));
+  @UseGuards(OptionalBearerGuard)
+  findCommentsForPost(@Param('postId') id: string, @Query() dto: PaginationQueryDto, @UserId() userId?:string) {
+    return this.commandBus.execute(new FindCommentsForPostCommand(id, dto, userId));
 
   }
 

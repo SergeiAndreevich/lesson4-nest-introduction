@@ -11,6 +11,7 @@ import {ReactionInputDto} from "../../reactionsLogic/dto/reaction-input.dto";
 import {ChangeCommentLikeStatusCommand} from "./useCase/changeCommentLikeStatus.use-case";
 import {UpdateCommentCommand} from "./useCase/updateCommentCommand.use-case";
 import {RemoveCommentCommand} from "./useCase/removeComment.use-case";
+import {OptionalBearerGuard} from "../../../setup/guard/optionalBearer.guard";
 
 @Controller('comments')
 export class CommentsController {
@@ -18,9 +19,11 @@ export class CommentsController {
               private readonly commentsQueryRepo: CommentsQueryRepository,
               private readonly commandBus: CommandBus,) {}
 
+  //Вот здесь нужен optionalBearer, тк получаем посты и возможно на каком-то есть наша реакция
   @Get(':id')
-  findCommentById(@Param('id') id: string) {
-    return this.commentsQueryRepo.findCommentByIdOrFail(id);
+  @UseGuards(OptionalBearerGuard)
+  findCommentById(@Param('id') id: string, @UserId() userId?: string) {
+    return this.commentsQueryRepo.findCommentByIdOrFail(id, userId);
   }
 
   @Put(':commentId/like-status')

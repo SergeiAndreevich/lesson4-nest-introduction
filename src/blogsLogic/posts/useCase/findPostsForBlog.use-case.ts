@@ -11,7 +11,8 @@ import {TypePostView} from "../../../types/post.types";
 export class FindPostsForBlogCommand{
     constructor(
         public blogId: string,
-        public query: PaginationQueryDto
+        public query: PaginationQueryDto,
+        public userId?:string,
     ){}
 }
 
@@ -24,6 +25,6 @@ export class FindPostsForBlogUseCase implements ICommandHandler<FindPostsForBlog
     async execute(command: FindPostsForBlogCommand):Promise<TypePaginatorObject<TypePostView[]>>{
         await this.blogsQueryRepo.findBlogByIdOrFail(command.blogId);
         const pagination = paginationHelper(command.query);
-        return await this.postsQueryRepo.findPostsForBlog(command.blogId, pagination);
+        return await this.postsQueryRepo.findPostsForBlog(command.blogId, pagination, command.userId);
     }
 }

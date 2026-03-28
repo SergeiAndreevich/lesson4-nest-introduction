@@ -7,7 +7,8 @@ import {CommentsQueryRepository} from "../commentQuery.repository";
 export class FindCommentsForPostCommand{
     constructor(
         public postId: string,
-        public query: PaginationQueryDto
+        public query: PaginationQueryDto,
+        public userId?: string
     ){}
 }
 
@@ -19,6 +20,6 @@ export class FindCommentsForPostUseCase implements ICommandHandler<FindCommentsF
     ) {}
     async execute(command: FindCommentsForPostCommand){
         const comment = await this.postsQueryRepo.findPostByIdOrFail(command.postId);
-        return this.commentsQueryRepo.findCommentsForPost(command.postId, command.query);
+        return this.commentsQueryRepo.findCommentsForPost(command.postId, command.query, command.userId);
     }
 }

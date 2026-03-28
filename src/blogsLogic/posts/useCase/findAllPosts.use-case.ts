@@ -6,7 +6,8 @@ import {paginationHelper} from "../../../helpers/paginationQuery.helper";
 
 export class FindAllPostsCommand{
     constructor(
-        public query: PaginationQueryDto
+        public query: PaginationQueryDto,
+        public userId?: string,
     ){}
 }
 
@@ -17,6 +18,6 @@ export class FindAllPostsUseCase implements ICommandHandler<FindAllPostsCommand>
     ) {}
     async execute(command: FindAllPostsCommand){
         const pagination = paginationHelper(command.query);
-        return this.postsQueryRepo.findAllPostsByQuery(pagination);
+        return this.postsQueryRepo.findAllPostsByQuery(pagination, command.userId);
     }
 }
