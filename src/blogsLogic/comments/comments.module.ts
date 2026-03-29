@@ -12,12 +12,13 @@ import {RemoveCommentUseCase} from "./useCase/removeComment.use-case";
 import {PostsModule} from "../posts/posts.module";
 import {ReactionsModule} from "../../reactionsLogic/reactions.module";
 import {CqrsModule} from "@nestjs/cqrs";
+import {FindCommentsForPostUseCase} from "./useCase/findCommentsForPost.use-case";
 
 @Module({
   imports: [MongooseModule.forFeature([{name: Comment.name, schema: CommentSchema}]), CqrsModule, PostsModule, ReactionsModule],
   controllers: [CommentsController],
   providers: [CommentsService, CommentsRepository, CommentsQueryRepository,
-  ChangeCommentLikeStatusUseCase, CreateCommentForPostUseCase,UpdateCommentUseCase, RemoveCommentUseCase,],
+  ChangeCommentLikeStatusUseCase, CreateCommentForPostUseCase,UpdateCommentUseCase, RemoveCommentUseCase, FindCommentsForPostUseCase],
   exports: [CommentsRepository, CommentsQueryRepository],
 })
 export class CommentsModule {}

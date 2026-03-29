@@ -1,7 +1,7 @@
 import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
-import {PostsQueryRepository} from "../../posts/postsQuery.reposiroty";
 import {PaginationQueryDto} from "../../../dto/pagination-query.dto";
 import {CommentsQueryRepository} from "../commentQuery.repository";
+import {PostsRepository} from "../../posts/posts.repository";
 
 
 export class FindCommentsForPostCommand{
@@ -15,11 +15,14 @@ export class FindCommentsForPostCommand{
 @CommandHandler(FindCommentsForPostCommand)
 export class FindCommentsForPostUseCase implements ICommandHandler<FindCommentsForPostCommand>{
     constructor(
-        private readonly postsQueryRepo: PostsQueryRepository,
+        private readonly postsRepo: PostsRepository,
         private readonly commentsQueryRepo: CommentsQueryRepository
     ) {}
     async execute(command: FindCommentsForPostCommand){
-        const post = await this.postsQueryRepo.findPostByIdOrFail(command.postId);
-        return this.commentsQueryRepo.findCommentsForPost(command.postId, command.query, command.userId);
+        console.log('Finding comments for post', command);
+        await this.postsRepo.findPostByIdOrFail(command.postId);
+        const comments = await this.commentsQueryRepo.findCommentsForPost(command.postId, command.query, command.userId);
+        console.log('Found comments for post', comments);
+        return comments;
     }
 }

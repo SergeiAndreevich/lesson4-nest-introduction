@@ -29,6 +29,5 @@ export class RemoveCommentUseCase implements ICommandHandler<RemoveCommentComman
             throw new BadRequestException('Post was not deleted');
         }
         return
-        return
     }
 }

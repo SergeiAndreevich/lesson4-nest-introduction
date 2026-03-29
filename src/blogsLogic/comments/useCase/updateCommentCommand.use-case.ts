@@ -1,8 +1,6 @@
 import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
-import {PostsQueryRepository} from "../../posts/postsQuery.reposiroty";
 import {CommentsRepository} from "../comments.repository";
 import {BadRequestException, ForbiddenException} from "@nestjs/common";
-import {Comment} from "../schema/comment.schema";
 import {UpdateCommentDto} from "../dto/update-comment.dto";
 
 
@@ -23,7 +21,7 @@ export class UpdateCommentUseCase implements ICommandHandler<UpdateCommentComman
     async execute(command: UpdateCommentCommand){
         const comment = await this.commentsRepo.findCommentByIdOrFail(command.commentId);
         //const comment = Comment.createCommentForPost(command.userId, command.userLogin, command.dto, post);
-        if(comment.commentatorInfo.userId !== command.userId && comment.commentatorInfo.userLogin !== command.userLogin){
+        if(comment.commentatorInfo.userId !== command.userId){
             throw new ForbiddenException({message: 'Wrong access, comment wont be changed', field: 'comment authorization'})
         }
         await this.commentsRepo.updateComment(command.commentId, command.dto);

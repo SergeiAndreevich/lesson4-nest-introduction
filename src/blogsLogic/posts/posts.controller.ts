@@ -23,7 +23,7 @@ import {OptionalBearerGuard} from "../../../setup/guard/optionalBearer.guard";
 
 @Controller('posts')
 export class PostsController {
-  constructor(@Inject(PostsService) private readonly postsService: PostsService,
+  constructor(private readonly postsService: PostsService,
               private readonly commandBus: CommandBus,
               private readonly postsQueryRepo: PostsQueryRepository,) {}
 
@@ -45,7 +45,7 @@ export class PostsController {
   //Вот здесь нужен optionalBearer, тк получаем посты и возможно на каком-то есть наша реакция
   @Get()
   @UseGuards(OptionalBearerGuard)
-  findAllPostsByQuery(@Query()dto:PaginationQueryDto, userId?:string):Promise<TypePaginatorObject<TypePostView[]>> {
+  findAllPostsByQuery(@Query()dto:PaginationQueryDto, @UserId() userId?:string):Promise<TypePaginatorObject<TypePostView[]>> {
     return this.commandBus.execute(new FindAllPostsCommand(dto, userId))
   }
 
@@ -59,9 +59,8 @@ export class PostsController {
   //Вот здесь нужен optionalBearer, тк получаем посты и возможно на каком-то есть наша реакция
   @Get(':postId/comments')
   @UseGuards(OptionalBearerGuard)
-  findCommentsForPost(@Param('postId') id: string, @Query() dto: PaginationQueryDto, @UserId() userId?:string) {
-    return this.commandBus.execute(new FindCommentsForPostCommand(id, dto, userId));
-
+  findCommentsForPost(@Param('postId') postId: string, @Query() dto: PaginationQueryDto, @UserId() userId?:string) {
+    return this.commandBus.execute(new FindCommentsForPostCommand(postId, dto, userId));
   }
 
   @Put(':postId/like-status')
