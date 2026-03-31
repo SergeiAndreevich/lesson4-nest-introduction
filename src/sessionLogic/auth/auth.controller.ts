@@ -32,15 +32,19 @@ export class AuthController {
 
     return { accessToken };
   }
-  // loginUser(@Body() loginInputDto: LoginInputDto) {
-  //   return this.authService.loginUser(loginInputDto);
-  // }
+
   @Post('refresh-token')
   async refresh(@Req() req: Request) {
     const refreshToken = req.cookies.refreshToken;
 
     // проверка токена
     return
+  }
+
+  @Post('logout')
+  @HttpCode(204)
+  logout(){
+
   }
 
   @Post('password-recovery')
