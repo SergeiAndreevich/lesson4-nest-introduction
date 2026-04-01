@@ -32,6 +32,9 @@ export class AuthService {
       const refreshToken = this.jwtService.sign({userId: user._id.toString(), userLogin: user.accountData.login}, {
         expiresIn: '7d'
       })
+
+    //создаём сессию
+
       return  {accessToken: accessToken, refreshToken: refreshToken}
   }
 

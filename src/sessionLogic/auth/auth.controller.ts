@@ -8,11 +8,15 @@ import {NewPasswordInputDto} from "./dto/new-password-input.dto";
 import {CodeInputDto} from "./dto/code-input.dto";
 import {BearerGuard} from "../../../setup/guard/bearer.guard";
 import {UserId} from "../../customDecorators/userId.decorator";
+import {CommandBus} from "@nestjs/cqrs";
+import {RefreshAccessCommand} from "./useCase/refreshAccess.use-case";
+import {LogoutCommand} from "./useCase/logout.use-case";
 
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService,
+              private readonly commandBus: CommandBus,) {}
 
   @Post('login')
   @HttpCode(200)
@@ -20,6 +24,7 @@ export class AuthController {
       @Body() dto: LoginInputDto,
       @Res({ passthrough: true }) res: Response
   ) {
+    //добавь создание сессии
     const { accessToken, refreshToken } = await this.authService.loginUser(dto);
 
     res.cookie('refreshToken', refreshToken, {
@@ -34,17 +39,30 @@ export class AuthController {
   }
 
   @Post('refresh-token')
-  async refresh(@Req() req: Request) {
-    const refreshToken = req.cookies.refreshToken;
+  @HttpCode(200)
+  async refresh(@Req() req: Request,
+                @Res({ passthrough: true }) res: Response) {
+    const result = await this.commandBus.execute(new RefreshAccessCommand(req.cookies.refreshToken));
 
-    // проверка токена
-    return
+    res.cookie('refreshToken', result.newRefreshToken, {
+      httpOnly: true,
+      secure: true, // true на проде (https)
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 1000 * 60 * 60 * 24 * 7 // 7 дней
+    });
+    return {accessToken: result.newAccessToken}
   }
 
   @Post('logout')
   @HttpCode(204)
-  logout(){
+  async logout(@Req() req: Request,
+         @Res({ passthrough: true }) res: Response){
+    await this.commandBus.execute(new LogoutCommand(req.cookies.refreshToken));
 
+    //очищаем куки и возвращаем ответочку
+    res.clearCookie("refreshToken");
+    res.sendStatus(204)
   }
 
   @Post('password-recovery')

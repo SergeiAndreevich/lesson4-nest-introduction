@@ -5,10 +5,13 @@ import {UsersModule} from "../users/users.module";
 import {BearerGuard} from "../../../setup/guard/bearer.guard";
 import {JwtGlobalModule} from "../../../setup/guard/jwt.module";
 import {NotificationsModule} from "../../helpers/emailHelper/notification.module";
+import {CqrsModule} from "@nestjs/cqrs";
+import {RefreshAccessUseCase} from "./useCase/refreshAccess.use-case";
+import {LogoutUseCase} from "./useCase/logout.use-case";
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService],
-  imports: [UsersModule, NotificationsModule],
+  providers: [AuthService, RefreshAccessUseCase, LogoutUseCase],
+  imports: [UsersModule, NotificationsModule, CqrsModule],
 })
 export class AuthModule {}
