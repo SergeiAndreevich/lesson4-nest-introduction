@@ -7,13 +7,14 @@ import {CloseAllSessionsForUserExcludeCurrentUseCase} from "./useCase/closeAllSe
 import {CloseSessionForCurrentUserUseCase} from "./useCase/closeSessionForCurrentUser.use-case";
 import {Session, SessionSchema} from "./schema/session.schema";
 import {SecurityDevicesRepository} from "./securityDevices.repository";
+import {SecurityDevicesQueryRepository} from "./securityDevicesQuery.repository";
 
 
 @Module({
     imports: [MongooseModule.forFeature([{name: Session.name, schema: SessionSchema}]),CqrsModule],
     controllers: [SessionsController],
     providers: [FindAllActiveSessionsForUserUseCase, CloseAllSessionsForUserExcludeCurrentUseCase, CloseSessionForCurrentUserUseCase,
-        SecurityDevicesRepository],
-    exports: [SecurityDevicesRepository],
+        SecurityDevicesRepository, SecurityDevicesQueryRepository],
+    exports: [SecurityDevicesRepository, SecurityDevicesQueryRepository],
 })
 export class SecurityDevicesModule {}
