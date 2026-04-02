@@ -21,11 +21,13 @@ export class AuthController {
   @Post('login')
   @HttpCode(200)
   async login(
+      @Req() req: Request,
       @Body() dto: LoginInputDto,
       @Res({ passthrough: true }) res: Response
   ) {
-    //добавь создание сессии
-    const { accessToken, refreshToken } = await this.authService.loginUser(dto);
+    const ip = req.ip;
+    const userAgent = req.headers['user-agent'] || 'unknown device';
+    const { accessToken, refreshToken } = await this.authService.loginUser(dto, ip, userAgent);
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -44,14 +46,14 @@ export class AuthController {
                 @Res({ passthrough: true }) res: Response) {
     const result = await this.commandBus.execute(new RefreshAccessCommand(req.cookies.refreshToken));
 
-    res.cookie('refreshToken', result.newRefreshToken, {
+    res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: true, // true на проде (https)
       sameSite: 'strict',
       path: '/',
       maxAge: 1000 * 60 * 60 * 24 * 7 // 7 дней
     });
-    return {accessToken: result.newAccessToken}
+    return {accessToken: result.accessToken}
   }
 
   @Post('logout')

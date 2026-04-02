@@ -4,6 +4,8 @@ import {BearerGuard} from "../../../setup/guard/bearer.guard";
 import {FindAllActiveSessionsForUserCommand} from "./useCase/findAllActiveSessionsForUser.use-case";
 import {CloseAllSessionsForUserExcludeCurrentCommand} from "./useCase/closeAllSessionsForUserExcludeCurrent.use-case";
 import {CloseSessionForCurrentUserCommand} from "./useCase/closeSessionForCurrentUser.use-case";
+import {UserId} from "../../customDecorators/userId.decorator";
+import {DeviceId} from "../../customDecorators/deviceId.decorator";
 
 @Controller('security')
 export class SessionsController {
@@ -14,21 +16,21 @@ export class SessionsController {
     @Get('devices')
     @UseGuards(BearerGuard)
     @HttpCode(200)
-    findActiveSessionsForCurrentUser(){
-        return this.commandBus.execute(new FindAllActiveSessionsForUserCommand());
+    findActiveSessionsForCurrentUser(@UserId() userId:string){
+        return this.commandBus.execute(new FindAllActiveSessionsForUserCommand(userId));
     }
 
     @Delete('devices')
     @UseGuards(BearerGuard)
     @HttpCode(204)
-    terminateAllSessionsForUserExcludeCurrent(){
-        return this.commandBus.execute(new CloseAllSessionsForUserExcludeCurrentCommand())
+    terminateAllSessionsForUserExcludeCurrent(@UserId() userId:string, @DeviceId() deviceId:string){
+        return this.commandBus.execute(new CloseAllSessionsForUserExcludeCurrentCommand(userId, deviceId))
     }
 
     @Delete('devices/:deviceId')
     @UseGuards(BearerGuard)
     @HttpCode(204)
-    terminateSessionForCurrentUser(@Param('deviceId') deviceId:string){
-        return this.commandBus.execute(new CloseSessionForCurrentUserCommand())
+    terminateSessionForCurrentUser(@Param('deviceId') deviceId:string, @UserId() userId:string){
+        return this.commandBus.execute(new CloseSessionForCurrentUserCommand(deviceId, userId))
     }
 }

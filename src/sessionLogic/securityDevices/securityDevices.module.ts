@@ -5,12 +5,15 @@ import {FindAllActiveSessionsForUserUseCase} from "./useCase/findAllActiveSessio
 import {CqrsModule} from "@nestjs/cqrs";
 import {CloseAllSessionsForUserExcludeCurrentUseCase} from "./useCase/closeAllSessionsForUserExcludeCurrent.use-case";
 import {CloseSessionForCurrentUserUseCase} from "./useCase/closeSessionForCurrentUser.use-case";
+import {Session, SessionSchema} from "./schema/session.schema";
+import {SecurityDevicesRepository} from "./securityDevices.repository";
 
 
 @Module({
-    imports: [MongooseModule.forFeature([]),CqrsModule],
+    imports: [MongooseModule.forFeature([{name: Session.name, schema: SessionSchema}]),CqrsModule],
     controllers: [SessionsController],
-    providers: [FindAllActiveSessionsForUserUseCase, CloseAllSessionsForUserExcludeCurrentUseCase, CloseSessionForCurrentUserUseCase],
-    exports: [],
+    providers: [FindAllActiveSessionsForUserUseCase, CloseAllSessionsForUserExcludeCurrentUseCase, CloseSessionForCurrentUserUseCase,
+        SecurityDevicesRepository],
+    exports: [SecurityDevicesRepository],
 })
-export class ReactionsModule {}
+export class SecurityDevicesModule {}

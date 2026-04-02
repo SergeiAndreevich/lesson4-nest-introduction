@@ -1,31 +1,30 @@
-import {UnauthorizedException} from "@nestjs/common";
+import {ForbiddenException, NotFoundException, UnauthorizedException} from "@nestjs/common";
 import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
 import {JwtService} from "@nestjs/jwt";
+import {SecurityDevicesRepository} from "../securityDevices.repository";
 
 
 export class CloseSessionForCurrentUserCommand{
     constructor(
-        public refreshToken: string
+        public deviceId: string,
+        public userId: string,
     ){}
 }
 
 @CommandHandler(CloseSessionForCurrentUserCommand)
 export class CloseSessionForCurrentUserUseCase implements ICommandHandler<CloseSessionForCurrentUserCommand>{
     constructor(
-        private readonly jwtService: JwtService,
+        private readonly sessionsRepo: SecurityDevicesRepository,
     ) {}
     async execute(command: CloseSessionForCurrentUserCommand){
-        const userId = req.userId;
-        if(userId === undefined || userId === null || userId.length === 0) {
-            res.sendStatus(httpStatus.Unauthorized)
-            return
+        const session = await this.sessionsRepo.findSessionByDeviceId(command.deviceId);
+        if(!session){
+            throw new NotFoundException({field: 'deviceId', message: 'Device not found'});
         }
-        const deviceId = req.params.deviceId;
-        const result = await this.sessionsService.closeSpecificSessionByDeviceId(userId, deviceId)
-        if(result.status !== httpStatus.NoContent){
-            res.sendStatus(result.status);
-            return
+        const result = await this.sessionsRepo.closeSession(command.userId, command.deviceId)
+        if(!result){
+            throw new ForbiddenException({field: 'deviceId', message: 'Invalid deviceId or userId'});
         }
-        res.sendStatus(httpStatus.NoContent)
+        return
     }
 }

@@ -8,10 +8,11 @@ import {NotificationsModule} from "../../helpers/emailHelper/notification.module
 import {CqrsModule} from "@nestjs/cqrs";
 import {RefreshAccessUseCase} from "./useCase/refreshAccess.use-case";
 import {LogoutUseCase} from "./useCase/logout.use-case";
+import {SecurityDevicesModule} from "../securityDevices/securityDevices.module";
 
 @Module({
   controllers: [AuthController],
   providers: [AuthService, RefreshAccessUseCase, LogoutUseCase],
-  imports: [UsersModule, NotificationsModule, CqrsModule],
+  imports: [UsersModule, NotificationsModule, CqrsModule,SecurityDevicesModule],
 })
 export class AuthModule {}

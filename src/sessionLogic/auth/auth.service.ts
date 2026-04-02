@@ -1,4 +1,4 @@
-import {BadRequestException, Injectable, UnauthorizedException} from '@nestjs/common';
+import {BadRequestException, ForbiddenException, Injectable, UnauthorizedException} from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import {LoginInputDto} from "./dto/login-input.dto";
 import {EmailInputDto} from "./dto/email-input-dto";
@@ -9,6 +9,9 @@ import { v4 as uuidv4 } from "uuid";
 import {mapUserToView} from "../../mappers/user.mapper";
 import {EmailService} from "../../helpers/emailHelper/mailNotification.service";
 import {JwtService} from "@nestjs/jwt";
+import {Session} from "../securityDevices/schema/session.schema";
+import {SecurityDevicesRepository} from "../securityDevices/securityDevices.repository";
+import {addDays} from "date-fns";
 
 
 @Injectable()
@@ -16,8 +19,12 @@ export class AuthService {
   constructor(private readonly usersService: UsersService,
               private readonly emailSenderHelper: EmailService,
               private readonly jwtService: JwtService,
+              private readonly sessionsRepo: SecurityDevicesRepository
   ) {}
-  async loginUser(loginInputDto: LoginInputDto) {
+  async loginUser(loginInputDto: LoginInputDto, ip:string | undefined, userAgent:string) {
+      if(!ip){
+          throw new ForbiddenException({field: 'ip', message: 'invalid ip'})
+      }
       //ищем юзера
       const user = await this.usersService.findUserByLoginOrEmail(loginInputDto.loginOrEmail);
       if(!user){
@@ -27,14 +34,18 @@ export class AuthService {
       if(user.accountData.password !== loginInputDto.password) {
         throw new UnauthorizedException({message: 'Invalid password', field: 'password'});
       }
+      //создаём сессию
+      const deviceId = uuidv4();
+      const session = Session.createSession(
+          user._id.toString(), deviceId,ip,
+          userAgent,addDays(new Date(), 7));
+
       //создаем аксес рефреш токены, создаем сессию и возвращаем токен
-      const accessToken = this.jwtService.sign({userId: user._id.toString(), userLogin: user.accountData.login});
-      const refreshToken = this.jwtService.sign({userId: user._id.toString(), userLogin: user.accountData.login}, {
-        expiresIn: '7d'
-      })
+      const accessToken = this.jwtService.sign({userId: user._id.toString(), userLogin: user.accountData.login, deviceId: deviceId});
+      const refreshToken = this.jwtService.sign({userId: user._id.toString(), userLogin: user.accountData.login, deviceId: deviceId}, {expiresIn: '7d'});
 
-    //создаём сессию
 
+      await this.sessionsRepo.createSession(session);
       return  {accessToken: accessToken, refreshToken: refreshToken}
   }
 
