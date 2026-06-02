@@ -11,7 +11,9 @@ import {EmailService} from "../../helpers/emailHelper/mailNotification.service";
 import {JwtService} from "@nestjs/jwt";
 import {Session} from "../securityDevices/schema/session.schema";
 import {SecurityDevicesRepository} from "../securityDevices/securityDevices.repository";
-import {addDays} from "date-fns";
+import {addDays, addSeconds} from "date-fns";
+import { REFRESH_TOKEN_TTL_SEC} from "../../../setup/globalVariables";
+import {JwtPayload} from "../../types/session.types";
 
 
 @Injectable()
@@ -34,18 +36,20 @@ export class AuthService {
       if(user.accountData.password !== loginInputDto.password) {
         throw new UnauthorizedException({message: 'Invalid password', field: 'password'});
       }
-      //создаём сессию
+
       const deviceId = uuidv4();
-      const session = Session.createSession(
-          user._id.toString(), deviceId,ip,
-          userAgent,addDays(new Date(), 7));
-
       //создаем аксес рефреш токены, создаем сессию и возвращаем токен
-      const accessToken = this.jwtService.sign({userId: user._id.toString(), userLogin: user.accountData.login, deviceId: deviceId});
-      const refreshToken = this.jwtService.sign({userId: user._id.toString(), userLogin: user.accountData.login, deviceId: deviceId}, {expiresIn: '7d'});
-
+      const accessToken = this.jwtService.sign({userId: user._id.toString(), userLogin: user.accountData.login});
+      const refreshToken = this.jwtService.sign(
+          {userId: user._id.toString(), userLogin: user.accountData.login, deviceId: deviceId},{expiresIn: `${REFRESH_TOKEN_TTL_SEC}s`});
+      const decodedRefresh = this.jwtService.decode(refreshToken) as JwtPayload;
+      //создаём сессию
+      const session = Session.createSession(
+          user._id.toString(), deviceId,ip,userAgent, new Date(decodedRefresh.iat * 1000),
+          addSeconds(new Date(), REFRESH_TOKEN_TTL_SEC));
 
       await this.sessionsRepo.createSession(session);
+      console.log('LOGIN TOKEN:', refreshToken);
       return  {accessToken: accessToken, refreshToken: refreshToken}
   }
 
@@ -80,8 +84,8 @@ export class AuthService {
     return this.usersService.registrationEmailResending(emailInputDto)
   }
 
-  findMe(userId:string) {
-    const user = this.usersService.findUserById(userId);
+  async findMe(userId:string) {
+    const user = await this.usersService.findUserById(userId);
     const viewModel = mapUserToView(user);
     return {
       email: viewModel.email,

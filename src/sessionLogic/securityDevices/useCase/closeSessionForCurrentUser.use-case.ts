@@ -21,7 +21,10 @@ export class CloseSessionForCurrentUserUseCase implements ICommandHandler<CloseS
         if(!session){
             throw new NotFoundException({field: 'deviceId', message: 'Device not found'});
         }
-        const result = await this.sessionsRepo.closeSession(command.userId, command.deviceId)
+        if (session.userId !== command.userId) {
+            throw new ForbiddenException({field: 'userId', message: 'Wrong user or session'});
+        }
+        const result = await this.sessionsRepo.closeSession(command.deviceId)
         if(!result){
             throw new ForbiddenException({field: 'deviceId', message: 'Invalid deviceId or userId'});
         }

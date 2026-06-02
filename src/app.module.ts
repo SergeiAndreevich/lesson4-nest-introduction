@@ -10,7 +10,7 @@ import {UsersModule} from "./sessionLogic/users/users.module";
 import { AuthModule } from './sessionLogic/auth/auth.module';
 
 import {configModule} from "./dynamic-config-module";
-import {APP_FILTER} from "@nestjs/core";
+import {APP_FILTER, APP_GUARD} from "@nestjs/core";
 import {DomainHttpExceptionsFilter} from "../setup/exception-filter/domain-filter";
 import {OtherHttpExceptionsFilter} from "../setup/exception-filter/other-http-filter";
 import {CqrsModule} from "@nestjs/cqrs";
@@ -22,13 +22,29 @@ import { ReactionsModule } from './reactionsLogic/reactions.module';
 import {Reaction, ReactionSchema} from "./reactionsLogic/schema/reaction.schema";
 import {JwtGlobalModule} from "../setup/guard/jwt.module";
 import {GuardsModule} from "../setup/guard/guards.module";
+import {ThrottlerGuard, ThrottlerModule} from "@nestjs/throttler";
+import {SecurityDevicesModule} from "./sessionLogic/securityDevices/securityDevices.module";
+import {AntiClickerModule} from "./rateLimitLogic/rateLimit.module";
 
 @Module({
   imports: [configModule, MongooseModule.forRoot('mongodb://localhost:27018/lesson4'),
-      BlogsModule, PostsModule,CommentsModule,UsersModule, AuthModule,ReactionsModule, CqrsModule, JwtGlobalModule, GuardsModule
+      BlogsModule, PostsModule,CommentsModule,UsersModule, AuthModule,ReactionsModule, CqrsModule, GuardsModule,
+      // ThrottlerModule.forRoot({
+      //     throttlers: [
+      //         {
+      //             ttl: 10000,
+      //             limit: 5,
+      //         },
+      //     ]
+      // }),
+      JwtGlobalModule, SecurityDevicesModule
   ],
   controllers: [AppController],
   providers: [AppService, AppRepository,
+  //     {
+  //     provide: APP_GUARD,
+  //     useClass: ThrottlerGuard, // Applying global throttle guard
+  // }
       // {
       //     provide: APP_FILTER,
       //     useClass: OtherHttpExceptionsFilter,

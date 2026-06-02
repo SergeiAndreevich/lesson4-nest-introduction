@@ -31,7 +31,7 @@ export class BearerGuard implements CanActivate {
             if (!payload || typeof payload !== 'object' || !('userId' in payload)) {
                 throw new UnauthorizedException();
             }
-            request.user = { userId: payload.userId, userLogin: payload.userLogin, deviceId: payload.deviceId };
+            request.user = { userId: payload.userId, userLogin: payload.userLogin };
             return true
         } catch (e) {
             console.error(e);

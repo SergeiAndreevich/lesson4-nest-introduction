@@ -9,10 +9,11 @@ import {CqrsModule} from "@nestjs/cqrs";
 import {RefreshAccessUseCase} from "./useCase/refreshAccess.use-case";
 import {LogoutUseCase} from "./useCase/logout.use-case";
 import {SecurityDevicesModule} from "../securityDevices/securityDevices.module";
+import {AntiClickerModule} from "../../rateLimitLogic/rateLimit.module";
 
 @Module({
   controllers: [AuthController],
   providers: [AuthService, RefreshAccessUseCase, LogoutUseCase],
-  imports: [UsersModule, NotificationsModule, CqrsModule,SecurityDevicesModule],
+  imports: [UsersModule, NotificationsModule, CqrsModule,SecurityDevicesModule, AntiClickerModule],
 })
 export class AuthModule {}

@@ -11,14 +11,19 @@ import {UserId} from "../../customDecorators/userId.decorator";
 import {CommandBus} from "@nestjs/cqrs";
 import {RefreshAccessCommand} from "./useCase/refreshAccess.use-case";
 import {LogoutCommand} from "./useCase/logout.use-case";
+import {REFRESH_TOKEN_TTL_SEC} from "../../../setup/globalVariables";
+import {AntiClickerGuard} from "../../rateLimitLogic/antiClicker.guard";
 
 
 @Controller('auth')
+//@UseGuards(ThrottlerGuard)
 export class AuthController {
   constructor(private readonly authService: AuthService,
               private readonly commandBus: CommandBus,) {}
 
+  //@Throttle({ default: { limit: 5, ttl: 10000 } })
   @Post('login')
+  @UseGuards(AntiClickerGuard)
   @HttpCode(200)
   async login(
       @Req() req: Request,
@@ -32,11 +37,10 @@ export class AuthController {
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true, // true на проде (https)
-      sameSite: 'strict',
-      path: '/',
-      maxAge: 1000 * 60 * 60 * 24 * 7 // 7 дней
+      sameSite: 'lax',
+      maxAge: REFRESH_TOKEN_TTL_SEC * 1000 // 7 дней = 1000 * 60 * 60 * 24 * 7
     });
-
+    console.log('SET COOKIE', refreshToken);
     return { accessToken };
   }
 
@@ -44,14 +48,15 @@ export class AuthController {
   @HttpCode(200)
   async refresh(@Req() req: Request,
                 @Res({ passthrough: true }) res: Response) {
-    const result = await this.commandBus.execute(new RefreshAccessCommand(req.cookies.refreshToken));
+    const refreshToken = req.cookies.refreshToken
+    console.log('refreshToken', refreshToken)
+    const result = await this.commandBus.execute(new RefreshAccessCommand(refreshToken));
 
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: true, // true на проде (https)
-      sameSite: 'strict',
-      path: '/',
-      maxAge: 1000 * 60 * 60 * 24 * 7 // 7 дней
+      sameSite: 'lax',
+      maxAge:  REFRESH_TOKEN_TTL_SEC * 1000 // 7 дней = 1000 * 60 * 60 * 24 * 7
     });
     return {accessToken: result.accessToken}
   }
@@ -63,8 +68,12 @@ export class AuthController {
     await this.commandBus.execute(new LogoutCommand(req.cookies.refreshToken));
 
     //очищаем куки и возвращаем ответочку
-    res.clearCookie("refreshToken");
-    res.sendStatus(204)
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: true,
+    });
+    return
   }
 
   @Post('password-recovery')
@@ -79,19 +88,25 @@ export class AuthController {
     return this.authService.setNewPassword(newPasswordInputDto);
   }
 
+  //@Throttle({ default: { limit: 5, ttl: 10000 } })
   @Post('registration')
+  @UseGuards(AntiClickerGuard)
   @HttpCode(204)
   registration(@Body() createAuthDto: CreateAuthDto) {
     return this.authService.registration(createAuthDto);
   }
 
+  //@Throttle({ default: { limit: 5, ttl: 10000 } })
   @Post('registration-confirmation')
+  @UseGuards(AntiClickerGuard)
   @HttpCode(204)
   registrationConfirmation(@Body() codeInputDto: CodeInputDto) {
     return this.authService.registrationConfirmation(codeInputDto);
   }
 
+  //@Throttle({ default: { limit: 5, ttl: 10000 } })
   @Post('registration-email-resending')
+  @UseGuards(AntiClickerGuard)
   @HttpCode(204)
   registrationEmailResending(@Body() emailInputDto: EmailInputDto) {
     return this.authService.registrationEmailResending(emailInputDto);

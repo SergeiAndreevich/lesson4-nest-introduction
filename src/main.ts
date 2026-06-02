@@ -1,14 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import {appSetup} from "../setup/app.setup";
 import {BadRequestException, ValidationPipe} from "@nestjs/common";
 import {ValidationError} from "class-validator";
 import {AllExceptionsFilter} from "../setup/exception-filter/exceptionFilter.filter";
 import cookieParser from "cookie-parser";
+import {NestExpressApplication} from "@nestjs/platform-express";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.use(cookieParser())
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.use(cookieParser());
+  app.set('trust proxy', true); // Trust requests from the loopback address
   app.useGlobalPipes(new ValidationPipe({
     //игнорирует все поля, у которых нет декораторов
     whitelist: true,

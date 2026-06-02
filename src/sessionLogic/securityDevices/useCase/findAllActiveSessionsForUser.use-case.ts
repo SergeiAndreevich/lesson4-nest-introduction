@@ -1,22 +1,21 @@
-import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
+import { IQueryHandler, QueryHandler} from "@nestjs/cqrs";
 import {SecurityDevicesRepository} from "../securityDevices.repository";
 import {SecurityDevicesQueryRepository} from "../securityDevicesQuery.repository";
 
 
-export class FindAllActiveSessionsForUserCommand{
+export class FindAllActiveSessionsForUserQuery{
     constructor(
         public userId: string
     ){}
 }
 
-@CommandHandler(FindAllActiveSessionsForUserCommand)
-export class FindAllActiveSessionsForUserUseCase implements ICommandHandler<FindAllActiveSessionsForUserCommand>{
+@QueryHandler(FindAllActiveSessionsForUserQuery)
+export class FindAllActiveSessionsForUserUseCase implements IQueryHandler<FindAllActiveSessionsForUserQuery>{
     constructor(
-        private readonly sessionsRepo: SecurityDevicesRepository,
         private readonly sessionsQueryRepo: SecurityDevicesQueryRepository
     ) {}
-    async execute(command: FindAllActiveSessionsForUserCommand){
-        const sessionsList = await this.sessionsQueryRepo.findAllSessions(command.userId);
+    async execute(query: FindAllActiveSessionsForUserQuery){
+        const sessionsList = await this.sessionsQueryRepo.findAllSessions(query.userId);
         return sessionsList
     }
 }

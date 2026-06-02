@@ -21,18 +21,15 @@ export class Session {
     @Prop({required: true})
     expiresAt: Date;
 
-    @Prop({required: true})
-    revoked: boolean;
 
-    static createSession(userId: string, deviceId: string,ip:string, deviceName:string, expiresAt: Date ): Session {
+    static createSession(userId: string, deviceId: string,ip:string, deviceName:string, lastActivity: Date, expiresAt: Date ): Session {
         return {
             userId: userId,
             deviceId: deviceId,
             ip: ip,
             deviceName: deviceName,
-            lastActivity: new Date(),
+            lastActivity: lastActivity,
             expiresAt: expiresAt,
-            revoked: false
         } as Session
     }
 }

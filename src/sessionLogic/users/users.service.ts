@@ -9,8 +9,6 @@ import {CreateAuthDto} from "../auth/dto/create-auth.dto";
 import {CodeInputDto} from "../auth/dto/code-input.dto";
 import {EmailInputDto} from "../auth/dto/email-input-dto";
 import {v4 as uuidv4} from "uuid";
-import {JwtService} from "@nestjs/jwt";
-import {EmailSenderHelper} from "../../helpers/emailSender.helper";
 import {EmailService} from "../../helpers/emailHelper/mailNotification.service";
 import {User} from "./schema/user.schema";
 
@@ -34,7 +32,7 @@ export class UsersService {
             throw new BadRequestException({message: 'User already exists', field: 'email'});
         }
         const userData = User.createNewUser(dto);
-        console.log('userData:', userData);
+        //console.log('userData:', userData);
         const createdUser = await this.usersRepo.createUser(userData);
         return mapUserToView(createdUser)
     }

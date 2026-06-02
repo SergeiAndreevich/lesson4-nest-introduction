@@ -12,9 +12,12 @@ export class SecurityDevicesQueryRepository{
     ) {}
 
     async findAllSessions(userId: string): Promise<TypeSessionToFront[]>{
-        const sessions = await this.sessionModel.find({userId: userId});
+        const now = new Date();
+        const sessions = await this.sessionModel.find({
+            userId: userId,
+            expiresAt: { $gt: now}
+        });
+        console.log('FIND ALL SESSIONS BY USER ID EXPIRES>NOW', sessions)
         return sessions.map(session => mapSessionToFront(session));
     }
-
-
 }

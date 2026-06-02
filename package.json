@@ -29,6 +29,7 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/mongoose": "^11.0.4",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/throttler": "^6.5.0",
     "@types/cookie-parser": "^1.4.10",
     "@types/mongoose": "^5.11.97",
     "@types/uuid": "^11.0.0",
