@@ -17,4 +17,5 @@ export type JwtPayload = {
     deviceId: string;
     iat: number;
     exp: number;
+    sessionVersion: number;
 }

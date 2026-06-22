@@ -21,8 +21,11 @@ export class Session {
     @Prop({required: true})
     expiresAt: Date;
 
+    @Prop({required: true})
+    version: number;
 
-    static createSession(userId: string, deviceId: string,ip:string, deviceName:string, lastActivity: Date, expiresAt: Date ): Session {
+
+    static createSession(userId: string, deviceId: string,ip:string, deviceName:string, lastActivity: Date, expiresAt: Date, version: number ): Session {
         return {
             userId: userId,
             deviceId: deviceId,
@@ -30,6 +33,7 @@ export class Session {
             deviceName: deviceName,
             lastActivity: lastActivity,
             expiresAt: expiresAt,
+            version: version,
         } as Session
     }
 }

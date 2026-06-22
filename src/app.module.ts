@@ -20,11 +20,11 @@ import {Comment,CommentSchema} from "./blogsLogic/comments/schema/comment.schema
 import {User, UserSchema} from "./sessionLogic/users/schema/user.schema";
 import { ReactionsModule } from './reactionsLogic/reactions.module';
 import {Reaction, ReactionSchema} from "./reactionsLogic/schema/reaction.schema";
-import {JwtGlobalModule} from "../setup/guard/jwt.module";
+//import {JwtGlobalModule} from "../setup/guard/jwt.module";
 import {GuardsModule} from "../setup/guard/guards.module";
 import {ThrottlerGuard, ThrottlerModule} from "@nestjs/throttler";
 import {SecurityDevicesModule} from "./sessionLogic/securityDevices/securityDevices.module";
-import {AntiClickerModule} from "./rateLimitLogic/rateLimit.module";
+//import {AntiClickerModule} from "./rateLimitLogic/rateLimit.module";
 
 @Module({
   imports: [configModule, MongooseModule.forRoot('mongodb://localhost:27018/lesson4'),
@@ -37,7 +37,8 @@ import {AntiClickerModule} from "./rateLimitLogic/rateLimit.module";
       //         },
       //     ]
       // }),
-      JwtGlobalModule, SecurityDevicesModule
+      //JwtGlobalModule,
+      SecurityDevicesModule
   ],
   controllers: [AppController],
   providers: [AppService, AppRepository,

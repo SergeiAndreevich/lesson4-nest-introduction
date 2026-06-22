@@ -19,15 +19,16 @@ export class CloseSessionForCurrentUserUseCase implements ICommandHandler<CloseS
     async execute(command: CloseSessionForCurrentUserCommand){
         const session = await this.sessionsRepo.findSessionByDeviceId(command.deviceId);
         if(!session){
-            throw new NotFoundException({field: 'deviceId', message: 'Device not found'});
+            throw new NotFoundException({field: 'deviceId wrong', message: 'Device not found'});
         }
+
         if (session.userId !== command.userId) {
             throw new ForbiddenException({field: 'userId', message: 'Wrong user or session'});
         }
-        const result = await this.sessionsRepo.closeSession(command.deviceId)
-        if(!result){
-            throw new ForbiddenException({field: 'deviceId', message: 'Invalid deviceId or userId'});
-        }
+        await this.sessionsRepo.closeSession(command.userId, command.deviceId)
+        // if(!result){
+        //     throw new ForbiddenException({field: 'deviceId', message: 'Invalid deviceId or userId'});
+        // }
         return
     }
 }

@@ -1,6 +1,8 @@
 import {CanActivate, ExecutionContext, Injectable, UnauthorizedException} from "@nestjs/common";
 import {Observable} from "rxjs";
 import {JwtService} from "@nestjs/jwt";
+import {REFRESH_SECRET} from "../globalVariables";
+import {JwtPayload} from "../../src/types/session.types";
 
 @Injectable()
 export class RefreshTokenCookieGuard implements CanActivate {
@@ -8,20 +10,20 @@ export class RefreshTokenCookieGuard implements CanActivate {
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         const request = context.switchToHttp().getRequest();
         const refreshToken = request.cookies.refreshToken;
-        console.log('COOKIE', request.cookies);
+        //console.log('COOKIE', request.cookies);
         if(!refreshToken) {
             throw new UnauthorizedException("No Token");
         }
 
         try {
-            const payload = this.jwtService.verify(refreshToken);
+            const payload = this.jwtService.verify(refreshToken, {secret: REFRESH_SECRET}) as JwtPayload;
             if (!payload || typeof payload !== 'object' || !('userId' in payload) || !('userLogin' in payload) || !('deviceId' in payload)) {
-                throw new UnauthorizedException();
+                throw new UnauthorizedException({field:'refreshTokenFromCookie',message: 'Invalid refresh token'});
             }
-            request.user = { userId: payload.userId, userLogin: payload.userLogin, deviceId: payload.deviceId };
+            request.user = { userId: payload.userId, userLogin: payload.userLogin, deviceId: payload.deviceId, sessionVersion:  payload.sessionVersion };
             return true
         } catch (e) {
-            console.error(e);
+            //console.error(e);
             throw new UnauthorizedException()
         }
     }

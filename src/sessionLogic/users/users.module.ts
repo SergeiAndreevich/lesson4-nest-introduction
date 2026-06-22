@@ -9,7 +9,9 @@ import {NotificationsModule} from "../../helpers/emailHelper/notification.module
 import {User, UserSchema} from "./schema/user.schema";
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]), JwtGlobalModule, NotificationsModule],
+  imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    JwtGlobalModule,
+    NotificationsModule],
   providers: [UsersService, UsersRepository, UsersQueryRepository ],
   controllers: [UsersController],
   exports:[UsersService, UsersRepository, UsersQueryRepository],

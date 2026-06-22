@@ -12,51 +12,72 @@ import {CommandBus} from "@nestjs/cqrs";
 import {RefreshAccessCommand} from "./useCase/refreshAccess.use-case";
 import {LogoutCommand} from "./useCase/logout.use-case";
 import {REFRESH_TOKEN_TTL_SEC} from "../../../setup/globalVariables";
+//import {AntiClickerGuard} from "../../rateLimitLogic/antiClicker.guard";
+import {Throttle, ThrottlerGuard} from "@nestjs/throttler";
+import {RateLimit, RateLimiterGuard} from "nestjs-rate-limiter";
 import {AntiClickerGuard} from "../../rateLimitLogic/antiClicker.guard";
+
+const AUTH_RATE_LIMIT = {
+  points: 5,
+  duration: 10,
+};
 
 
 @Controller('auth')
-//@UseGuards(ThrottlerGuard)
 export class AuthController {
   constructor(private readonly authService: AuthService,
-              private readonly commandBus: CommandBus,) {}
+              private readonly commandBus: CommandBus,) {
+  }
 
-  //@Throttle({ default: { limit: 5, ttl: 10000 } })
   @Post('login')
   @UseGuards(AntiClickerGuard)
+  //@UseGuards(RateLimiterGuard)  // ← Добавляем гард
+  //@RateLimit(AUTH_RATE_LIMIT)
   @HttpCode(200)
   async login(
       @Req() req: Request,
       @Body() dto: LoginInputDto,
-      @Res({ passthrough: true }) res: Response
+      @Res({passthrough: true}) res: Response
   ) {
+    //входящий ip
     const ip = req.ip;
+    //входящий браузер
     const userAgent = req.headers['user-agent'] || 'unknown device';
-    const { accessToken, refreshToken } = await this.authService.loginUser(dto, ip, userAgent);
+    //на входе получил loginOrEmail, password, на выходе должен получить AT и RT
+    const {accessToken, refreshToken} = await this.authService.loginUser(dto, ip, userAgent);
 
+
+    //отдаем пользователю в куки рефреш токен и в респонсе аксесс токен
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true, // true на проде (https)
       sameSite: 'lax',
-      maxAge: REFRESH_TOKEN_TTL_SEC * 1000 // 7 дней = 1000 * 60 * 60 * 24 * 7
+      maxAge: REFRESH_TOKEN_TTL_SEC * 1000
     });
-    console.log('SET COOKIE', refreshToken);
     return { accessToken };
   }
+  //Вроде все четко работает, все логично: если в базе нашелся чел с логином/почтой и пароли совпали, то на 10 секунд
+  //выдаем аксесс токен, где есть уникальный юзер айди, и выдаем рефреш токен где уникальный айди юзера, уникальный код устройства и номер сессии
+  //кроме того создается сессия, в которой сидит уникальный юзер Айди, уникальный номер устройства и номер версии
+  //а еще в сессии сидит свойство протухания revoked: false
 
   @Post('refresh-token')
   @HttpCode(200)
   async refresh(@Req() req: Request,
                 @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies.refreshToken
-    console.log('refreshToken', refreshToken)
+    //console.log('refreshToken', refreshToken)
+    //ищем сессию и если нашли, то удаляем
     const result = await this.commandBus.execute(new RefreshAccessCommand(refreshToken));
+    //логика такова, что мне приходит рефреш, я расчехляю из него уникальный юзер Айди, уникальный девайс Айди, версию сессии
+    // теперь у меня в БД хранится список из сессий. При рефреше происходит "протухание" старой сессии и создани новой
+
 
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: true, // true на проде (https)
       sameSite: 'lax',
-      maxAge:  REFRESH_TOKEN_TTL_SEC * 1000 // 7 дней = 1000 * 60 * 60 * 24 * 7
+      maxAge:  REFRESH_TOKEN_TTL_SEC * 1000
     });
     return {accessToken: result.accessToken}
   }
@@ -64,10 +85,9 @@ export class AuthController {
   @Post('logout')
   @HttpCode(204)
   async logout(@Req() req: Request,
-         @Res({ passthrough: true }) res: Response){
+               @Res({ passthrough: true }) res: Response){
     await this.commandBus.execute(new LogoutCommand(req.cookies.refreshToken));
 
-    //очищаем куки и возвращаем ответочку
     res.clearCookie("refreshToken", {
       httpOnly: true,
       sameSite: 'lax',
@@ -88,25 +108,28 @@ export class AuthController {
     return this.authService.setNewPassword(newPasswordInputDto);
   }
 
-  //@Throttle({ default: { limit: 5, ttl: 10000 } })
   @Post('registration')
   @UseGuards(AntiClickerGuard)
+  //@UseGuards(RateLimiterGuard)  // ← Добавляем гард
+  //@RateLimit(AUTH_RATE_LIMIT)
   @HttpCode(204)
   registration(@Body() createAuthDto: CreateAuthDto) {
     return this.authService.registration(createAuthDto);
   }
 
-  //@Throttle({ default: { limit: 5, ttl: 10000 } })
   @Post('registration-confirmation')
   @UseGuards(AntiClickerGuard)
+  //@UseGuards(RateLimiterGuard)  // ← Добавляем гард
+  //@RateLimit(AUTH_RATE_LIMIT)
   @HttpCode(204)
   registrationConfirmation(@Body() codeInputDto: CodeInputDto) {
     return this.authService.registrationConfirmation(codeInputDto);
   }
 
-  //@Throttle({ default: { limit: 5, ttl: 10000 } })
   @Post('registration-email-resending')
   @UseGuards(AntiClickerGuard)
+  //@UseGuards(RateLimiterGuard)  // ← Добавляем гард
+  //@RateLimit(AUTH_RATE_LIMIT)
   @HttpCode(204)
   registrationEmailResending(@Body() emailInputDto: EmailInputDto) {
     return this.authService.registrationEmailResending(emailInputDto);

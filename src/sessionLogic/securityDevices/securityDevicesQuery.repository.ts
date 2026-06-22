@@ -15,9 +15,9 @@ export class SecurityDevicesQueryRepository{
         const now = new Date();
         const sessions = await this.sessionModel.find({
             userId: userId,
-            expiresAt: { $gt: now}
+            //expiresAt: { $gt: now}
         });
-        console.log('FIND ALL SESSIONS BY USER ID EXPIRES>NOW', sessions)
+        //console.log('FIND ALL SESSIONS BY USER ID and Revoked false', sessions)
         return sessions.map(session => mapSessionToFront(session));
     }
 }

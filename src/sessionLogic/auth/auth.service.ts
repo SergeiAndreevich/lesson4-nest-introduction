@@ -12,7 +12,12 @@ import {JwtService} from "@nestjs/jwt";
 import {Session} from "../securityDevices/schema/session.schema";
 import {SecurityDevicesRepository} from "../securityDevices/securityDevices.repository";
 import {addDays, addSeconds} from "date-fns";
-import { REFRESH_TOKEN_TTL_SEC} from "../../../setup/globalVariables";
+import {
+    ACCESS_SECRET,
+    ACCESS_TOKEN_TTL_SEC,
+    REFRESH_SECRET,
+    REFRESH_TOKEN_TTL_SEC
+} from "../../../setup/globalVariables";
 import {JwtPayload} from "../../types/session.types";
 
 
@@ -27,29 +32,30 @@ export class AuthService {
       if(!ip){
           throw new ForbiddenException({field: 'ip', message: 'invalid ip'})
       }
-      //ищем юзера
+      //ищем юзера по логину или почте, проверяя ИЛИ в обоих полях
       const user = await this.usersService.findUserByLoginOrEmail(loginInputDto.loginOrEmail);
       if(!user){
         throw new UnauthorizedException({message: 'User not found', field: 'loginOrEmail'});
       }
-      //проверяем пароль
+      //проверяем пароль, совпадает ли (здесь без хэширования делал)
       if(user.accountData.password !== loginInputDto.password) {
         throw new UnauthorizedException({message: 'Invalid password', field: 'password'});
       }
-
+      //создаю уникальный код устройства
       const deviceId = uuidv4();
+      //создаю версию сессии
+      const sessionVersion = 1;
       //создаем аксес рефреш токены, создаем сессию и возвращаем токен
-      const accessToken = this.jwtService.sign({userId: user._id.toString(), userLogin: user.accountData.login});
+      const accessToken = this.jwtService.sign({userId: user._id.toString(), userLogin: user.accountData.login},{secret:ACCESS_SECRET,expiresIn: `${ACCESS_TOKEN_TTL_SEC}s`});
       const refreshToken = this.jwtService.sign(
-          {userId: user._id.toString(), userLogin: user.accountData.login, deviceId: deviceId},{expiresIn: `${REFRESH_TOKEN_TTL_SEC}s`});
-      const decodedRefresh = this.jwtService.decode(refreshToken) as JwtPayload;
-      //создаём сессию
+          {userId: user._id.toString(), userLogin: user.accountData.login, deviceId: deviceId, sessionVersion: sessionVersion},{secret: REFRESH_SECRET,expiresIn: `${REFRESH_TOKEN_TTL_SEC}s`});
+      //создаём сессию, в которой автоматически создается свойство "протух: false"
       const session = Session.createSession(
-          user._id.toString(), deviceId,ip,userAgent, new Date(decodedRefresh.iat * 1000),
-          addSeconds(new Date(), REFRESH_TOKEN_TTL_SEC));
-
+          user._id.toString(), deviceId,ip,userAgent, new Date(),
+          addSeconds(new Date(), REFRESH_TOKEN_TTL_SEC), sessionVersion);
+      //засовываем сессию в БД
       await this.sessionsRepo.createSession(session);
-      console.log('LOGIN TOKEN:', refreshToken);
+      //отдаём пользователю готовые AT и RT
       return  {accessToken: accessToken, refreshToken: refreshToken}
   }
 
@@ -71,7 +77,7 @@ export class AuthService {
     if(!confirmationCode){
       throw new BadRequestException({message: 'Smth wrong with received user and its emailConfirmationCode', field: 'code'});
     }
-    await this.emailSenderHelper.sendConfirmationEmail(createdUser.email, confirmationCode);
+    //await this.emailSenderHelper.sendConfirmationEmail(createdUser.email, confirmationCode);
     return
   }
 

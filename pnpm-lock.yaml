@@ -65,6 +65,9 @@ importers:
       mongoose:
         specifier: ^9.1.5
         version: 9.1.5
+      nestjs-rate-limiter:
+        specifier: ^3.1.0
+        version: 3.1.0
       nodemailer:
         specifier: ^8.0.1
         version: 8.0.1
@@ -3057,6 +3060,9 @@ packages:
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
+  nestjs-rate-limiter@3.1.0:
+    resolution: {integrity: sha512-Qwr6daFvNppy038rs0iCQzX/uC3/czCC/2jATcETLIvyFmcBgySOMg7HGEquPKUZDX9lbc06Tn9L6U3QZS13HQ==}
+
   nice-try@1.0.5:
     resolution: {integrity: sha512-1nh45deeb5olNY7eX82BkPO7SSxR5SSYJiPTrTdFUVYwAl8CKMA5N9PjTYkHiRjisVcxcQ1HXdLhx2qxxJzLNQ==}
 
@@ -3358,6 +3364,9 @@ packages:
   range-parser@1.2.1:
     resolution: {integrity: sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==}
     engines: {node: '>= 0.6'}
+
+  rate-limiter-flexible@2.1.10:
+    resolution: {integrity: sha512-Pa+8TPD4xYaiCUB5K4a/+j2FHDUe4HP1g49JmKEmkOkhqPaeVqxJsZuuVaza/svSCOT+V73vtsyBiSFK/e1yXw==}
 
   raw-body@3.0.2:
     resolution: {integrity: sha512-K5zQjDllxWkf7Z5xJdV0/B0WTNqx6vxG70zJE4N0kBs4LovmEYWJzQGxC9bS9RAKu3bgM40lrd5zoLJ12MQ5BA==}
@@ -7656,6 +7665,10 @@ snapshots:
 
   neo-async@2.6.2: {}
 
+  nestjs-rate-limiter@3.1.0:
+    dependencies:
+      rate-limiter-flexible: 2.1.10
+
   nice-try@1.0.5:
     optional: true
 
@@ -8003,6 +8016,8 @@ snapshots:
       safe-buffer: 5.2.1
 
   range-parser@1.2.1: {}
+
+  rate-limiter-flexible@2.1.10: {}
 
   raw-body@3.0.2:
     dependencies:

@@ -1,6 +1,7 @@
 import {CanActivate, ExecutionContext, Injectable, UnauthorizedException} from "@nestjs/common";
 import {Observable} from "rxjs";
 import {JwtService} from "@nestjs/jwt";
+import {ACCESS_SECRET} from "../globalVariables";
 
 @Injectable()
 export class OptionalBearerGuard implements CanActivate {
@@ -27,7 +28,7 @@ export class OptionalBearerGuard implements CanActivate {
 
 
         try {
-            const payload = this.jwtService.verify(token);
+            const payload = this.jwtService.verify(token, {secret: ACCESS_SECRET});
             if (!payload || typeof payload !== 'object' || !('userId' in payload)) {
                 return true;
             }

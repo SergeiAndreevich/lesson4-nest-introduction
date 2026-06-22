@@ -3,7 +3,12 @@ import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
 import {JwtService} from "@nestjs/jwt";
 import {SecurityDevicesRepository} from "../../securityDevices/securityDevices.repository";
 import { addSeconds} from "date-fns";
-import {REFRESH_TOKEN_TTL_SEC} from "../../../../setup/globalVariables";
+import {
+    ACCESS_SECRET,
+    ACCESS_TOKEN_TTL_SEC,
+    REFRESH_SECRET,
+    REFRESH_TOKEN_TTL_SEC
+} from "../../../../setup/globalVariables";
 import {Session} from "../../securityDevices/schema/session.schema";
 import {JwtPayload} from "../../../types/session.types";
 
@@ -28,50 +33,66 @@ export class RefreshAccessUseCase implements ICommandHandler<RefreshAccessComman
                 message: 'No token'
             });
         }
-        let decodedRefresh: any;
+        //пришел рефреш Токен: прошло 10 секунд, аксесс протух, чтобы получить новый аксесс нужно активировать эндпоинт
+        //рефреш-аксесс и по рефрешТокену получить новую пару AT и RT
+        let decodedRefresh: JwtPayload;
         try {
-            decodedRefresh = this.jwtService.verify(command.refreshToken);
+            decodedRefresh = this.jwtService.verify(command.refreshToken, {secret: REFRESH_SECRET});
         } catch (e) {
             throw new UnauthorizedException({
                 field: 'refreshToken',
-                message: 'Invalid or expired token'
+                message: 'Invalid or expired token come in refreshAccess'
             });
         }
         //достаем содержимое рефреш-токена
         const userId = decodedRefresh.userId;
         const userLogin = decodedRefresh.userLogin;
         const deviceId = decodedRefresh.deviceId;
-        const session = await this.sessionsRepo.findFrontSessionByDeviceId(deviceId);
+        let sessionVersion = decodedRefresh.sessionVersion;
+        const session = await this.sessionsRepo.findSessionForRefresh(userId, deviceId);
         if(!session){
-            throw new UnauthorizedException({field: 'deviceId', message: 'No session found'})
+            throw new UnauthorizedException({field: 'userId or deviceId is failed', message: 'No session found'})
         }
-
-        //Ключевая проверка: является ли этот токен валидным, актуальным, самым последним изданным
-        if (Math.floor(new Date(session.lastActivity).getTime() / 1000) !== decodedRefresh.iat) {
-            throw new UnauthorizedException({field: 'token', message: 'Wrong refresh token'});
-
+        //проверяем версию сессии
+        if(session.version !== sessionVersion) {
+            throw new UnauthorizedException({field: 'session version', message: 'Wrong version'})
         }
+        // //проверяем, не истек ли срок сессии
+        // const now = new Date();
+        // if(session.expiresAt.getTime() < now.getTime()){
+        //     throw new UnauthorizedException({field: 'session expiration time', message: 'Session expired'})
+        // }
 
-        //проверяем, не истек ли срок сессии
-        const now = new Date();
-        if(session.expiresAt.getTime() < now.getTime()){
-            throw new UnauthorizedException({field: 'session', message: 'Session expired'})
-        }
+        //дипсик говорит что jwt.verify и проверка номера сессии уже гарантирует консистентность
+
+        //обновляем версию сессии
+        const newSessionVersion = sessionVersion + 1;
+
+        //ищем сессию по userId и deviceId, затем обновляем три поля, а именно последняя активность, время жизни и версию сессии
+
+        //новая логика: ищу по юзер Айди, девайс Айди и версию сессии - затем обновляю ревокед и ласт активити
+        // const updated = await this.sessionsRepo.updateRevokedSession(userId, deviceId, new Date(),sessionVersion);
+        // if (!updated) {
+        //     throw new UnauthorizedException({
+        //         field: 'session',
+        //         message: 'Session update failed - Здесь чтоль проблема?'
+        //     });
+        // }
+        //еще новее логика. Удаляю сессию, затем создаю новую
+        await this.sessionsRepo.closeSession(userId,deviceId);
+        //создаю новую сессию
+        const createdSession = Session.createSession( userId, deviceId,session.ip,session.deviceName, new Date(),
+            addSeconds(new Date(), REFRESH_TOKEN_TTL_SEC), newSessionVersion);
+        //записываю новую сессию в БД
+        await this.sessionsRepo.createSession(createdSession);
 
         //создаем новые аксес рефреш токены
-        const newAccessToken = this.jwtService.sign({userId: userId, userLogin: userLogin});
-        const newRefreshToken = this.jwtService.sign({userId: userId, userLogin: userLogin, deviceId: deviceId}, {expiresIn:  `${REFRESH_TOKEN_TTL_SEC}s`});
-        const newRefreshDecoded = this.jwtService.decode(newRefreshToken) as JwtPayload;
+        const newAccessToken = this.jwtService.sign({userId: userId, userLogin: userLogin}, {secret: ACCESS_SECRET, expiresIn: `${ACCESS_TOKEN_TTL_SEC}s`});
+        const newRefreshToken = this.jwtService.sign({userId: userId, userLogin: userLogin, deviceId: deviceId, sessionVersion: newSessionVersion}, {secret: REFRESH_SECRET, expiresIn:  `${REFRESH_TOKEN_TTL_SEC}s`});
 
-        const updated = await this.sessionsRepo.updateSession(deviceId, new Date(newRefreshDecoded.iat*1000),addSeconds(now, REFRESH_TOKEN_TTL_SEC));
-
-        if (!updated) {
-            throw new UnauthorizedException({
-                field: 'session',
-                message: 'Session update failed'
-            });
-        }
-
+        //и возвращаем пользователю новые AT и RT
         return  {accessToken: newAccessToken, refreshToken: newRefreshToken}
     }
+
+
 }

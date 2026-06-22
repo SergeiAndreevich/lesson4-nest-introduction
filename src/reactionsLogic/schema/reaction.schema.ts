@@ -7,8 +7,9 @@ import {EntitiesForReaction, ReactionType} from "../../types/reaction.types";
 export class Reaction {
     @Prop({ required: true })
     entityId: string;
-
-    @Prop({ required: true, enum: EntitiesForReaction })
+    @Prop({  required: true,
+        type: String,
+        enum: Object.values(EntitiesForReaction) })
     entityType: string;
 
     @Prop({ required: true })
@@ -17,7 +18,8 @@ export class Reaction {
     @Prop({ required: true })
     userLogin:  string;
 
-    @Prop({ required: true, enum: ReactionType })
+    @Prop({     type: String,
+        enum: Object.values(ReactionType)})
     status: ReactionType;
 
     @Prop({ required: true })

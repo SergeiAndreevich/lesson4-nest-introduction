@@ -70,7 +70,7 @@ export class UsersService {
             throw new BadRequestException({message:'User has not been updated' , field: 'email'});
         }
         //вероятно здесь нужно добавить больше логики...
-        await this.emailSenderHelper.sendConfirmationEmail(user.accountData.email, newCode);
+        //await this.emailSenderHelper.sendConfirmationEmail(user.accountData.email, newCode);
         return
     }
     async sendPasswordRecoveryCode(email: string, confirmationCode: string){

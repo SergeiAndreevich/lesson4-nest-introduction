@@ -3,6 +3,7 @@ import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
 import {JwtService} from "@nestjs/jwt";
 import {SecurityDevicesRepository} from "../../securityDevices/securityDevices.repository";
 import {JwtPayload} from "../../../types/session.types";
+import {REFRESH_SECRET} from "../../../../setup/globalVariables";
 
 
 export class LogoutCommand{
@@ -22,30 +23,49 @@ export class LogoutUseCase implements ICommandHandler<LogoutCommand>{
         if(!command.refreshToken) {
             throw new UnauthorizedException({field: 'refreshToken',  message: 'No refresh token'});
         }
-        console.log('LOGOUT TOKEN:', command.refreshToken);
+        //получаем на вход рефрешТокен
         let decodedRefresh: JwtPayload;
         try {
-            decodedRefresh = this.jwtService.verify(command.refreshToken);
-        } catch (e) {
-            throw new UnauthorizedException({field: 'token', message: 'Invalid token' });
-        }        console.log('LOGOUT Decoded', decodedRefresh);
+            decodedRefresh = this.jwtService.verify(command.refreshToken, {secret: REFRESH_SECRET});
+        }
+        catch (e) {
+            throw new UnauthorizedException({field: 'token come in logout', message: 'Invalid token in decoded refresh with verify' });
+        }
+
+        //достаем из рефреша уникальный Айди юзера, уникальный номер устройства и версию сессии
+        const userId =  decodedRefresh.userId;
         const deviceId = decodedRefresh.deviceId;
-        console.log('LOGOUT deviceId:', deviceId);
-        const session = await this.sessionsRepo.findFrontSessionByDeviceId(deviceId);
+        let sessionVersion = decodedRefresh.sessionVersion;
+        //ищем сессию сразу по всем трём уникальным полям
+        //const session = await this.sessionsRepo.findSession(userId,deviceId, sessionVersion);
+
+        //по двум полям ищем. главное найти сессию
+        const session = await this.sessionsRepo.findSessionForLogout(userId,deviceId);
+
         if (!session) {
-            throw new UnauthorizedException({field: 'deviceId', message: 'No session found'});
+            console.log('LOGOUT SESSION FAIL____________', session, sessionVersion)
+            throw new UnauthorizedException({field: 'userId, deviceId is failed', message: 'No session found'});
         }
-        //Ключевая проверка: является ли этот токен валидным, актуальным, самым последним изданным
-        if (Math.floor(new Date(session.lastActivity).getTime() / 1000) !== decodedRefresh.iat) {
-            throw new UnauthorizedException({field: 'token', message: 'Wrong refresh token'});
+
+        if(session.version !== sessionVersion) {
+            console.log('LOGOUT SESSION version FAIL____________',session, sessionVersion)
+            throw new UnauthorizedException({field: 'sessionVersion is failed', message: 'No session found'});
         }
-        console.log('Decoded refresh iat', decodedRefresh.iat);
+        // //проверяем, не истек ли срок сессии
+        // const now = new Date();
+        // if(session.expiresAt.getTime() < now.getTime()){
+        //     throw new UnauthorizedException({field: 'session expiration time', message: 'Session expired'})
+        // }
         // вносим изменения в БД, т.е. протухаем существующий токен
-        const result = await this.sessionsRepo.closeSession(deviceId);
-        //проверяем статус того че пришло из БД
-        if(!result){
-            throw new UnauthorizedException({field: 'session', message: 'Not deleted'});
-        }
+        await this.sessionsRepo.closeSession(userId, deviceId);
+
+        // //проверяем статус того че пришло из БД
+        // if(!result){
+        //     throw new UnauthorizedException({field: 'session', message: 'Not deleted'});
+        // }
+        //возвращаем пустоту
         return
+
+        //есть еще мысль вернуть "протухание" и протухать сессию в логауте, а в остальных местах делать проверку. Нахуя - не знаю, но идея есть идея
     }
 }

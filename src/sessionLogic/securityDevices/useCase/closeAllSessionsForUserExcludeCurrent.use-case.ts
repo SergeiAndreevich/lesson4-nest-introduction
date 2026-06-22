@@ -16,29 +16,30 @@ export class CloseAllSessionsForUserExcludeCurrentUseCase implements ICommandHan
         private readonly sessionsRepo: SecurityDevicesRepository,
     ) {}
     async execute(command: CloseAllSessionsForUserExcludeCurrentCommand){
-        const currentSession = await this.sessionsRepo.findSessionByDeviceId(command.deviceId);
+        const currentSession = await this.sessionsRepo.findSessionByDeviceIdAndUserId(command.deviceId, command.userId);
 
         if (!currentSession) {
             throw new UnauthorizedException({
-                field: 'deviceId',
+                field: 'deviceId or userId is wrong in close sessions',
                 message: 'Session not found'
             });
         }
 
-        if (currentSession.userId !== command.userId) {
-            throw new UnauthorizedException({
-                field: 'userId',
-                message: 'Not your session'
-            });
-        }
+
+        // if (currentSession.userId !== command.userId) {
+        //     throw new UnauthorizedException({
+        //         field: 'userId',
+        //         message: 'Not your session'
+        //     });
+        // }
 
 
-        if (currentSession.expiresAt.getTime() < Date.now()) {
-            throw new UnauthorizedException({
-                field: 'session',
-                message: 'Session expired'
-            });
-        }
+        // if (currentSession.expiresAt.getTime() < Date.now()) {
+        //     throw new UnauthorizedException({
+        //         field: 'session',
+        //         message: 'Session expired'
+        //     });
+        // }
 
 
         await this.sessionsRepo.closeAllSessionsBesidesThisOne(command.userId, command.deviceId);

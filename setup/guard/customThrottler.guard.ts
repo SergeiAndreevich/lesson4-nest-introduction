@@ -22,7 +22,7 @@ export class IpRateLimitGuard implements CanActivate {
         }
 
         // Убираем проверку на test! Всегда используем реальный IP
-        console.log(`[RateLimit] IP: ${ip}`);
+        //console.log(`[RateLimit] IP: ${ip}`);
 
         const now = Date.now();
         let timestamps = this.requests.get(ip) || [];
