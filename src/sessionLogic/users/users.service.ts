@@ -12,6 +12,8 @@ import {v4 as uuidv4} from "uuid";
 import {EmailService} from "../../helpers/emailHelper/mailNotification.service";
 import {User} from "./schema/user.schema";
 import {UsersSQLRepository} from "./users.sql.repository";
+import {UsersQuerySqlRepository} from "./usersQuery.sql.repository";
+import {TypeUser} from "../../types/user.types";
 
 
 @Injectable()
@@ -20,24 +22,26 @@ export class UsersService {
        private readonly usersRepo: UsersRepository,
        private readonly usersQueryRepo: UsersQueryRepository,
        private readonly emailSenderHelper: EmailService,
-       private readonly usersSQLRepo: UsersSQLRepository
+       private readonly usersSQLRepo: UsersSQLRepository,
+       private readonly usersSQLQueryRepo: UsersQuerySqlRepository
     ) {}
 
     async createUser(dto: CreateUserDto | CreateAuthDto) {
-
-        await this.usersSQLRepo.testConnection()
         //специально для тестов так. Раньше был один метод
-        const userByLogin = await this.usersQueryRepo.findUserByLogin(dto.login);
+        //const userByLogin = await this.usersQueryRepo.findUserByLogin(dto.login);
+        const userByLogin = await this.usersSQLQueryRepo.findUserByLogin(dto.login);
         if(userByLogin){
             throw new BadRequestException({message: 'User already exists', field: 'login'});
         }
-        const userByEmail = await this.usersQueryRepo.findUserByEmail(dto.email);
+        //const userByEmail = await this.usersQueryRepo.findUserByEmail(dto.email);
+        const userByEmail = await this.usersSQLQueryRepo.findUserByEmail(dto.email);
         if(userByEmail){
             throw new BadRequestException({message: 'User already exists', field: 'email'});
         }
-        const userData = User.createNewUser(dto);
-        //console.log('userData:', userData);
-        const createdUser = await this.usersRepo.createUser(userData);
+        //const userData = User.createNewUser(dto);
+        const userData:TypeUser = {id: uuidv4(), login: dto.login, email: dto.email, password: dto.password, createdAt: new Date()};
+        //const createdUser = await this.usersRepo.createUser(userData);
+        const createdUser = await this.usersSQLRepo.createUser(userData);
         return mapUserToView(createdUser)
     }
     async registrationConfirmation(codeInputDto: CodeInputDto) {

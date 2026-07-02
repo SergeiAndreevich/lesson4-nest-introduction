@@ -4,3 +4,11 @@ export type TypeUserToView = {
     email: string;
     createdAt: string;
 }
+
+export type TypeUser = {
+    id: string;
+    login: string;
+    email: string;
+    password: string;
+    createdAt: Date;
+}
