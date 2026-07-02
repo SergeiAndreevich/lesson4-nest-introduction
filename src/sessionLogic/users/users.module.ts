@@ -7,13 +7,17 @@ import {UsersQueryRepository} from "./usersQuery.repository";
 import {JwtGlobalModule} from "../../../setup/guard/jwt.module";
 import {NotificationsModule} from "../../helpers/emailHelper/notification.module";
 import {User, UserSchema} from "./schema/user.schema";
+import {DatabaseModule} from "../../../setup/database/database.module";
+import {UsersSQLRepository} from "./users.sql.repository";
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     JwtGlobalModule,
-    NotificationsModule],
-  providers: [UsersService, UsersRepository, UsersQueryRepository ],
+    NotificationsModule,
+    DatabaseModule
+  ],
+  providers: [UsersService, UsersRepository, UsersQueryRepository, UsersSQLRepository ],
   controllers: [UsersController],
-  exports:[UsersService, UsersRepository, UsersQueryRepository],
+  exports:[UsersService, UsersRepository, UsersQueryRepository,UsersSQLRepository],
 })
 export class UsersModule {}

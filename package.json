@@ -32,6 +32,7 @@
     "@nestjs/throttler": "^6.5.0",
     "@types/cookie-parser": "^1.4.10",
     "@types/mongoose": "^5.11.97",
+    "@types/pg": "^8.20.0",
     "@types/uuid": "^11.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
@@ -41,6 +42,7 @@
     "mongoose": "^9.1.5",
     "nestjs-rate-limiter": "^3.1.0",
     "nodemailer": "^8.0.1",
+    "pg": "^8.22.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "uuid": "^13.0.0"

@@ -24,10 +24,11 @@ import {Reaction, ReactionSchema} from "./reactionsLogic/schema/reaction.schema"
 import {GuardsModule} from "../setup/guard/guards.module";
 import {ThrottlerGuard, ThrottlerModule} from "@nestjs/throttler";
 import {SecurityDevicesModule} from "./sessionLogic/securityDevices/securityDevices.module";
+import {DatabaseModule} from "../setup/database/database.module";
 //import {AntiClickerModule} from "./rateLimitLogic/rateLimit.module";
 
 @Module({
-  imports: [configModule, MongooseModule.forRoot('mongodb://localhost:27018/lesson4'),
+  imports: [configModule, MongooseModule.forRoot('mongodb://localhost:27018/lesson4'), DatabaseModule,
       BlogsModule, PostsModule,CommentsModule,UsersModule, AuthModule,ReactionsModule, CqrsModule, GuardsModule,
       // ThrottlerModule.forRoot({
       //     throttlers: [

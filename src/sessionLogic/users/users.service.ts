@@ -11,6 +11,7 @@ import {EmailInputDto} from "../auth/dto/email-input-dto";
 import {v4 as uuidv4} from "uuid";
 import {EmailService} from "../../helpers/emailHelper/mailNotification.service";
 import {User} from "./schema/user.schema";
+import {UsersSQLRepository} from "./users.sql.repository";
 
 
 @Injectable()
@@ -19,9 +20,12 @@ export class UsersService {
        private readonly usersRepo: UsersRepository,
        private readonly usersQueryRepo: UsersQueryRepository,
        private readonly emailSenderHelper: EmailService,
+       private readonly usersSQLRepo: UsersSQLRepository
     ) {}
 
     async createUser(dto: CreateUserDto | CreateAuthDto) {
+
+        await this.usersSQLRepo.testConnection()
         //специально для тестов так. Раньше был один метод
         const userByLogin = await this.usersQueryRepo.findUserByLogin(dto.login);
         if(userByLogin){
