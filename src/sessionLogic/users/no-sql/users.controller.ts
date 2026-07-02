@@ -1,8 +1,8 @@
 import {Body, Controller, Inject, Post, Get, Query, Delete, Param, HttpCode, UseGuards} from '@nestjs/common';
-import {CreateUserDto} from "./dto/create-user.dto";
+import {CreateUserDto} from "../dto/create-user.dto";
 import {UsersService} from "./users.service";
-import {PaginationQueryDto} from "../../dto/pagination-query.dto";
-import {BasicGuard} from "../../../setup/guard/basic.guard";
+import {PaginationQueryDto} from "../../../dto/pagination-query.dto";
+import {BasicGuard} from "../../../../setup/guard/basic.guard";
 
 @Controller('users')
 export class UsersController {

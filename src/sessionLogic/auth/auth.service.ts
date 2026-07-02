@@ -4,7 +4,7 @@ import {LoginInputDto} from "./dto/login-input.dto";
 import {EmailInputDto} from "./dto/email-input-dto";
 import {NewPasswordInputDto} from "./dto/new-password-input.dto";
 import {CodeInputDto} from "./dto/code-input.dto";
-import {UsersService} from "../users/users.service";
+import {UsersService} from "../users/no-sql/users.service";
 import { v4 as uuidv4 } from "uuid";
 import {mapUserToView} from "../../mappers/user.mapper";
 import {EmailService} from "../../helpers/emailHelper/mailNotification.service";

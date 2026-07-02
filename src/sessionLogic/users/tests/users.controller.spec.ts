@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { getConnectionToken } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
-import {AppModule} from "../../app.module";
+import {AppModule} from "../../../app.module";
 import request from "supertest";
 
 describe('Users E2E', () => {

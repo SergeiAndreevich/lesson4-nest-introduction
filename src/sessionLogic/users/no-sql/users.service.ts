@@ -1,19 +1,19 @@
 import {BadRequestException, Injectable, NotFoundException, UnauthorizedException} from '@nestjs/common';
 import {UsersRepository} from "./users.repository";
 import {UsersQueryRepository} from "./usersQuery.repository";
-import {CreateUserDto} from "./dto/create-user.dto";
-import {mapUserToView} from "../../mappers/user.mapper";
-import {PaginationQueryDto} from "../../dto/pagination-query.dto";
-import {paginationHelper} from "../../helpers/paginationQuery.helper";
-import {CreateAuthDto} from "../auth/dto/create-auth.dto";
-import {CodeInputDto} from "../auth/dto/code-input.dto";
-import {EmailInputDto} from "../auth/dto/email-input-dto";
+import {CreateUserDto} from "../dto/create-user.dto";
+import {mapUserToView} from "../../../mappers/user.mapper";
+import {PaginationQueryDto} from "../../../dto/pagination-query.dto";
+import {paginationHelper} from "../../../helpers/paginationQuery.helper";
+import {CreateAuthDto} from "../../auth/dto/create-auth.dto";
+import {CodeInputDto} from "../../auth/dto/code-input.dto";
+import {EmailInputDto} from "../../auth/dto/email-input-dto";
 import {v4 as uuidv4} from "uuid";
-import {EmailService} from "../../helpers/emailHelper/mailNotification.service";
-import {User} from "./schema/user.schema";
-import {UsersSQLRepository} from "./users.sql.repository";
-import {UsersQuerySqlRepository} from "./usersQuery.sql.repository";
-import {TypeUser} from "../../types/user.types";
+import {EmailService} from "../../../helpers/emailHelper/mailNotification.service";
+import {User} from "../schema/user.schema";
+import {UsersSQLRepository} from "../users.sql.repository";
+import {UsersQuerySqlRepository} from "../usersQuery.sql.repository";
+import {TypeUser} from "../../../types/user.types";
 
 
 @Injectable()
@@ -28,20 +28,20 @@ export class UsersService {
 
     async createUser(dto: CreateUserDto | CreateAuthDto) {
         //специально для тестов так. Раньше был один метод
-        //const userByLogin = await this.usersQueryRepo.findUserByLogin(dto.login);
-        const userByLogin = await this.usersSQLQueryRepo.findUserByLogin(dto.login);
+        const userByLogin = await this.usersQueryRepo.findUserByLogin(dto.login);
+        //const userByLogin = await this.usersSQLQueryRepo.findUserByLogin(dto.login);
         if(userByLogin){
             throw new BadRequestException({message: 'User already exists', field: 'login'});
         }
-        //const userByEmail = await this.usersQueryRepo.findUserByEmail(dto.email);
-        const userByEmail = await this.usersSQLQueryRepo.findUserByEmail(dto.email);
+        const userByEmail = await this.usersQueryRepo.findUserByEmail(dto.email);
+        //const userByEmail = await this.usersSQLQueryRepo.findUserByEmail(dto.email);
         if(userByEmail){
             throw new BadRequestException({message: 'User already exists', field: 'email'});
         }
-        //const userData = User.createNewUser(dto);
-        const userData:TypeUser = {id: uuidv4(), login: dto.login, email: dto.email, password: dto.password, createdAt: new Date()};
-        //const createdUser = await this.usersRepo.createUser(userData);
-        const createdUser = await this.usersSQLRepo.createUser(userData);
+        const userData = User.createNewUser(dto);
+        //const userData:TypeUser = {id: uuidv4(), login: dto.login, email: dto.email, password: dto.password, createdAt: new Date()};
+        const createdUser = await this.usersRepo.createUser(userData);
+        //const createdUser = await this.usersSQLRepo.createUser(userData);
         return mapUserToView(createdUser)
     }
     async registrationConfirmation(codeInputDto: CodeInputDto) {
@@ -104,8 +104,7 @@ export class UsersService {
     }
     async findAllUsersByQuery(query:PaginationQueryDto) {
         const pagination = paginationHelper(query);
-        //return this.usersQueryRepo.findAllUsersByQuery(pagination);
-        return this.usersSQLQueryRepo.findAllUsersByQuery(pagination)
+        return this.usersQueryRepo.findAllUsersByQuery(pagination);
     }
     async findUserById(id: string){
         const user = await this.usersQueryRepo.findUserById(id);
@@ -120,13 +119,13 @@ export class UsersService {
     }
 
     async removeUserById(id: string){
-        //await this.findUserById(id);
-        const user = await this.usersSQLQueryRepo.findUserById(id);
-        if(!user){
-            throw new NotFoundException({message: 'User not found', field: 'userId'});
-        }
-        //const deleted = await this.usersRepo.removeUserById(id);
-        const deleted = await this.usersSQLRepo.removeUserById(id);
+        await this.findUserById(id);
+        // const user = await this.usersSQLQueryRepo.findUserById(id);
+        // if(!user){
+        //     throw new NotFoundException({message: 'User not found', field: 'userId'});
+        // }
+        const deleted = await this.usersRepo.removeUserById(id);
+        //const deleted = await this.usersSQLRepo.removeUserById(id);
         if (!deleted) {
             //if deletedCount = 0
             throw new BadRequestException({message: 'User was not deleted', field: 'userId'});

@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UsersService } from './users.service';
-import {UsersRepository} from "./users.repository";
-import {UsersQueryRepository} from "./usersQuery.repository";
-import {EmailSenderHelper} from "../../helpers/emailSender.helper";
-import {CreateUserDto} from "./dto/create-user.dto";
+import { UsersService } from '../no-sql/users.service';
+import {UsersRepository} from "../no-sql/users.repository";
+import {UsersQueryRepository} from "../no-sql/usersQuery.repository";
+import {EmailSenderHelper} from "../../../helpers/emailSender.helper";
+import {CreateUserDto} from "../dto/create-user.dto";
 import {User} from "./types-and-schemas/user.schema";
 import {add} from "date-fns";
 import {BadRequestException} from "@nestjs/common";
