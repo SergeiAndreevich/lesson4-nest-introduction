@@ -20,6 +20,12 @@ export class UsersSQLRepository {
 
         return result.rows[0];
     }
+
+    async removeUserById(id: string): Promise<boolean> {
+        const result = await this.pool.query(`
+        DELETE FROM users WHERE id = $1`, [id]);
+        return result.rowCount === 1;
+    }
 }
 
 

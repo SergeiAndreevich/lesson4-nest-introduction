@@ -104,7 +104,8 @@ export class UsersService {
     }
     async findAllUsersByQuery(query:PaginationQueryDto) {
         const pagination = paginationHelper(query);
-        return this.usersQueryRepo.findAllUsersByQuery(pagination);
+        //return this.usersQueryRepo.findAllUsersByQuery(pagination);
+        return this.usersSQLQueryRepo.findAllUsersByQuery(pagination)
     }
     async findUserById(id: string){
         const user = await this.usersQueryRepo.findUserById(id);
@@ -119,8 +120,13 @@ export class UsersService {
     }
 
     async removeUserById(id: string){
-        await this.findUserById(id);
-        const deleted = await this.usersRepo.removeUserById(id);
+        //await this.findUserById(id);
+        const user = await this.usersSQLQueryRepo.findUserById(id);
+        if(!user){
+            throw new NotFoundException({message: 'User not found', field: 'userId'});
+        }
+        //const deleted = await this.usersRepo.removeUserById(id);
+        const deleted = await this.usersSQLRepo.removeUserById(id);
         if (!deleted) {
             //if deletedCount = 0
             throw new BadRequestException({message: 'User was not deleted', field: 'userId'});

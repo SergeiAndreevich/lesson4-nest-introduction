@@ -82,4 +82,5 @@ export class UsersQueryRepository {
             items: users.map(user => mapUserToView(user))
         }
     }
+
 }
