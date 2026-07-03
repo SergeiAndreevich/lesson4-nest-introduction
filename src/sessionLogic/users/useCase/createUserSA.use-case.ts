@@ -4,7 +4,7 @@ import {CreateUserDto} from "../dto/create-user.dto";
 import {CreateAuthDto} from "../../auth/dto/create-auth.dto";
 import {UsersSQLRepository} from "../users.sql.repository";
 import {UsersQuerySqlRepository} from "../usersQuery.sql.repository";
-import {TypeUser} from "../../../types/user.types";
+import {createUserSQL, TypeUser} from "../../../types/user.types";
 import {v4 as uuidv4} from "uuid";
 import {mapUserToView} from "../../../mappers/user.mapper";
 
@@ -32,7 +32,7 @@ export class CreateUserSAUseCase implements ICommandHandler<CreateUserSACommand>
             throw new BadRequestException({message: 'User already exists', field: 'email'});
         }
         //создание экземпляра юзера
-        const userData:TypeUser = {id: uuidv4(), login: command.dto.login, email: command.dto.email, password: command.dto.password, createdAt: new Date()};
+        const userData:TypeUser = createUserSQL(command.dto.login, command.dto.email, command.dto.password);
         //запись в БД, возвращает созданного юзера
         const createdUser = await this.usersSQLRepo.createUser(userData);
         //мапим юзера для фронта

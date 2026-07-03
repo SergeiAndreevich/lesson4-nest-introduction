@@ -15,7 +15,7 @@ import {CqrsModule} from "@nestjs/cqrs";
 import {CreateUserSAUseCase} from "./useCase/createUserSA.use-case";
 import {RemoveUserSAUseCase} from "./useCase/removeUserSA.use-case";
 import {FindUsersByQuerySAUseCase} from "./useCase/findUsersByQuerySA.use-case";
-import {EmailConfirmationSQLRepository} from "./email-confirmation.aql.repository";
+import {EmailConfirmationSQLRepository} from "./email-confirmation.sql.repository";
 import {PasswordRecoverySQLRepository} from "./password-recovery.sql.repository";
 
 @Module({
