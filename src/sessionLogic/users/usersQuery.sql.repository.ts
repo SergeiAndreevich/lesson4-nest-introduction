@@ -25,6 +25,13 @@ export class UsersQuerySqlRepository{
         );
         return result.rows[0] ??  null
     }
+    async findUserByLoginOrEmail(loginOrEmail: string ) {
+        const result = await this.pool.query<TypeUser>(
+            `SELECT * FROM users WHERE login = $1 OR email = $2`,
+            [loginOrEmail, loginOrEmail],
+        );
+        return result.rows[0] ??  null
+    }
     async findUserByEmail(email: string) {
         const result = await this.pool.query<TypeUser>(
             `SELECT * FROM users WHERE email = $1`,

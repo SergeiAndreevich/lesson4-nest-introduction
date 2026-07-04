@@ -43,12 +43,12 @@ export class LogoutUseCase implements ICommandHandler<LogoutCommand>{
         const session = await this.sessionsRepo.findSessionForLogout(userId,deviceId);
 
         if (!session) {
-            console.log('LOGOUT SESSION FAIL____________', session, sessionVersion)
+            //console.log('LOGOUT SESSION FAIL____________', session, sessionVersion)
             throw new UnauthorizedException({field: 'userId, deviceId is failed', message: 'No session found'});
         }
 
         if(session.version !== sessionVersion) {
-            console.log('LOGOUT SESSION version FAIL____________',session, sessionVersion)
+            //console.log('LOGOUT SESSION version FAIL____________',session, sessionVersion)
             throw new UnauthorizedException({field: 'sessionVersion is failed', message: 'No session found'});
         }
         // //проверяем, не истек ли срок сессии
@@ -68,4 +68,6 @@ export class LogoutUseCase implements ICommandHandler<LogoutCommand>{
 
         //есть еще мысль вернуть "протухание" и протухать сессию в логауте, а в остальных местах делать проверку. Нахуя - не знаю, но идея есть идея
     }
+
+    //логаут тоже трогать не надо, тк тут тоже все логика завязана на Монго и логике сессий
 }
