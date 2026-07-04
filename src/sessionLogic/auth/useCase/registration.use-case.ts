@@ -9,9 +9,10 @@ import {mapUserToView} from "../../../mappers/user.mapper";
 import {UsersQuerySqlRepository} from "../../users/usersQuery.sql.repository";
 import {UsersSQLRepository} from "../../users/users.sql.repository";
 import {CreateAuthDto} from "../dto/create-auth.dto";
-import {createUserSQL} from "../../../types/user.types";
+import {createEmailConfirmation, createPasswordRecovery, createUserSQL} from "../../../types/user.types";
 import {EmailConfirmationSQLRepository} from "../../users/email-confirmation.sql.repository";
 import {PasswordRecoverySQLRepository} from "../../users/password-recovery.sql.repository";
+import {EmailService} from "../../../helpers/emailHelper/mailNotification.service";
 
 
 export class RegistrationCommand{
@@ -27,7 +28,7 @@ export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>
         private readonly usersSQLRepo: UsersSQLRepository,
         private readonly emailConfirmationSQLRepo:EmailConfirmationSQLRepository,
         private readonly passwordRecoverySQLRepo: PasswordRecoverySQLRepository,
-        private readonly emailSenderHelper:
+        private readonly emailSenderHelper: EmailService
     ) {}
     async execute(command: RegistrationCommand){
         const dto = command.dto;
@@ -45,10 +46,14 @@ export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>
         if(!createdUser){
             throw new BadRequestException({message: 'Something went wrong in postgres', field: 'database'});
         }
-        //Как-то надо еще создать запись в recoveryPassword и emailConfirmation
-        //создаем код подтверждения
-        const confirmationCode = user.emailConfirmation.code;
-        if(!confirmationCode){
+        //создаем код подтверждения почты
+        const emailConfirmation = await this.emailConfirmationSQLRepo.createFirstEmailConfirmation(createEmailConfirmation(createdUser.id));
+        if(!emailConfirmation){
+            throw new BadRequestException({message: 'Smth wrong with received user and its emailConfirmationCode', field: 'code'});
+        }
+        //создаем заготовку под восстановление пароля
+        const passwordRecovery = await this.passwordRecoverySQLRepo.createPasswordRecoveryFields(createPasswordRecovery(createdUser.id));
+        if(!passwordRecovery){
             throw new BadRequestException({message: 'Smth wrong with received user and its emailConfirmationCode', field: 'code'});
         }
         //отсылаем email с кодом подтверждения

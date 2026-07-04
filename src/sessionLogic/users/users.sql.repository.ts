@@ -11,7 +11,7 @@ export class UsersSQLRepository {
         @Inject(PG_CONNECTION) private readonly pool: Pool
     ) {}
 
-    async createUser(user: TypeUser) {
+    async createUser(user: TypeUser):Promise<TypeUser | null> {
         const result = await this.pool.query(`
         INSERT INTO users (id, login, email, password, created_at)
         VALUES ($1, $2, $3, $4, $5)

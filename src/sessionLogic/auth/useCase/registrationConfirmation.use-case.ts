@@ -44,7 +44,7 @@ export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>
             throw new BadRequestException({message: 'Incorrect confirmation info', field: 'code'});
         }
 
-        const isConfirmed = await this.emailConfirmationSQLRepo.confirmEmail(user._id.toString());
+        const isConfirmed = await this.emailConfirmationSQLRepo.confirmEmail(user.id);
         if(!isConfirmed){
             throw new BadRequestException({message:'User has not been updated' , field: 'email'});
         }
