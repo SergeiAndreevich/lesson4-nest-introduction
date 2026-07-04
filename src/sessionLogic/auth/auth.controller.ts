@@ -16,6 +16,9 @@ import {REFRESH_TOKEN_TTL_SEC} from "../../../setup/globalVariables";
 import {Throttle, ThrottlerGuard} from "@nestjs/throttler";
 import {RateLimit, RateLimiterGuard} from "nestjs-rate-limiter";
 import {AntiClickerGuard} from "../../rateLimitLogic/antiClicker.guard";
+import {RegistrationCommand} from "./useCase/registration.use-case";
+import {RegistrationConfirmationCommand} from "./useCase/registrationConfirmation.use-case";
+import {LoginCommand} from "./useCase/login.use-case";
 
 const AUTH_RATE_LIMIT = {
   points: 5,
@@ -44,8 +47,8 @@ export class AuthController {
     //входящий браузер
     const userAgent = req.headers['user-agent'] || 'unknown device';
     //на входе получил loginOrEmail, password, на выходе должен получить AT и RT
-    const {accessToken, refreshToken} = await this.authService.loginUser(dto, ip, userAgent);
-
+    //const {accessToken, refreshToken} = await this.authService.loginUser(dto, ip, userAgent);
+    const {accessToken, refreshToken} = await this.commandBus.execute(new LoginCommand(dto, ip, userAgent));
 
     //отдаем пользователю в куки рефреш токен и в респонсе аксесс токен
     res.cookie('refreshToken', refreshToken, {
@@ -113,8 +116,10 @@ export class AuthController {
   //@UseGuards(RateLimiterGuard)  // ← Добавляем гард
   //@RateLimit(AUTH_RATE_LIMIT)
   @HttpCode(204)
-  registration(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.registration(createAuthDto);
+  async registration(@Body() createAuthDto: CreateAuthDto) {
+    //return this.authService.registration(createAuthDto);
+    await this.commandBus.execute(new RegistrationCommand(createAuthDto));
+    return
   }
 
   @Post('registration-confirmation')
@@ -122,8 +127,10 @@ export class AuthController {
   //@UseGuards(RateLimiterGuard)  // ← Добавляем гард
   //@RateLimit(AUTH_RATE_LIMIT)
   @HttpCode(204)
-  registrationConfirmation(@Body() codeInputDto: CodeInputDto) {
-    return this.authService.registrationConfirmation(codeInputDto);
+  async registrationConfirmation(@Body() codeInputDto: CodeInputDto) {
+    //return this.authService.registrationConfirmation(codeInputDto);
+    await this.commandBus.execute(new RegistrationConfirmationCommand(codeInputDto));
+    return
   }
 
   @Post('registration-email-resending')

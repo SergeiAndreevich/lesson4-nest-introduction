@@ -1,7 +1,6 @@
 import {Inject, Injectable} from "@nestjs/common";
 import {PG_CONNECTION} from "../../../setup/database/database.constants";
-import {Pool} from "pg";
-import {User} from "./schema/user.schema";
+import {Pool, PoolClient} from "pg";
 import {TypeUser} from "../../types/user.types";
 
 
@@ -11,8 +10,13 @@ export class UsersSQLRepository {
         @Inject(PG_CONNECTION) private readonly pool: Pool
     ) {}
 
-    async createUser(user: TypeUser):Promise<TypeUser | null> {
-        const result = await this.pool.query(`
+    //При записи данных в постгре может быть только два результата: успешно записалось и ошибка. Ошибки могут быть разные, но суть в том
+    //что БД не вернет тебе null, только error
+    //null может вернуться при SELECT, UPDATE, DELETE когда в WHERE такое условие, которое не выполняется (ну не найдено соответствие в БД с таким и всё)
+
+    async createUser(user: TypeUser, client?: PoolClient):Promise<TypeUser> {
+        const db = client ?? this.pool;
+        const result = await db.query(`
         INSERT INTO users (id, login, email, password, created_at)
         VALUES ($1, $2, $3, $4, $5)
         RETURNING *

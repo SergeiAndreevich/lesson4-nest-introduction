@@ -1,6 +1,6 @@
 import {Inject, Injectable} from "@nestjs/common";
 import {PG_CONNECTION} from "../../../setup/database/database.constants";
-import {Pool} from "pg";
+import {Pool, PoolClient} from "pg";
 import {TypeEmailConfirmation} from "../../types/user.types";
 
 
@@ -10,13 +10,14 @@ export class EmailConfirmationSQLRepository {
         @Inject(PG_CONNECTION) private readonly pool: Pool
     ) {}
 
-    async createFirstEmailConfirmation(dto:TypeEmailConfirmation):Promise<TypeEmailConfirmation | null>{
-        const result = await this.pool.query(`
+    async createFirstEmailConfirmation(dto:TypeEmailConfirmation, client?: PoolClient):Promise<TypeEmailConfirmation>{
+        const db = client ?? this.pool;
+        const result = await db.query(`
         INSERT INTO email_confirmations (userId, confirmation_code, expires_at, is_confirmed)
         VALUES ($1, $2, $3, $4)
         RETURNING *
         `, [dto.userId, dto.confirmation_code, dto.expires_at, dto.is_confirmed]);
-        return result.rows[0] ?? null;
+        return result.rows[0]
     }
     async confirmEmail(userId: string){
         const result = await this.pool.query(`

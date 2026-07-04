@@ -1,4 +1,4 @@
-import {BadRequestException, UnauthorizedException} from "@nestjs/common";
+import {BadRequestException, Inject, UnauthorizedException} from "@nestjs/common";
 import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
 import {JwtService} from "@nestjs/jwt";
 import {SecurityDevicesRepository} from "../../securityDevices/securityDevices.repository";
@@ -9,10 +9,18 @@ import {mapUserToView} from "../../../mappers/user.mapper";
 import {UsersQuerySqlRepository} from "../../users/usersQuery.sql.repository";
 import {UsersSQLRepository} from "../../users/users.sql.repository";
 import {CreateAuthDto} from "../dto/create-auth.dto";
-import {createEmailConfirmation, createPasswordRecovery, createUserSQL} from "../../../types/user.types";
+import {
+    createEmailConfirmation,
+    createPasswordRecovery,
+    createUserSQL,
+    TypeEmailConfirmation,
+    TypeUser
+} from "../../../types/user.types";
 import {EmailConfirmationSQLRepository} from "../../users/email-confirmation.sql.repository";
 import {PasswordRecoverySQLRepository} from "../../users/password-recovery.sql.repository";
 import {EmailService} from "../../../helpers/emailHelper/mailNotification.service";
+import {PG_CONNECTION} from "../../../../setup/database/database.constants";
+import {Pool} from "pg";
 
 
 export class RegistrationCommand{
@@ -28,7 +36,9 @@ export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>
         private readonly usersSQLRepo: UsersSQLRepository,
         private readonly emailConfirmationSQLRepo:EmailConfirmationSQLRepository,
         private readonly passwordRecoverySQLRepo: PasswordRecoverySQLRepository,
-        private readonly emailSenderHelper: EmailService
+        private readonly emailSenderHelper: EmailService,
+        @Inject(PG_CONNECTION) private readonly pool: Pool
+
     ) {}
     async execute(command: RegistrationCommand){
         const dto = command.dto;
@@ -42,22 +52,29 @@ export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>
             throw new BadRequestException({message: 'User already exists', field: 'email'});
         }
         //создаём экземпляр юзера и засовываем в БД
-        const createdUser = await this.usersSQLRepo.createUser(createUserSQL(dto.login, dto.email, dto.password));
-        if(!createdUser){
-            throw new BadRequestException({message: 'Something went wrong in postgres', field: 'database'});
+        const client = await this.pool.connect();
+        let createdUser: TypeUser;
+        let emailConfirmation: TypeEmailConfirmation;
+        try {
+            //начинаем транзакцию
+            await client.query("BEGIN");
+            //создаем юзера
+            const createdUser = await this.usersSQLRepo.createUser(createUserSQL(dto.login, dto.email, dto.password), client);
+            //для юзера создаем код подтверждения почты
+            const emailConfirmation = await this.emailConfirmationSQLRepo.createFirstEmailConfirmation(createEmailConfirmation(createdUser.id), client);
+            //создаем заготовку под восстановление пароля для юзера
+            await this.passwordRecoverySQLRepo.createPasswordRecoveryFields(createPasswordRecovery(createdUser.id), client);
+
+            await client.query("COMMIT");
+        }catch(e){
+            await client.query("ROLLBACK");
+            throw e;
         }
-        //создаем код подтверждения почты
-        const emailConfirmation = await this.emailConfirmationSQLRepo.createFirstEmailConfirmation(createEmailConfirmation(createdUser.id));
-        if(!emailConfirmation){
-            throw new BadRequestException({message: 'Smth wrong with received user and its emailConfirmationCode', field: 'code'});
-        }
-        //создаем заготовку под восстановление пароля
-        const passwordRecovery = await this.passwordRecoverySQLRepo.createPasswordRecoveryFields(createPasswordRecovery(createdUser.id));
-        if(!passwordRecovery){
-            throw new BadRequestException({message: 'Smth wrong with received user and its emailConfirmationCode', field: 'code'});
+        finally{
+            client.release();
         }
         //отсылаем email с кодом подтверждения
-        //await this.emailSenderHelper.sendConfirmationEmail(createdUser.email, confirmationCode);
+        //await this.emailSenderHelper.sendConfirmationEmail(createdUser.email, emailConfirmation.confirmation_code);
         return
     }
 }

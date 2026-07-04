@@ -15,21 +15,21 @@ import {PasswordRecoverySQLRepository} from "../../users/password-recovery.sql.r
 import {CodeInputDto} from "../dto/code-input.dto";
 
 
-export class RegistrationCommand{
+export class RegistrationConfirmationCommand{
     constructor(
         public dto: CodeInputDto
     ){}
 }
 
-@CommandHandler(RegistrationCommand)
-export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>{
+@CommandHandler(RegistrationConfirmationCommand)
+export class RegistrationConfirmationUseCase implements ICommandHandler<RegistrationConfirmationCommand>{
     constructor(
         private readonly usersSQLQueryRepo: UsersQuerySqlRepository,
         private readonly usersSQLRepo: UsersSQLRepository,
         private readonly emailConfirmationSQLRepo:EmailConfirmationSQLRepository,
         private readonly passwordRecoverySQLRepo: PasswordRecoverySQLRepository,
     ){}
-    async execute(command: RegistrationCommand){
+    async execute(command: RegistrationConfirmationCommand){
         const dto = command.dto;
 
         //нашли юзера по коду, значит точно код совпадает

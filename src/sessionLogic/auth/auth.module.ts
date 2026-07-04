@@ -11,10 +11,13 @@ import {LogoutUseCase} from "./useCase/logout.use-case";
 import {SecurityDevicesModule} from "../securityDevices/securityDevices.module";
 import {AntiClickerModule} from "../../rateLimitLogic/rateLimit.module";
 import {NestRateLimiterModule} from "../../rateLimitLogic/nestRateLimiter.module";
+import {LoginUseCase} from "./useCase/login.use-case";
+import {RegistrationUseCase} from "./useCase/registration.use-case";
+import {RegistrationConfirmationUseCase} from "./useCase/registrationConfirmation.use-case";
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, RefreshAccessUseCase, LogoutUseCase],
+  providers: [AuthService, RefreshAccessUseCase, LogoutUseCase, LoginUseCase, RegistrationUseCase, RegistrationConfirmationUseCase],
   imports: [UsersModule, NotificationsModule, CqrsModule,SecurityDevicesModule,
     AntiClickerModule,
     NestRateLimiterModule],
