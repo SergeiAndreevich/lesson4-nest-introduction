@@ -31,19 +31,15 @@ export class RegistrationConfirmationUseCase implements ICommandHandler<Registra
     ){}
     async execute(command: RegistrationConfirmationCommand){
         const dto = command.dto;
-
         //нашли юзера по коду, значит точно код совпадает
         const user = await this.emailConfirmationSQLRepo.findUserByEmailCode(dto.code);
         if(!user){
             throw new BadRequestException({message: 'User not found', field: 'code'});
         }
-
         //далее проверяем, если почта уже подтверждена или если код истек, то выкидываем ошибку
-        //из БД приходит строка, надо как-то преобразовать для сравнения ! ! !
-        if(user.isConfirmed === true || user.expiresAt < new Date()) {
+        if(user["is_confirmed"] === true || user["expires_at"] < new Date()) {
             throw new BadRequestException({message: 'Incorrect confirmation info', field: 'code'});
         }
-
         const isConfirmed = await this.emailConfirmationSQLRepo.confirmEmail(user.id);
         if(!isConfirmed){
             throw new BadRequestException({message:'User has not been updated' , field: 'email'});

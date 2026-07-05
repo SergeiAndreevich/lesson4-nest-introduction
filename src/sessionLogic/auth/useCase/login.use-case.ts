@@ -35,9 +35,6 @@ export class LoginCommand{
 export class LoginUseCase implements ICommandHandler<LoginCommand>{
     constructor(
         private readonly usersSQLQueryRepo: UsersQuerySqlRepository,
-        private readonly usersSQLRepo: UsersSQLRepository,
-        private readonly emailConfirmationSQLRepo:EmailConfirmationSQLRepository,
-        private readonly passwordRecoverySQLRepo: PasswordRecoverySQLRepository,
         private readonly jwtService: JwtService,
         private readonly sessionsRepo: SecurityDevicesRepository
 

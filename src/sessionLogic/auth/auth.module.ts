@@ -14,10 +14,14 @@ import {NestRateLimiterModule} from "../../rateLimitLogic/nestRateLimiter.module
 import {LoginUseCase} from "./useCase/login.use-case";
 import {RegistrationUseCase} from "./useCase/registration.use-case";
 import {RegistrationConfirmationUseCase} from "./useCase/registrationConfirmation.use-case";
+import {RecoveryPasswordUseCase} from "./useCase/recoveryPassword.use-case";
+import {SetNewPasswordUseCase} from "./useCase/setNewPassword.use-case";
+import {RegistrationEmailResendingUseCase} from "./useCase/registrationEmailResending.use-case";
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, RefreshAccessUseCase, LogoutUseCase, LoginUseCase, RegistrationUseCase, RegistrationConfirmationUseCase],
+  providers: [AuthService, RefreshAccessUseCase, LogoutUseCase, LoginUseCase, RegistrationUseCase, RegistrationConfirmationUseCase,
+  RecoveryPasswordUseCase, SetNewPasswordUseCase, RegistrationEmailResendingUseCase],
   imports: [UsersModule, NotificationsModule, CqrsModule,SecurityDevicesModule,
     AntiClickerModule,
     NestRateLimiterModule],

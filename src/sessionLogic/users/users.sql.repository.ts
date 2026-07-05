@@ -25,6 +25,14 @@ export class UsersSQLRepository {
         return result.rows[0];
     }
 
+    async setNewPassword(userId: string, newPassword: string, client?: PoolClient): Promise<boolean> {
+        const result = await this.pool.query(`
+        UPDATE users SET  password = $1
+        WHERE user_id = $2
+        `, [userId, newPassword]);
+        return result.rowCount === 1
+    }
+
     async removeUserById(id: string): Promise<boolean> {
         const result = await this.pool.query(`
         DELETE FROM users WHERE id = $1`, [id]);

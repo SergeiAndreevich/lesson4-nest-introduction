@@ -28,7 +28,22 @@ export class EmailConfirmationSQLRepository {
 
         return result.rowCount === 1;
     }
+    async setNewEmailConfirmationCode(userId: string, newCode: string):Promise<boolean>{
+        const result = await this.pool.query(`
+        UPDATE email_confirmations
+        SET confirmation_code = $1
+        WHERE user_id = $2
+        `, [newCode, userId]);
+        return result.rowCount === 1
+    }
 
+    async findUserById(userId: string){
+        const result = await this.pool.query(`
+        SELECT * FROM email_confirmations
+        WHERE user_id = $1
+        `, [userId]);
+        return result.rows[0] ??  null
+    }
     async findUserByEmailCode(code: string){
         const result = await this.pool.query(`
         SELECT * FROM email_confirmations WHERE confirmation_code = $1

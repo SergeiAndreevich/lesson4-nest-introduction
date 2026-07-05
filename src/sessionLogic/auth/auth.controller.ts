@@ -19,6 +19,9 @@ import {AntiClickerGuard} from "../../rateLimitLogic/antiClicker.guard";
 import {RegistrationCommand} from "./useCase/registration.use-case";
 import {RegistrationConfirmationCommand} from "./useCase/registrationConfirmation.use-case";
 import {LoginCommand} from "./useCase/login.use-case";
+import {RecoveryPasswordCommand} from "./useCase/recoveryPassword.use-case";
+import {SetNewPasswordCommand} from "./useCase/setNewPassword.use-case";
+import {RegistrationEmailResendingCommand} from "./useCase/registrationEmailResending.use-case";
 
 const AUTH_RATE_LIMIT = {
   points: 5,
@@ -101,14 +104,18 @@ export class AuthController {
 
   @Post('password-recovery')
   @HttpCode(204)
-  recoveryUserPassword(@Body() emailInputDto: EmailInputDto) {
-    return this.authService.recoveryUserPassword(emailInputDto);
+  async recoveryUserPassword(@Body() emailInputDto: EmailInputDto) {
+    //return this.authService.recoveryUserPassword(emailInputDto);
+    await this.commandBus.execute(new RecoveryPasswordCommand(emailInputDto));
+    return
   }
 
   @Post('new-password')
   @HttpCode(204)
-  setNewPassword(@Body() newPasswordInputDto: NewPasswordInputDto){
-    return this.authService.setNewPassword(newPasswordInputDto);
+  async setNewPassword(@Body() newPasswordInputDto: NewPasswordInputDto){
+    //return this.authService.setNewPassword(newPasswordInputDto);
+    await this.commandBus.execute(new SetNewPasswordCommand(newPasswordInputDto));
+    return
   }
 
   @Post('registration')
@@ -138,8 +145,10 @@ export class AuthController {
   //@UseGuards(RateLimiterGuard)  // ← Добавляем гард
   //@RateLimit(AUTH_RATE_LIMIT)
   @HttpCode(204)
-  registrationEmailResending(@Body() emailInputDto: EmailInputDto) {
-    return this.authService.registrationEmailResending(emailInputDto);
+  async registrationEmailResending(@Body() emailInputDto: EmailInputDto) {
+    //return this.authService.registrationEmailResending(emailInputDto);
+    await this.commandBus.execute(new RegistrationEmailResendingCommand(emailInputDto));
+    return
   }
 
   @Get('me')

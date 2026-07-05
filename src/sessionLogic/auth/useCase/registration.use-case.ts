@@ -66,6 +66,8 @@ export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>
             await this.passwordRecoverySQLRepo.createPasswordRecoveryFields(createPasswordRecovery(createdUser.id), client);
 
             await client.query("COMMIT");
+            //отсылаем email с кодом подтверждения
+            await this.emailSenderHelper.sendConfirmationEmail(createdUser.email, emailConfirmation.confirmation_code);
         }catch(e){
             await client.query("ROLLBACK");
             throw e;
@@ -73,8 +75,6 @@ export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>
         finally{
             client.release();
         }
-        //отсылаем email с кодом подтверждения
-        //await this.emailSenderHelper.sendConfirmationEmail(createdUser.email, emailConfirmation.confirmation_code);
         return
     }
 }

@@ -54,6 +54,6 @@ export function createPasswordRecovery(userId: string): TypePasswordRecovery {
         userId: userId,
         recovery_code: uuidv4(),
         expires_at: new Date(Date.now() + 1000 * 60 * 5),
-        is_confirmed: false
+        is_confirmed: true
     }
 }
