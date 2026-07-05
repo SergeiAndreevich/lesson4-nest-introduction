@@ -17,11 +17,12 @@ import {RegistrationConfirmationUseCase} from "./useCase/registrationConfirmatio
 import {RecoveryPasswordUseCase} from "./useCase/recoveryPassword.use-case";
 import {SetNewPasswordUseCase} from "./useCase/setNewPassword.use-case";
 import {RegistrationEmailResendingUseCase} from "./useCase/registrationEmailResending.use-case";
+import {FindUserUseCase} from "./useCase/findUser.use-case";
 
 @Module({
   controllers: [AuthController],
   providers: [AuthService, RefreshAccessUseCase, LogoutUseCase, LoginUseCase, RegistrationUseCase, RegistrationConfirmationUseCase,
-  RecoveryPasswordUseCase, SetNewPasswordUseCase, RegistrationEmailResendingUseCase],
+  RecoveryPasswordUseCase, SetNewPasswordUseCase, RegistrationEmailResendingUseCase, FindUserUseCase],
   imports: [UsersModule, NotificationsModule, CqrsModule,SecurityDevicesModule,
     AntiClickerModule,
     NestRateLimiterModule],

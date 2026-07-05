@@ -8,7 +8,7 @@ import {NewPasswordInputDto} from "./dto/new-password-input.dto";
 import {CodeInputDto} from "./dto/code-input.dto";
 import {BearerGuard} from "../../../setup/guard/bearer.guard";
 import {UserId} from "../../customDecorators/userId.decorator";
-import {CommandBus} from "@nestjs/cqrs";
+import {CommandBus, QueryBus} from "@nestjs/cqrs";
 import {RefreshAccessCommand} from "./useCase/refreshAccess.use-case";
 import {LogoutCommand} from "./useCase/logout.use-case";
 import {REFRESH_TOKEN_TTL_SEC} from "../../../setup/globalVariables";
@@ -22,6 +22,7 @@ import {LoginCommand} from "./useCase/login.use-case";
 import {RecoveryPasswordCommand} from "./useCase/recoveryPassword.use-case";
 import {SetNewPasswordCommand} from "./useCase/setNewPassword.use-case";
 import {RegistrationEmailResendingCommand} from "./useCase/registrationEmailResending.use-case";
+import {FindUserQuery, FindUserUseCase} from "./useCase/findUser.use-case";
 
 const AUTH_RATE_LIMIT = {
   points: 5,
@@ -32,7 +33,8 @@ const AUTH_RATE_LIMIT = {
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService,
-              private readonly commandBus: CommandBus,) {
+              private readonly commandBus: CommandBus,
+              private readonly queryBus: QueryBus,) {
   }
 
   @Post('login')
@@ -155,6 +157,7 @@ export class AuthController {
   @UseGuards(BearerGuard)
   @HttpCode(200)
   async findMe(@UserId()userId:string ) {
-    return this.authService.findMe(userId)
+    //return this.authService.findMe(userId)
+    return await this.queryBus.execute(new FindUserQuery(userId))
   }
 }
