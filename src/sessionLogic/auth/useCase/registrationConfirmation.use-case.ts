@@ -13,6 +13,7 @@ import {createUserSQL} from "../../../types/user.types";
 import {EmailConfirmationSQLRepository} from "../../users/email-confirmation.sql.repository";
 import {PasswordRecoverySQLRepository} from "../../users/password-recovery.sql.repository";
 import {CodeInputDto} from "../dto/code-input.dto";
+import {validate} from "uuid";
 
 
 export class RegistrationConfirmationCommand{
@@ -32,6 +33,9 @@ export class RegistrationConfirmationUseCase implements ICommandHandler<Registra
     async execute(command: RegistrationConfirmationCommand){
         const dto = command.dto;
         //нашли юзера по коду, значит точно код совпадает
+        if (!validate(dto.code)) {
+            throw new BadRequestException({message: 'No code or invalid code', field: 'code'});
+        }
         const user = await this.emailConfirmationSQLRepo.findUserByEmailCode(dto.code);
         if(!user){
             throw new BadRequestException({message: 'User not found', field: 'code'});
@@ -40,7 +44,7 @@ export class RegistrationConfirmationUseCase implements ICommandHandler<Registra
         if(user["is_confirmed"] === true || user["expires_at"] < new Date()) {
             throw new BadRequestException({message: 'Incorrect confirmation info', field: 'code'});
         }
-        const isConfirmed = await this.emailConfirmationSQLRepo.confirmEmail(user.id);
+        const isConfirmed = await this.emailConfirmationSQLRepo.confirmEmail(user.user_id);
         if(!isConfirmed){
             throw new BadRequestException({message:'User has not been updated' , field: 'email'});
         }

@@ -1,11 +1,10 @@
-import {SessionDocument} from "../sessionLogic/securityDevices/schema/session.schema";
-import {TypeSessionToFront} from "../types/session.types";
+import {TypeSession, TypeSessionToFront} from "../types/session.types";
 
-export function mapSessionToFront(session: SessionDocument): TypeSessionToFront {
+export function mapSessionToFront(session: TypeSession): TypeSessionToFront {
     return {
         ip: session.ip,
-        title: session.deviceName,
-        lastActiveDate: session.lastActivity.toISOString(),
-        deviceId: session.deviceId
+        title: session.device_name,
+        lastActiveDate: session.last_activity.toISOString(),
+        deviceId: session.device_id
     }
 }

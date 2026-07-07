@@ -18,7 +18,7 @@ import {
     REFRESH_SECRET,
     REFRESH_TOKEN_TTL_SEC
 } from "../../../setup/globalVariables";
-import {JwtPayload} from "../../types/session.types";
+import {createSession, JwtPayload} from "../../types/session.types";
 
 
 @Injectable()
@@ -50,8 +50,9 @@ export class AuthService {
       const refreshToken = this.jwtService.sign(
           {userId: user._id.toString(), userLogin: user.accountData.login, deviceId: deviceId, sessionVersion: sessionVersion},{secret: REFRESH_SECRET,expiresIn: `${REFRESH_TOKEN_TTL_SEC}s`});
       //создаём сессию, в которой автоматически создается свойство "протух: false"
-      const session = Session.createSession(
-          user._id.toString(), deviceId,ip,userAgent, new Date(),
+      //const session = Session.createSession(
+      const session = createSession(uuidv4(),
+          user._id.toString(), deviceId, ip, userAgent, new Date(),
           addSeconds(new Date(), REFRESH_TOKEN_TTL_SEC), sessionVersion);
       //засовываем сессию в БД
       await this.sessionsRepo.createSession(session);

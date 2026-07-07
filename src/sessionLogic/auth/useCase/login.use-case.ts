@@ -2,7 +2,7 @@ import {BadRequestException, ForbiddenException, UnauthorizedException} from "@n
 import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
 import {JwtService} from "@nestjs/jwt";
 import {SecurityDevicesRepository} from "../../securityDevices/securityDevices.repository";
-import {JwtPayload} from "../../../types/session.types";
+import {createSession, JwtPayload} from "../../../types/session.types";
 import {
     ACCESS_SECRET,
     ACCESS_TOKEN_TTL_SEC,
@@ -63,7 +63,8 @@ export class LoginUseCase implements ICommandHandler<LoginCommand>{
         const refreshToken = this.jwtService.sign(
             {userId: user.id.toString(), userLogin: user.login, deviceId: deviceId, sessionVersion: sessionVersion},{secret: REFRESH_SECRET,expiresIn: `${REFRESH_TOKEN_TTL_SEC}s`});
         //создаём сессию, в которой автоматически создается свойство "протух: false"
-        const session = Session.createSession(
+        //const session = Session.createSession(
+        const session = createSession( uuidv4(),
             user.id.toString(), deviceId,command.ip,command.userAgent, new Date(),
             addSeconds(new Date(), REFRESH_TOKEN_TTL_SEC), sessionVersion);
         //засовываем сессию в БД

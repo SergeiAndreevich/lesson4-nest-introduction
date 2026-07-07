@@ -80,8 +80,8 @@ export class UsersQuerySqlRepository{
         // 2. SORT
         // =========================
         const sortMap: Record<string, string> = {
-            login: 'login',
-            email: 'email',
+            login: 'login COLLATE "C"',
+            email: 'email COLLATE "C"',
             createdAt: 'created_at',
         };
 

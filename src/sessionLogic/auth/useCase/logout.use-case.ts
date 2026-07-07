@@ -20,6 +20,11 @@ export class LogoutUseCase implements ICommandHandler<LogoutCommand>{
     ) {}
     async execute(command: LogoutCommand){
         // check actual token
+        console.log('REFRESH TOKEN:', command.refreshToken);
+
+        console.log(
+            this.jwtService.decode(command.refreshToken),
+        );
         if(!command.refreshToken) {
             throw new UnauthorizedException({field: 'refreshToken',  message: 'No refresh token'});
         }

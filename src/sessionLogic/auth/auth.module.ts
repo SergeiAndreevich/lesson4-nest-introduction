@@ -18,6 +18,7 @@ import {RecoveryPasswordUseCase} from "./useCase/recoveryPassword.use-case";
 import {SetNewPasswordUseCase} from "./useCase/setNewPassword.use-case";
 import {RegistrationEmailResendingUseCase} from "./useCase/registrationEmailResending.use-case";
 import {FindUserUseCase} from "./useCase/findUser.use-case";
+import {DatabaseModule} from "../../../setup/database/database.module";
 
 @Module({
   controllers: [AuthController],
@@ -25,6 +26,6 @@ import {FindUserUseCase} from "./useCase/findUser.use-case";
   RecoveryPasswordUseCase, SetNewPasswordUseCase, RegistrationEmailResendingUseCase, FindUserUseCase],
   imports: [UsersModule, NotificationsModule, CqrsModule,SecurityDevicesModule,
     AntiClickerModule,
-    NestRateLimiterModule],
+    NestRateLimiterModule,DatabaseModule],
 })
 export class AuthModule {}

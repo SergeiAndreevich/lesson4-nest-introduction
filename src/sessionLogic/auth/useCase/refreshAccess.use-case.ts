@@ -10,7 +10,8 @@ import {
     REFRESH_TOKEN_TTL_SEC
 } from "../../../../setup/globalVariables";
 import {Session} from "../../securityDevices/schema/session.schema";
-import {JwtPayload} from "../../../types/session.types";
+import {createSession, JwtPayload} from "../../../types/session.types";
+import { v4 as uuidv4 } from "uuid";
 
 
 export class RefreshAccessCommand{
@@ -81,7 +82,8 @@ export class RefreshAccessUseCase implements ICommandHandler<RefreshAccessComman
         //еще новее логика. Удаляю сессию, затем создаю новую
         await this.sessionsRepo.closeSession(userId,deviceId);
         //создаю новую сессию
-        const createdSession = Session.createSession( userId, deviceId,session.ip,session.deviceName, new Date(),
+        //const createdSession = Session.createSession( userId, deviceId,session.ip,session.device_name, new Date(),
+        const createdSession = createSession( uuidv4(), userId, deviceId,session.ip,session.device_name, new Date(),
             addSeconds(new Date(), REFRESH_TOKEN_TTL_SEC), newSessionVersion);
         //записываю новую сессию в БД
         await this.sessionsRepo.createSession(createdSession);

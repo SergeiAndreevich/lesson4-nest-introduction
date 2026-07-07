@@ -24,24 +24,6 @@ export class CloseAllSessionsForUserExcludeCurrentUseCase implements ICommandHan
                 message: 'Session not found'
             });
         }
-
-
-        // if (currentSession.userId !== command.userId) {
-        //     throw new UnauthorizedException({
-        //         field: 'userId',
-        //         message: 'Not your session'
-        //     });
-        // }
-
-
-        // if (currentSession.expiresAt.getTime() < Date.now()) {
-        //     throw new UnauthorizedException({
-        //         field: 'session',
-        //         message: 'Session expired'
-        //     });
-        // }
-
-
         await this.sessionsRepo.closeAllSessionsBesidesThisOne(command.userId, command.deviceId);
         return
     }

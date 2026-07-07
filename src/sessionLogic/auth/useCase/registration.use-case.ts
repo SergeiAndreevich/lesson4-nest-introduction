@@ -53,8 +53,6 @@ export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>
         }
         //создаём экземпляр юзера и засовываем в БД
         const client = await this.pool.connect();
-        let createdUser: TypeUser;
-        let emailConfirmation: TypeEmailConfirmation;
         try {
             //начинаем транзакцию
             await client.query("BEGIN");
@@ -67,7 +65,16 @@ export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>
 
             await client.query("COMMIT");
             //отсылаем email с кодом подтверждения
-            await this.emailSenderHelper.sendConfirmationEmail(createdUser.email, emailConfirmation.confirmation_code);
+            // try {
+            //     await this.emailSenderHelper.sendConfirmationEmail(
+            //         createdUser.email,
+            //         emailConfirmation.confirmation_code,
+            //     );
+            //
+            //     console.log("EMAIL SENT");
+            // } catch (error) {
+            //     console.log(error);
+            // }
         }catch(e){
             await client.query("ROLLBACK");
             throw e;

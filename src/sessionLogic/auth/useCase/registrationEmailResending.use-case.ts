@@ -52,7 +52,7 @@ export class RegistrationEmailResendingUseCase implements ICommandHandler<Regist
         if(!isUpdated){
             throw new BadRequestException({message:'User has not been updated' , field: 'email'});
         }
-        await this.emailSenderHelper.sendConfirmationEmail(dto.email, newCode);
+        //await this.emailSenderHelper.sendConfirmationEmail(dto.email, newCode);
         return
     }
 }

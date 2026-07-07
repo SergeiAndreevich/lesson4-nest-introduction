@@ -1,89 +1,85 @@
-import {Injectable} from "@nestjs/common";
+import {Inject, Injectable} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {Model} from "mongoose";
 import {Session, SessionDocument} from "./schema/session.schema";
 import {factory} from "ts-jest/dist/transformers/hoist-jest";
+import {PG_CONNECTION} from "../../../setup/database/database.constants";
+import {Pool} from "pg";
+import {TypeSession} from "../../types/session.types";
 
 @Injectable()
 export class SecurityDevicesRepository{
     constructor(
-        @InjectModel(Session.name) private readonly sessionModel: Model<SessionDocument>
+        @InjectModel(Session.name) private readonly sessionModel: Model<SessionDocument>,
+        @Inject(PG_CONNECTION) private readonly pool: Pool
     ) {}
 
-    async createSession(session:Session){
-        const createdSession = await this.sessionModel.create(session);
-        return createdSession
+    async createSession(session:TypeSession): Promise<TypeSession>{
+        // const createdSession = await this.sessionModel.create(session);
+        // return createdSession
+        const result = await this.pool.query(`
+        INSERT INTO sessions (id, user_id, device_id, ip, device_name, last_activity,expires_at,version)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        RETURNING *
+        `, [session.id, session.user_id, session.device_id, session.ip, session.device_name, session.last_activity, session.expires_at, session.version]);
+        return result.rows[0]
     }
 
-    async findSessionByDeviceId(deviceId:string){
-        const session= await this.sessionModel.findOne({deviceId: deviceId}).lean<Session>();
-        return session
+    async findSessionByDeviceId(deviceId:string):Promise<TypeSession | null>{
+        // const session= await this.sessionModel.findOne({deviceId: deviceId}).lean<Session>();
+        // return session
+        const result = await this.pool.query(`
+        SELECT * FROM sessions WHERE device_id=$1
+        `,[deviceId]);
+        return result.rows[0] ?? null
     }
-    async findSessionByDeviceIdAndUserId(deviceId:string, userId: string){
-        const session= await this.sessionModel.findOne({deviceId: deviceId, userId: userId}).lean<Session>();
-        return session
-    }
-
-    async findSessionForRefresh(userId: string, deviceId:string){
-        const session= await this.sessionModel.findOne({userId: userId,deviceId: deviceId}).lean<Session>();
-        return session;
-    }
-    async findFrontSessionByDeviceId(deviceId:string){
-        console.log(
-            await this.sessionModel.find().lean()
-        );
-        const session= await this.sessionModel.findOne({deviceId: deviceId}).lean<Session>();
-        return session;
-    }
-    async findSession(userId: string, deviceId:string, sessionVersion: number){
-        const session= await this.sessionModel.findOne({userId: userId,deviceId: deviceId, version: sessionVersion}).lean<Session>();
-        return session;
-    }
-    async findSessionForLogout(userId: string, deviceId:string){
-        const session= await this.sessionModel.findOne({userId: userId,deviceId: deviceId}).lean<Session>();
-        return session;
+    async findSessionByDeviceIdAndUserId(deviceId:string, userId: string):Promise<TypeSession | null>{
+        // const session= await this.sessionModel.findOne({deviceId: deviceId, userId: userId}).lean<Session>();
+        // return session
+        const result = await this.pool.query(`
+        SELECT * FROM sessions WHERE device_id=$1 AND user_id=$2
+        `, [deviceId, userId]);
+        return result.rows[0] ?? null
     }
 
-    async updateSession(deviceId:string, userId: string, lastActivity:Date, expiresAt:Date, sessionVersion: number) {
-        const result = await this.sessionModel.updateOne(
-            { userId: userId, deviceId: deviceId },
-            {
-                $set: {
-                    lastActivity: lastActivity,
-                    expiresAt: expiresAt,
-                    version: sessionVersion
-                },
-            },
-        );
-
-        return result.acknowledged && result.matchedCount === 1;
-    }
-    async updateRevokedSession(userId: string, deviceId: string, lastActivity:Date, sessionVersion: number) {
-        const result = await this.sessionModel.updateOne(
-            { userId: userId, deviceId: deviceId, version: sessionVersion},
-            {
-                $set: {
-                    lastActivity: lastActivity,
-                    revoked: true
-                },
-            },
-        );
-        return result.acknowledged && result.matchedCount === 1;
+    async findSessionForRefresh(userId: string, deviceId:string): Promise<TypeSession | null>{
+        // const session= await this.sessionModel.findOne({userId: userId,deviceId: deviceId}).lean<Session>();
+        // return session;
+        const result = await this.pool.query(`
+        SELECT * from sessions WHERE user_id=$1 AND device_id=$2
+        `, [userId, deviceId]);
+        return result.rows[0] ?? null
     }
 
+    async findSessionForLogout(userId: string, deviceId:string) : Promise<TypeSession | null>{
+        // const session= await this.sessionModel.findOne({userId: userId,deviceId: deviceId}).lean<Session>();
+        // return session;
+        const result = await this.pool.query(`
+        SELECT * from sessions WHERE user_id=$1 AND device_id=$2
+        `, [userId, deviceId]);
+        return result.rows[0] ?? null
+    }
 
     async closeSession(userId: string, deviceId: string){
-        const result = await this.sessionModel.deleteOne({userId: userId, deviceId: deviceId });
-        //return result.deletedCount === 1
-        return
+        // const result = await this.sessionModel.deleteOne({userId: userId, deviceId: deviceId });
+        // //return result.deletedCount === 1
+        // return
+        const result = await this.pool.query(`
+        DELETE FROM sessions WHERE user_id = $1 AND device_id=$2`, [userId, deviceId]);
+        return result.rowCount === 1;
     }
 
     async closeAllSessionsBesidesThisOne(userId:string, deviceId:string){
-        const result = await this.sessionModel.deleteMany({
-            userId: userId,
-            deviceId: { $ne: deviceId }
-        });
-        return
+        // const result = await this.sessionModel.deleteMany({
+        //     userId: userId,
+        //     deviceId: { $ne: deviceId }
+        // });
+        // return
+        const result = await this.pool.query(`
+        DELETE FROM sessions
+        WHERE user_id = $1 AND device_id <> $2
+        `,[userId, deviceId]);
+        return result.rowCount !== null
     }
     async removeSession(sessionId:string){
         const result = await this.sessionModel.deleteOne({_id:sessionId});

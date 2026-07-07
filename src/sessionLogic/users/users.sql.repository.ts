@@ -40,7 +40,7 @@ export class UsersSQLRepository {
     }
     async removeAllUsersForTest(): Promise<void> {
         await this.pool.query(`
-        TRUNCATE TABLE users;
+        TRUNCATE TABLE users CASCADE;
     `);
     }
 }

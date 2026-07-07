@@ -8,10 +8,11 @@ import {CloseSessionForCurrentUserUseCase} from "./useCase/closeSessionForCurren
 import {Session, SessionSchema} from "./schema/session.schema";
 import {SecurityDevicesRepository} from "./securityDevices.repository";
 import {SecurityDevicesQueryRepository} from "./securityDevicesQuery.repository";
+import {DatabaseModule} from "../../../setup/database/database.module";
 
 
 @Module({
-    imports: [MongooseModule.forFeature([{name: Session.name, schema: SessionSchema}]),CqrsModule],
+    imports: [MongooseModule.forFeature([{name: Session.name, schema: SessionSchema}]),CqrsModule, DatabaseModule],
     controllers: [SessionsController],
     providers: [FindAllActiveSessionsForUserUseCase, CloseAllSessionsForUserExcludeCurrentUseCase, CloseSessionForCurrentUserUseCase,
         SecurityDevicesRepository, SecurityDevicesQueryRepository],
