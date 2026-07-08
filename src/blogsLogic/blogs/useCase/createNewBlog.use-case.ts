@@ -1,6 +1,6 @@
 import {BadRequestException} from "@nestjs/common";
 import {CreateBlogDto} from "../dto/create-blog.dto";
-import {BlogsRepository} from "../blogs.repository";
+import {BlogsRepository} from "../no-sql/blogs.repository";
 import {Blog} from "../schema/blog.schema";
 import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
 

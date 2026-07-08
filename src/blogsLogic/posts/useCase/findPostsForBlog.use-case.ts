@@ -1,6 +1,6 @@
 import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
 import {PaginationQueryDto} from "../../../dto/pagination-query.dto";
-import {BlogsQueryRepository} from "../../blogs/blogsQuery.repository";
+import {BlogsQueryRepository} from "../../blogs/no-sql/blogsQuery.repository";
 import {paginationHelper} from "../../../helpers/paginationQuery.helper";
 import {PostsQueryRepository} from "../postsQuery.reposiroty";
 import {TypePaginatorObject} from "../../../types/pagination.types";

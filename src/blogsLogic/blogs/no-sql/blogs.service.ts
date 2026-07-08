@@ -1,5 +1,5 @@
 import {BadRequestException, Injectable} from '@nestjs/common';
-import { UpdateBlogDto } from './dto/update-blog.dto';
+import { UpdateBlogDto } from '../dto/update-blog.dto';
 import {BlogsRepository} from "./blogs.repository";
 import {BlogsQueryRepository} from "./blogsQuery.repository";
 

@@ -1,22 +1,22 @@
 import {Controller, Get, Post, Body, Param, Delete, Put, Query, HttpCode, UseGuards} from '@nestjs/common';
 import { BlogsService } from './blogs.service';
-import { CreateBlogDto } from './dto/create-blog.dto';
-import { UpdateBlogDto } from './dto/update-blog.dto';
-import {CreatePostForBlogDto} from "./dto/create-post-for-blog.dto";
-import {PaginationQueryDto} from "../../dto/pagination-query.dto";
+import { CreateBlogDto } from '../dto/create-blog.dto';
+import { UpdateBlogDto } from '../dto/update-blog.dto';
+import {CreatePostForBlogDto} from "../dto/create-post-for-blog.dto";
+import {PaginationQueryDto} from "../../../dto/pagination-query.dto";
 import {BlogsQueryRepository} from "./blogsQuery.repository";
-import {CreateNewBlogCommand} from "./useCase/createNewBlog.use-case";
+import {CreateNewBlogCommand} from "../useCase/createNewBlog.use-case";
 import {CommandBus} from "@nestjs/cqrs";
-import {CreatePostForBlogCommand} from "../posts/useCase/createPostForBlog.use-case";
-import {PostsQueryRepository} from "../posts/postsQuery.reposiroty";
-import {TypeBlogToView} from "../../types/blog.types";
-import {TypePostView} from "../../types/post.types";
-import {FindPostsForBlogCommand} from "../posts/useCase/findPostsForBlog.use-case";
-import {TypePaginatorObject} from "../../types/pagination.types";
-import {FindAllBlogsCommand} from "./useCase/findAllBlogs.use-case";
-import {BasicGuard} from "../../../setup/guard/basic.guard";
-import {OptionalBearerGuard} from "../../../setup/guard/optionalBearer.guard";
-import {UserId} from "../../customDecorators/userId.decorator";
+import {CreatePostForBlogCommand} from "../../posts/useCase/createPostForBlog.use-case";
+import {PostsQueryRepository} from "../../posts/postsQuery.reposiroty";
+import {TypeBlogToView} from "../../../types/blog.types";
+import {TypePostView} from "../../../types/post.types";
+import {FindPostsForBlogCommand} from "../../posts/useCase/findPostsForBlog.use-case";
+import {TypePaginatorObject} from "../../../types/pagination.types";
+import {FindAllBlogsCommand} from "../useCase/findAllBlogs.use-case";
+import {BasicGuard} from "../../../../setup/guard/basic.guard";
+import {OptionalBearerGuard} from "../../../../setup/guard/optionalBearer.guard";
+import {UserId} from "../../../customDecorators/userId.decorator";
 
 @Controller('blogs')
 export class BlogsController {

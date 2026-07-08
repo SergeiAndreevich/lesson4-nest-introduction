@@ -1,6 +1,6 @@
 import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
 import {PaginationQueryDto} from "../../../dto/pagination-query.dto";
-import {BlogsQueryRepository} from "../blogsQuery.repository";
+import {BlogsQueryRepository} from "../no-sql/blogsQuery.repository";
 import {paginationHelper} from "../../../helpers/paginationQuery.helper";
 import {IPaginationAndSorting, TypePaginatorObject} from "../../../types/pagination.types";
 import {TypeBlogToView} from "../../../types/blog.types";

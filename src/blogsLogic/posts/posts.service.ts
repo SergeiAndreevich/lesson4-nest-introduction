@@ -7,7 +7,7 @@ import {PaginationQueryDto} from "../../dto/pagination-query.dto";
 import {paginationHelper} from "../../helpers/paginationQuery.helper";
 import {mapNewPostToView, mapPostToView} from "../../mappers/post.mapper";
 import {CommentsService} from "../comments/comments.service";
-import {BlogsQueryRepository} from "../blogs/blogsQuery.repository";
+import {BlogsQueryRepository} from "../blogs/no-sql/blogsQuery.repository";
 import {CommentsQueryRepository} from "../comments/commentQuery.repository";
 
 @Injectable()

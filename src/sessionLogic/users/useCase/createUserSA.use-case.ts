@@ -5,7 +5,6 @@ import {CreateAuthDto} from "../../auth/dto/create-auth.dto";
 import {UsersSQLRepository} from "../users.sql.repository";
 import {UsersQuerySqlRepository} from "../usersQuery.sql.repository";
 import {createUserSQL, TypeUser} from "../../../types/user.types";
-import {v4 as uuidv4} from "uuid";
 import {mapUserToView} from "../../../mappers/user.mapper";
 
 

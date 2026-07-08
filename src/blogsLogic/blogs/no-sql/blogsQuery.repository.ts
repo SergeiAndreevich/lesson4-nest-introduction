@@ -1,10 +1,10 @@
-import {IPaginationAndSorting, TypePaginatorObject} from "../../types/pagination.types";
+import {IPaginationAndSorting, TypePaginatorObject} from "../../../types/pagination.types";
 import {Model, Types} from "mongoose";
 import {InjectModel} from "@nestjs/mongoose";
-import {mapBlogToView} from "../../mappers/blog.mapper";
-import {TypeBlogToView} from "../../types/blog.types";
+import {mapBlogToView} from "../../../mappers/blog.mapper";
+import {TypeBlogToView} from "../../../types/blog.types";
 import {Injectable, NotFoundException, Post} from "@nestjs/common";
-import {Blog, BlogDocument} from "./schema/blog.schema";
+import {Blog, BlogDocument} from "../schema/blog.schema";
 
 
 
