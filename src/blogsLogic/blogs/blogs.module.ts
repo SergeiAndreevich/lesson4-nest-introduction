@@ -8,6 +8,11 @@ import {Blog, BlogSchema} from "./schema/blog.schema";
 import {CreateNewBlogUseCase} from "./useCase/createNewBlog.use-case";
 import {FindAllBlogsUseCase} from "./useCase/findAllBlogs.use-case";
 import {CqrsModule} from "@nestjs/cqrs";
+import {CreateBlogSAUseCase} from "./useCase/createNewBlogSA.use-case";
+import {CreatePostForBlogSAUseCase} from "../posts/useCase/createPostForBlogSA.use-case";
+import {FindAllBlogsSAUseCase} from "./useCase/findAllBlogsSA.use-case";
+import {FindBlogSAUseCase} from "./useCase/findBlogSA.use-case";
+import {UpdateBlogSAUseCase} from "./useCase/updateBlogSA.use-case";
 
 @Module({
   imports: [MongooseModule.forFeature([
@@ -15,7 +20,8 @@ import {CqrsModule} from "@nestjs/cqrs";
   ],
   controllers: [BlogsController],
   providers: [BlogsService, BlogsRepository, BlogsQueryRepository,
-      CreateNewBlogUseCase, FindAllBlogsUseCase],
+      CreateNewBlogUseCase, FindAllBlogsUseCase,
+      CreateBlogSAUseCase, CreatePostForBlogSAUseCase, FindAllBlogsSAUseCase, FindBlogSAUseCase, UpdateBlogSAUseCase],
     exports: [BlogsQueryRepository, BlogsRepository],
 })
 export class BlogsModule {}

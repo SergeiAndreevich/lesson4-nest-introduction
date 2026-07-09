@@ -6,7 +6,7 @@ import {CreatePostForBlogDto} from "./dto/create-post-for-blog.dto";
 import {PaginationQueryDto} from "../../dto/pagination-query.dto";
 import {BlogsQueryRepository} from "./no-sql/blogsQuery.repository";
 import {CreateNewBlogCommand} from "./useCase/createNewBlog.use-case";
-import {CommandBus} from "@nestjs/cqrs";
+import {CommandBus, QueryBus} from "@nestjs/cqrs";
 import {CreatePostForBlogCommand} from "../posts/useCase/createPostForBlog.use-case";
 import {PostsQueryRepository} from "../posts/postsQuery.reposiroty";
 import {TypeBlogToView} from "../../types/blog.types";
@@ -18,12 +18,18 @@ import {BasicGuard} from "../../../setup/guard/basic.guard";
 import {OptionalBearerGuard} from "../../../setup/guard/optionalBearer.guard";
 import {UserId} from "../../customDecorators/userId.decorator";
 import {CreateBlogSACommand} from "./useCase/createNewBlogSA.use-case";
+import {CreatePostForBlogSACommand} from "../posts/useCase/createPostForBlogSA.use-case";
+import {FindAllBlogsSAQuery, FindAllBlogsSAUseCase} from "./useCase/findAllBlogsSA.use-case";
+import {FindBlogSAQuery, FindBlogSAUseCase} from "./useCase/findBlogSA.use-case";
+import {UpdateBlogSACommand} from "./useCase/updateBlogSA.use-case";
+import {RemoveBlogSACommand} from "./useCase/removeBlogSA.use-case";
 
 @Controller('sa/blogs')
 export class BlogsController {
   constructor(private readonly blogsService: BlogsService,
               private readonly blogsQueryRepo: BlogsQueryRepository,
-              private readonly commandBus: CommandBus
+              private readonly commandBus: CommandBus,
+              private readonly queryBus: QueryBus
   ) {}
 
   @Post()
@@ -37,17 +43,17 @@ export class BlogsController {
   @UseGuards(BasicGuard)
   @HttpCode(201)
   async createPostForBlog(@Param('blogId') blogId:string, @Body() dto:CreatePostForBlogDto): Promise<TypePostView>{
-    return await this.commandBus.execute(new CreatePostForBlogCommand(blogId,dto));
+    return await this.commandBus.execute(new CreatePostForBlogSACommand(blogId,dto));
   }
 
   @Get()
-  findAll(@Query() query: PaginationQueryDto):Promise<TypePaginatorObject<TypeBlogToView[]>> {
-    return this.commandBus.execute(new FindAllBlogsCommand(query))
+  async findAll(@Query() query: PaginationQueryDto):Promise<TypePaginatorObject<TypeBlogToView[]>> {
+    return await this.queryBus.execute(new FindAllBlogsSAQuery(query))
   }
 
   @Get(':id')
-  findBlog(@Param('id') id: string):Promise<TypeBlogToView> {
-    return this.blogsQueryRepo.findBlogByIdOrFail(id);
+  async findBlog(@Param('id') id: string):Promise<TypeBlogToView> {
+    return await this.queryBus.execute(new FindBlogSAQuery(id))
   }
 
   //Вот здесь нужен optionalBearer, тк получаем посты и возможно на каком-то есть наша реакция
@@ -60,15 +66,15 @@ export class BlogsController {
   @Put(':id')
   @UseGuards(BasicGuard)
   @HttpCode(204)
-  updateBlogById(@Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
-    return this.blogsService.updateBlogById(id, updateBlogDto);
+  async updateBlogById(@Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
+    return await this.commandBus.execute(new UpdateBlogSACommand(id, updateBlogDto))
   }
 
   @Delete(':id')
   @UseGuards(BasicGuard)
   @HttpCode(204)
-  removeBlog(@Param('id') id: string) {
-    return this.blogsService.removeBlogById(id);
+  async removeBlog(@Param('id') id: string) {
+    return await this.commandBus.execute(new RemoveBlogSACommand(id))
   }
 
 }

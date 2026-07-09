@@ -1,8 +1,10 @@
-import {IPaginationAndSorting, TypePaginatorObject} from "../../../types/pagination.types";
 import {Inject, Injectable, NotFoundException, Post} from "@nestjs/common";
 import {PG_CONNECTION} from "../../../setup/database/database.constants";
 import {Pool} from "pg";
 import {TypeUserToView} from "../../types/user.types";
+import {TypeBlog, TypeBlogToView} from "../../types/blog.types";
+import {mapBlogToView, mapBlogToViewSA} from "../../mappers/blog.mapper";
+import {IPaginationAndSorting, TypePaginatorObject} from "../../types/pagination.types";
 
 
 
@@ -18,39 +20,16 @@ export class BlogsSQLQueryRepository{
         return result.rows[0] ?? null
     }
 
-    async findAllBlogsByQuery(pagination:IPaginationAndSorting) : Promise<TypePaginatorObject<TypeBlogToView[]>>{
-        const {pageNumber, pageSize, sortBy, sortDirection,
-            searchNameTerm, searchLoginTerm, searchEmailTerm} = pagination;
-        const filter: any = {};
-        if (searchNameTerm) {
-            filter.name = { $regex: searchNameTerm, $options: "i" };
-        }
-        const totalCount = await this.blogModel.countDocuments(filter);
-
-        const blogs = await this.blogModel
-            .find(filter)
-            .sort({ [sortBy]: sortDirection })
-            .skip((pageNumber - 1) * pageSize)
-            .limit(pageSize)
-            .lean();
-
-        return {
-            pagesCount: Math.ceil(totalCount / pageSize),
-            page: pageNumber,
-            pageSize: pageSize,
-            totalCount,
-            items: blogs.map(blog => mapBlogToView(blog))
-        };
-    }
-    async findAllUsersByQuery(
+    async findBlogsByQuery(
         pagination: IPaginationAndSorting
-    ): Promise<TypePaginatorObject<TypeUserToView[]>> {
+    ): Promise<TypePaginatorObject<TypeBlogToView[]>> {
 
         const {
             pageNumber,
             pageSize,
             sortBy,
             sortDirection,
+            searchNameTerm,
             searchLoginTerm,
             searchEmailTerm,
         } = pagination;
@@ -61,6 +40,12 @@ export class BlogsSQLQueryRepository{
         const whereParts: string[] = [];
         const values: any[] = [];
         let i = 1;
+
+        if (searchNameTerm) {
+            whereParts.push(`name ILIKE $${i}`);
+            values.push(`%${searchNameTerm}%`);
+            i++;
+        }
 
         if (searchLoginTerm) {
             whereParts.push(`login ILIKE $${i}`);
@@ -99,14 +84,9 @@ export class BlogsSQLQueryRepository{
         // =========================
         // 4. QUERY USERS
         // =========================
-        const usersResult = await this.pool.query<TypeUserToView>(
+        const blogsResult = await this.pool.query<TypeBlog>(
             `
-        SELECT
-            id,
-            login,
-            email,
-            created_at AS "createdAt"
-        FROM users
+        SELECT * FROM blogs
         ${whereSQL}
         ORDER BY ${sortField} ${direction}
         LIMIT $${i}
@@ -121,7 +101,7 @@ export class BlogsSQLQueryRepository{
         const countResult = await this.pool.query<{ count: string }>(
             `
         SELECT COUNT(*)
-        FROM users
+        FROM blogs
         ${whereSQL}
         `,
             values,
@@ -137,7 +117,7 @@ export class BlogsSQLQueryRepository{
             page: pageNumber,
             pageSize,
             totalCount,
-            items: usersResult.rows,
+            items: blogsResult.rows.map(i=>mapBlogToViewSA(i)),
         };
     }
 }
