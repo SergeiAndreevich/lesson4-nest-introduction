@@ -1,6 +1,6 @@
 import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
 import {CreateCommentDto} from "../dto/create-comment.dto";
-import {PostsQueryRepository} from "../../posts/postsQuery.reposiroty";
+import {PostsQueryRepository} from "../../posts/no-sql/postsQuery.reposiroty";
 import {CommentsRepository} from "../comments.repository";
 import {BadRequestException} from "@nestjs/common";
 import {Comment} from "../schema/comment.schema";

@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { PostsService } from './posts.service';
-import { PostsController } from './posts.controller';
+import { PostsService } from './no-sql/posts.service';
+import { PostsController } from './no-sql/posts.controller';
 import {MongooseModule} from "@nestjs/mongoose";
-import {PostsRepository} from "./posts.repository";
-import {PostsQueryRepository} from "./postsQuery.reposiroty";
+import {PostsRepository} from "./no-sql/posts.repository";
+import {PostsQueryRepository} from "./no-sql/postsQuery.reposiroty";
 import {Post, PostSchema} from "./shema/post.schema";
 import {BlogsModule} from "../blogs/blogs.module";
 import {FindAllPostsUseCase} from "./useCase/findAllPosts.use-case";
@@ -13,13 +13,16 @@ import {ReactionsModule} from "../../reactionsLogic/reactions.module";
 import {FindPostsForBlogUseCase} from "./useCase/findPostsForBlog.use-case";
 import {CreatePostForBlogUseCase} from "./useCase/createPostForBlog.use-case";
 import {CqrsModule} from "@nestjs/cqrs";
+import {DatabaseModule} from "../../../setup/database/database.module";
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }
-  ]), CqrsModule, BlogsModule, ReactionsModule],
+  ]), CqrsModule, BlogsModule, ReactionsModule, DatabaseModule],
   controllers: [PostsController],
   providers: [PostsService, PostsRepository, PostsQueryRepository,
-  FindAllPostsUseCase, FindPostsForBlogUseCase, CreateNewPostUseCase, CreatePostForBlogUseCase, ChangePostLikeStatusUseCase],
+  FindAllPostsUseCase, FindPostsForBlogUseCase, CreateNewPostUseCase, CreatePostForBlogUseCase, ChangePostLikeStatusUseCase,
+
+  ],
   exports: [PostsRepository,PostsQueryRepository],
 })
 export class PostsModule {}

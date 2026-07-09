@@ -4,7 +4,7 @@ import {ReactionInputDto} from "../../../reactionsLogic/dto/reaction-input.dto";
 import {ReactionsQueryRepository} from "../../../reactionsLogic/reactionsQuery.repository";
 import {EntitiesForReaction, ReactionType} from "../../../types/reaction.types";
 import {Reaction} from "../../../reactionsLogic/schema/reaction.schema";
-import {PostsRepository} from "../posts.repository";
+import {PostsRepository} from "../no-sql/posts.repository";
 
 
 export class ChangePostLikeStatusCommand{

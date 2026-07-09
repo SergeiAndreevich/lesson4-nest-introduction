@@ -1,8 +1,8 @@
 import {InjectModel} from "@nestjs/mongoose";
 import {Model, Types} from "mongoose";
 import {Injectable, NotFoundException} from "@nestjs/common";
-import {UpdatePostDto} from "./dto/update-post.dto";
-import {Post, PostDocument} from "./shema/post.schema";
+import {UpdatePostDto} from "../dto/update-post.dto";
+import {Post, PostDocument} from "../shema/post.schema";
 
 @Injectable()
 export class PostsRepository {

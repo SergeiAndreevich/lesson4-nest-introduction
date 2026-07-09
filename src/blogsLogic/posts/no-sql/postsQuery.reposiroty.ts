@@ -1,12 +1,12 @@
 import {InjectModel} from "@nestjs/mongoose";
 import {Injectable, NotFoundException} from "@nestjs/common";
 import {Model} from "mongoose";
-import {IPaginationAndSorting, TypePaginatorObject} from "../../types/pagination.types";
-import {TypePostView} from "../../types/post.types";
-import {mapPostToFront} from "../../mappers/post.mapper";
-import {Post, PostDocument} from "./shema/post.schema";
-import {ReactionsQueryRepository} from "../../reactionsLogic/reactionsQuery.repository";
-import {EntitiesForReaction, ReactionType, TypeLikeDetails} from "../../types/reaction.types";
+import {IPaginationAndSorting, TypePaginatorObject} from "../../../types/pagination.types";
+import {TypePostView} from "../../../types/post.types";
+import {mapPostToFront} from "../../../mappers/post.mapper";
+import {Post, PostDocument} from "../shema/post.schema";
+import {ReactionsQueryRepository} from "../../../reactionsLogic/reactionsQuery.repository";
+import {EntitiesForReaction, ReactionType, TypeLikeDetails} from "../../../types/reaction.types";
 import {Types} from 'mongoose';
 
 @Injectable()

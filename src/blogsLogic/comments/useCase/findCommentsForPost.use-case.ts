@@ -1,7 +1,7 @@
 import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
 import {PaginationQueryDto} from "../../../dto/pagination-query.dto";
 import {CommentsQueryRepository} from "../commentQuery.repository";
-import {PostsRepository} from "../../posts/posts.repository";
+import {PostsRepository} from "../../posts/no-sql/posts.repository";
 
 
 export class FindCommentsForPostCommand{

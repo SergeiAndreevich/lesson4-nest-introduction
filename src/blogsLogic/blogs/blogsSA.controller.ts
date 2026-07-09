@@ -8,7 +8,7 @@ import {BlogsQueryRepository} from "./no-sql/blogsQuery.repository";
 import {CreateNewBlogCommand} from "./useCase/createNewBlog.use-case";
 import {CommandBus, QueryBus} from "@nestjs/cqrs";
 import {CreatePostForBlogCommand} from "../posts/useCase/createPostForBlog.use-case";
-import {PostsQueryRepository} from "../posts/postsQuery.reposiroty";
+import {PostsQueryRepository} from "../posts/no-sql/postsQuery.reposiroty";
 import {TypeBlogToView} from "../../types/blog.types";
 import {TypePostView} from "../../types/post.types";
 import {FindPostsForBlogCommand} from "../posts/useCase/findPostsForBlog.use-case";

@@ -1,25 +1,27 @@
 import {Controller, Get, Post, Body, Param, Delete, Query, Put, Inject, HttpCode, UseGuards} from '@nestjs/common';
 import { PostsService } from './posts.service';
-import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
-import {PaginationQueryDto} from "../../dto/pagination-query.dto";
+import { CreatePostDto } from '../dto/create-post.dto';
+import { UpdatePostDto } from '../dto/update-post.dto';
+import {PaginationQueryDto} from "../../../dto/pagination-query.dto";
 import {CommandBus} from "@nestjs/cqrs";
-import {CreateNewPostCommand} from "./useCase/createPost.use-case";
+import {CreateNewPostCommand} from "../useCase/createPost.use-case";
 import {PostsQueryRepository} from "./postsQuery.reposiroty";
-import {TypePostView} from "../../types/post.types";
-import {FindAllPostsCommand} from "./useCase/findAllPosts.use-case";
-import {TypePaginatorObject} from "../../types/pagination.types";
-import {CreateCommentDto} from "../comments/dto/create-comment.dto";
-import {CreateCommentForPostCommand} from "../comments/useCase/createCommentForPost.use-case";
-import {CommentsQueryRepository} from "../comments/commentQuery.repository";
-import {BearerGuard} from "../../../setup/guard/bearer.guard";
-import {UserId} from "../../customDecorators/userId.decorator";
-import {UserLogin} from "../../customDecorators/userLogin.decorator";
-import {ReactionInputDto} from "../../reactionsLogic/dto/reaction-input.dto";
-import {ChangePostLikeStatusCommand} from "./useCase/changePostLikeStatus.use-case";
-import {FindCommentsForPostCommand} from "../comments/useCase/findCommentsForPost.use-case";
-import {BasicGuard} from "../../../setup/guard/basic.guard";
-import {OptionalBearerGuard} from "../../../setup/guard/optionalBearer.guard";
+import {TypePostView} from "../../../types/post.types";
+import {FindAllPostsCommand} from "../useCase/findAllPosts.use-case";
+import {TypePaginatorObject} from "../../../types/pagination.types";
+import {CreateCommentDto} from "../../comments/dto/create-comment.dto";
+import {CreateCommentForPostCommand} from "../../comments/useCase/createCommentForPost.use-case";
+import {CommentsQueryRepository} from "../../comments/commentQuery.repository";
+import {BearerGuard} from "../../../../setup/guard/bearer.guard";
+import {UserId} from "../../../customDecorators/userId.decorator";
+import {UserLogin} from "../../../customDecorators/userLogin.decorator";
+import {ReactionInputDto} from "../../../reactionsLogic/dto/reaction-input.dto";
+import {ChangePostLikeStatusCommand} from "../useCase/changePostLikeStatus.use-case";
+import {FindCommentsForPostCommand} from "../../comments/useCase/findCommentsForPost.use-case";
+import {BasicGuard} from "../../../../setup/guard/basic.guard";
+import {OptionalBearerGuard} from "../../../../setup/guard/optionalBearer.guard";
+import {RemovePostSACommand} from "../useCase/removePostSA.use-case";
+import {UpdatePostSACommand} from "../useCase/updatePostSA.use-case";
 
 @Controller('posts')
 export class PostsController {
@@ -73,14 +75,16 @@ export class PostsController {
   @Put(':id')
   @UseGuards(BasicGuard)
   @HttpCode(204)
-  updatePostById(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postsService.updatePostById(id, updatePostDto);
+  async updatePostById(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
+    //return this.postsService.updatePostById(id, updatePostDto);
+    return await this.commandBus.execute(new UpdatePostSACommand(id,updatePostDto))
   }
 
   @Delete(':id')
   @UseGuards(BasicGuard)
   @HttpCode(204)
-  removePostById(@Param('id') id: string) {
-    return this.postsService.removePostById(id);
+  async removePostById(@Param('id') id: string) {
+    //return this.postsService.removePostById(id);
+    return await this.commandBus.execute(new RemovePostSACommand(id))
   }
 }

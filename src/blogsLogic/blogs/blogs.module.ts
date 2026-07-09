@@ -13,15 +13,17 @@ import {CreatePostForBlogSAUseCase} from "../posts/useCase/createPostForBlogSA.u
 import {FindAllBlogsSAUseCase} from "./useCase/findAllBlogsSA.use-case";
 import {FindBlogSAUseCase} from "./useCase/findBlogSA.use-case";
 import {UpdateBlogSAUseCase} from "./useCase/updateBlogSA.use-case";
+import {RemoveBlogSAUseCase} from "./useCase/removeBlogSA.use-case";
+import {DatabaseModule} from "../../../setup/database/database.module";
 
 @Module({
   imports: [MongooseModule.forFeature([
-      {name: Blog.name, schema: BlogSchema}]), CqrsModule
+      {name: Blog.name, schema: BlogSchema}]), CqrsModule, DatabaseModule
   ],
   controllers: [BlogsController],
   providers: [BlogsService, BlogsRepository, BlogsQueryRepository,
       CreateNewBlogUseCase, FindAllBlogsUseCase,
-      CreateBlogSAUseCase, CreatePostForBlogSAUseCase, FindAllBlogsSAUseCase, FindBlogSAUseCase, UpdateBlogSAUseCase],
+      CreateBlogSAUseCase, CreatePostForBlogSAUseCase, FindAllBlogsSAUseCase, FindBlogSAUseCase, UpdateBlogSAUseCase, RemoveBlogSAUseCase],
     exports: [BlogsQueryRepository, BlogsRepository],
 })
 export class BlogsModule {}
