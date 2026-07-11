@@ -13,7 +13,7 @@ export class BlogsSQLQueryRepository{
     constructor(
         @Inject(PG_CONNECTION) private readonly pool: Pool
     ) {}
-    async findBlogById(id: string) {
+    async findBlogById(id: string):Promise<TypeBlog | null> {
         const result = await this.pool.query(`
         SELECT * FROM blogs WHERE id = $1
         `,[id]);

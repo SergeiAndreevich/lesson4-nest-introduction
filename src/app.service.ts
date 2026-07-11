@@ -6,6 +6,7 @@ import {PostsRepository} from "./blogsLogic/posts/no-sql/posts.repository";
 import {BlogsRepository} from "./blogsLogic/blogs/no-sql/blogs.repository";
 import {UsersSQLRepository} from "./sessionLogic/users/users.sql.repository";
 import {BlogsSQLRepository} from "./blogsLogic/blogs/blogsSA.repository";
+import {PostsSQLRepository} from "./blogsLogic/posts/postsSQL.repository";
 
 @Injectable()
 export class AppService {
@@ -16,6 +17,7 @@ export class AppService {
       private usersRepo: UsersRepository,
       private usersSQLRepo: UsersSQLRepository,
       private blogsSQLRepository: BlogsSQLRepository,
+      private postsSQLRepository: PostsSQLRepository
   ) {}
   getHello(): string {
     return 'Hello World! Its my first NestJS app';
@@ -27,7 +29,8 @@ export class AppService {
     await this.usersRepo.removeAllUsersForTest();
 
     await this.usersSQLRepo.removeAllUsersForTest();
-    await this.blogsRepo.removeAllBlogsForTest();
+    await this.blogsSQLRepository.removeAllBlogsForTest();
+    await this.postsSQLRepository.removeAllPostsForTest();
     return
   }
 }

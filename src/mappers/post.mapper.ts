@@ -1,4 +1,4 @@
-import {TypePostView} from "../types/post.types";
+import {TypePost, TypePostView} from "../types/post.types";
 import {ReactionType, TypeLikeDetails} from "../types/reaction.types";
 import {PostDocument} from "../blogsLogic/posts/shema/post.schema";
 import {CommentDocument} from "../blogsLogic/comments/schema/comment.schema";
@@ -53,6 +53,23 @@ export function mapPostToFront(dto: PostDocument, myStatus: ReactionType, newest
             dislikesCount: dto.dislikesCount,
             myStatus: myStatus,
             newestLikes: newestLikes
+        }
+    }
+}
+export function mapPostSA(dto: TypePost):TypePostView {
+    return {
+        id: dto.id,
+        title: dto.title,
+        shortDescription: dto.short_description,
+        content: dto.content,
+        blogId: dto.blog_id,
+        blogName: dto.blog_name,
+        createdAt: dto.created_at.toISOString(),
+        extendedLikesInfo: {
+            likesCount: 0,
+            dislikesCount: 0,
+            myStatus: ReactionType.none,
+            newestLikes: []
         }
     }
 }

@@ -6,6 +6,9 @@ import {PostsRepository} from "../no-sql/posts.repository";
 import {BlogsQueryRepository} from "../../blogs/no-sql/blogsQuery.repository";
 import {PostsQueryRepository} from "../no-sql/postsQuery.reposiroty";
 import {BlogsSQLQueryRepository} from "../../blogs/blogsSAQuery.repository";
+import {createPost} from "../../../types/post.types";
+import {PostsSQLRepository} from "../postsSQL.repository";
+import {mapPostSA, mapPostToFront} from "../../../mappers/post.mapper";
 
 
 export class CreatePostForBlogSACommand{
@@ -18,18 +21,17 @@ export class CreatePostForBlogSACommand{
 @CommandHandler(CreatePostForBlogSACommand)
 export class CreatePostForBlogSAUseCase implements ICommandHandler<CreatePostForBlogSACommand>{
     constructor(
-        private readonly postsRepo: PostsRepository,
         private readonly blogsSQLQueryRepo: BlogsSQLQueryRepository,
-        private readonly postsQueryRepo: PostsQueryRepository,
+        private readonly postsSQLRepo: PostsSQLRepository
     ) {}
     async execute(command: CreatePostForBlogSACommand){
         const blog = await this.blogsSQLQueryRepo.findBlogById(command.blogId);
-        //далее логику надо думать исходя из таблицы posts и я думаю надо её связать с блогами
-        const post = Post.createNewPostForBlog(command.createPostForBlogDto, blog)
-        const createdPostId = await this.postsRepo.createPost(post);
-        if(!createdPostId){
-            throw new BadRequestException({message: 'Post has not been created', field: 'post'});
+        if(!blog){
+            throw new BadRequestException({message: 'Blog not found', field: 'blogId'});
         }
-        return this.postsQueryRepo.findPostByIdOrFail(createdPostId)
+        //не забывай про связку с лайками
+        const post = createPost(command.createPostForBlogDto, blog.id, blog.name)
+        const createdPost = await this.postsSQLRepo.createPostSA(post);
+        return mapPostSA(createdPost)
     }
 }

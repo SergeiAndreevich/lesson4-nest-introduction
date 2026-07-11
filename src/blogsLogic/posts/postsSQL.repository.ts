@@ -5,25 +5,23 @@ import {UpdatePostDto} from "./dto/update-post.dto";
 import {Post, PostDocument} from "./shema/post.schema";
 import {PG_CONNECTION} from "../../../setup/database/database.constants";
 import {Pool} from "pg";
+import {TypePost} from "../../types/post.types";
 
 @Injectable()
 export class PostsSQLRepository {
     constructor(
         @Inject(PG_CONNECTION) private readonly pool: Pool
     ) {}
-    async createPostSA(post: any): Promise<string> {
+    async createPostSA(post: TypePost): Promise<TypePost> {
         const result = await this.pool.query(`
-        INSERT INTO posts ()
-        VALUES ($1,$2,)
+        INSERT INTO posts (id, title, short_description, content, blog_id, blog_name, created_at, likes_count, dislikes_count)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
         RETURNING *
-        `,[]);
+        `,[post.id,post.title,post.short_description,post.content,post.blog_id,post.blog_name,post.created_at,post.likes_count,post.dislikes_count]);
         return result.rows[0]
     }
 
     async findPostSAById(id: string): Promise<any | null> {
-        // if (!Types.ObjectId.isValid(id)) {
-        //     throw new NotFoundException({ message: 'PostId must be ObjectId', field: 'postId' });
-        // }
         const result = await this.pool.query(`
         SELECT * FROM posts
         WHERE id = $1
@@ -33,35 +31,21 @@ export class PostsSQLRepository {
 
     async updatePostSAById(id: string, dto: UpdatePostDto):Promise<boolean> {
         const result = await this.pool.query(`
-        
-        `,[]);
-        // const result = await this.postModel.updateOne(
-        //     { _id: id },
-        //     {
-        //         $set: {
-        //             title: dto.title,
-        //             shortDescription: dto.shortDescription,
-        //             content: dto.content,
-        //             blogId: dto.blogId,
-        //         },
-        //     },
-        // );
-
+        UPDATE posts
+        SET title = $1, short_description = $2, content = $3, blog_id = $4
+        WHERE id = $5
+        `,[dto.title, dto.shortDescription, dto.content, dto.blogId, id]);
         return result.rowCount === 1
     }
 
     async updatePostSACounters(postId:string, likesCount: number, dislikesCount: number) {
-        const result = await this.postModel.updateOne(
-            { _id: postId },
-            {
-                $set: {
-                    likesCount: likesCount,
-                    dislikesCount: dislikesCount
-                },
-            },
-        );
 
-        return result.matchedCount === 1 && result.modifiedCount === 1;
+        const result = await this.pool.query(`
+        UPDATE posts
+        SET likes_count = $1, dislikes_count = $2
+        WHERE id = $3
+        `, [likesCount, dislikesCount, postId]);
+        return result.rowCount === 1
     }
 
     async removePostSAById(id: string){
