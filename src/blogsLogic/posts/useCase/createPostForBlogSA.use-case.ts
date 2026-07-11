@@ -9,6 +9,7 @@ import {BlogsSQLQueryRepository} from "../../blogs/blogsSAQuery.repository";
 import {createPost} from "../../../types/post.types";
 import {PostsSQLRepository} from "../postsSQL.repository";
 import {mapPostSA, mapPostToFront} from "../../../mappers/post.mapper";
+import {PostsSQLQueryRepository} from "../postsSQLQuery.reposiroty";
 
 
 export class CreatePostForBlogSACommand{
@@ -22,7 +23,8 @@ export class CreatePostForBlogSACommand{
 export class CreatePostForBlogSAUseCase implements ICommandHandler<CreatePostForBlogSACommand>{
     constructor(
         private readonly blogsSQLQueryRepo: BlogsSQLQueryRepository,
-        private readonly postsSQLRepo: PostsSQLRepository
+        private readonly postsSQLRepo: PostsSQLRepository,
+        private readonly postsSQLQueryRepo: PostsSQLQueryRepository
     ) {}
     async execute(command: CreatePostForBlogSACommand){
         const blog = await this.blogsSQLQueryRepo.findBlogById(command.blogId);
@@ -32,6 +34,6 @@ export class CreatePostForBlogSAUseCase implements ICommandHandler<CreatePostFor
         //не забывай про связку с лайками
         const post = createPost(command.createPostForBlogDto, blog.id, blog.name)
         const createdPost = await this.postsSQLRepo.createPostSA(post);
-        return mapPostSA(createdPost)
+        return await this.postsSQLQueryRepo.findPostById(createdPost.id)
     }
 }

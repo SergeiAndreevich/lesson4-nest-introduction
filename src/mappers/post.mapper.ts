@@ -56,6 +56,23 @@ export function mapPostToFront(dto: PostDocument, myStatus: ReactionType, newest
         }
     }
 }
+export function mapPostSAToFront(dto: TypePost, myStatus: ReactionType, newestLikes: TypeLikeDetails[]): TypePostView {
+    return {
+        id: dto.id,
+        title: dto.title,
+        shortDescription: dto.short_description,
+        content: dto.content,
+        blogId: dto.blog_id,
+        blogName: dto.blog_name,
+        createdAt: dto.created_at.toISOString(),
+        extendedLikesInfo: {
+            likesCount: dto.likes_count,
+            dislikesCount: dto.dislikes_count,
+            myStatus: myStatus,
+            newestLikes: newestLikes
+        }
+    }
+}
 export function mapPostSA(dto: TypePost):TypePostView {
     return {
         id: dto.id,
