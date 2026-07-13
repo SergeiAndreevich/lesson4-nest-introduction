@@ -1,8 +1,5 @@
-import {InjectModel} from "@nestjs/mongoose";
-import {Model, Types} from "mongoose";
 import {Inject, Injectable, NotFoundException} from "@nestjs/common";
 import {UpdatePostDto} from "./dto/update-post.dto";
-import {Post, PostDocument} from "./shema/post.schema";
 import {PG_CONNECTION} from "../../../setup/database/database.constants";
 import {Pool} from "pg";
 import {TypePost} from "../../types/post.types";
@@ -21,7 +18,7 @@ export class PostsSQLRepository {
         return result.rows[0]
     }
 
-    async findPostSAById(id: string): Promise<any | null> {
+    async findPostSAById(id: string): Promise<TypePost | null> {
         const result = await this.pool.query(`
         SELECT * FROM posts
         WHERE id = $1
@@ -29,17 +26,16 @@ export class PostsSQLRepository {
         return result.rows[0] ?? null
     }
 
-    async updatePostSAById(id: string, dto: UpdatePostDto):Promise<boolean> {
+    async updatePostSAById(id: string, dto: UpdatePostDto, blogName: string):Promise<boolean> {
         const result = await this.pool.query(`
         UPDATE posts
-        SET title = $1, short_description = $2, content = $3, blog_id = $4
-        WHERE id = $5
-        `,[dto.title, dto.shortDescription, dto.content, dto.blogId, id]);
+        SET title = $1, short_description = $2, content = $3, blog_id = $4, blog_name = $5
+        WHERE id = $6
+        `,[dto.title, dto.shortDescription, dto.content, dto.blogId, blogName, id]);
         return result.rowCount === 1
     }
 
     async updatePostSACounters(postId:string, likesCount: number, dislikesCount: number) {
-
         const result = await this.pool.query(`
         UPDATE posts
         SET likes_count = $1, dislikes_count = $2
