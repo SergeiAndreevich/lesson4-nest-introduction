@@ -5,6 +5,8 @@ import {paginationHelper} from "../../../helpers/paginationQuery.helper";
 import {IPaginationAndSorting, TypePaginatorObject} from "../../../types/pagination.types";
 import {TypeBlogToView} from "../../../types/blog.types";
 import {BlogsSQLQueryRepository} from "../blogsSAQuery.repository";
+import {BadRequestException, NotFoundException} from "@nestjs/common";
+import {mapBlogToViewSA} from "../../../mappers/blog.mapper";
 
 
 
@@ -20,6 +22,10 @@ export class FindBlogSAUseCase implements IQueryHandler<FindBlogSAQuery>{
         private readonly blogsSQLQueryRepo: BlogsSQLQueryRepository,
     ) {}
     async execute(query: FindBlogSAQuery):Promise<TypeBlogToView>{
-        return await this.blogsSQLQueryRepo.findBlogById(query.id)
+        const blog = await this.blogsSQLQueryRepo.findBlogById(query.id);
+        if(!blog){
+            throw new NotFoundException({message: 'Blog not found', field: 'blogId'});
+        }
+        return mapBlogToViewSA(blog)
     }
 }

@@ -3,7 +3,7 @@ import { PostsService } from './no-sql/posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import {PaginationQueryDto} from "../../dto/pagination-query.dto";
-import {CommandBus} from "@nestjs/cqrs";
+import {CommandBus, QueryBus} from "@nestjs/cqrs";
 import {CreateNewPostCommand} from "./useCase/createPost.use-case";
 import {PostsQueryRepository} from "./no-sql/postsQuery.reposiroty";
 import {TypePostView} from "../../types/post.types";
@@ -20,11 +20,13 @@ import {ChangePostLikeStatusCommand} from "./useCase/changePostLikeStatus.use-ca
 import {FindCommentsForPostCommand} from "../comments/useCase/findCommentsForPost.use-case";
 import {BasicGuard} from "../../../setup/guard/basic.guard";
 import {OptionalBearerGuard} from "../../../setup/guard/optionalBearer.guard";
+import {FindAllPostSAQuery} from "./useCase/findAllPostsSA.use-case";
 
-@Controller('posts')
-export class PostsController {
+@Controller('sa/posts')
+export class PostsSAController {
   constructor(private readonly postsService: PostsService,
               private readonly commandBus: CommandBus,
+              private readonly queryBus: QueryBus,
               private readonly postsQueryRepo: PostsQueryRepository,) {}
 
   @Post()
@@ -45,8 +47,9 @@ export class PostsController {
   //Вот здесь нужен optionalBearer, тк получаем посты и возможно на каком-то есть наша реакция
   @Get()
   @UseGuards(OptionalBearerGuard)
-  findAllPostsByQuery(@Query()dto:PaginationQueryDto, @UserId() userId?:string):Promise<TypePaginatorObject<TypePostView[]>> {
-    return this.commandBus.execute(new FindAllPostsCommand(dto, userId))
+  async findAllPostsByQuery(@Query()dto:PaginationQueryDto, @UserId() userId?:string):Promise<TypePaginatorObject<TypePostView[]>> {
+    //return this.commandBus.execute(new FindAllPostsCommand(dto, userId))
+    return await this.queryBus.execute(new FindAllPostSAQuery(dto, userId))
   }
 
   //Вот здесь нужен optionalBearer, тк получаем посты и возможно на каком-то есть наша реакция

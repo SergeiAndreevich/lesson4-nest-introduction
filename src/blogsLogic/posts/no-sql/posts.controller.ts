@@ -3,7 +3,7 @@ import { PostsService } from './posts.service';
 import { CreatePostDto } from '../dto/create-post.dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
 import {PaginationQueryDto} from "../../../dto/pagination-query.dto";
-import {CommandBus} from "@nestjs/cqrs";
+import {CommandBus, QueryBus} from "@nestjs/cqrs";
 import {CreateNewPostCommand} from "../useCase/createPost.use-case";
 import {PostsQueryRepository} from "./postsQuery.reposiroty";
 import {TypePostView} from "../../../types/post.types";
@@ -22,12 +22,18 @@ import {BasicGuard} from "../../../../setup/guard/basic.guard";
 import {OptionalBearerGuard} from "../../../../setup/guard/optionalBearer.guard";
 import {RemovePostSACommand} from "../useCase/removePostSA.use-case";
 import {UpdatePostSACommand} from "../useCase/updatePostSA.use-case";
+import {PostsSQLQueryRepository} from "../postsSQLQuery.reposiroty";
+import {paginationHelper} from "../../../helpers/paginationQuery.helper";
+import {FindAllPostSAQuery} from "../useCase/findAllPostsSA.use-case";
+import {FindPostSAQuery} from "../useCase/findPostSA.use-case";
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService,
               private readonly commandBus: CommandBus,
-              private readonly postsQueryRepo: PostsQueryRepository,) {}
+              private readonly queryBus: QueryBus,
+              private readonly postsQueryRepo: PostsQueryRepository,
+              private readonly postsSQLQueryRepo: PostsSQLQueryRepository) {}
 
   @Post()
   @UseGuards(BasicGuard)
@@ -44,18 +50,20 @@ export class PostsController {
     return  await this.commandBus.execute(new CreateCommentForPostCommand(userId, userLogin, postId, dto));
   }
 
+  // HW_18
   //Вот здесь нужен optionalBearer, тк получаем посты и возможно на каком-то есть наша реакция
   @Get()
   @UseGuards(OptionalBearerGuard)
   findAllPostsByQuery(@Query()dto:PaginationQueryDto, @UserId() userId?:string):Promise<TypePaginatorObject<TypePostView[]>> {
-    return this.commandBus.execute(new FindAllPostsCommand(dto, userId))
+    return this.queryBus.execute(new FindAllPostSAQuery(dto, userId))
   }
 
   //Вот здесь нужен optionalBearer, тк получаем посты и возможно на каком-то есть наша реакция
   @Get(':id')
   @UseGuards(OptionalBearerGuard)
-  findPostById(@Param('id') id: string, @UserId() userId?: string):Promise<TypePostView> {
-    return this.postsQueryRepo.findPostByIdOrFail(id, userId)
+  async findPostById(@Param('id') id: string, @UserId() userId?: string):Promise<TypePostView> {
+    //return this.postsQueryRepo.findPostByIdOrFail(id, userId)
+    return await this.queryBus.execute(new FindPostSAQuery(id, userId))
   }
 
   //Вот здесь нужен optionalBearer, тк получаем посты и возможно на каком-то есть наша реакция

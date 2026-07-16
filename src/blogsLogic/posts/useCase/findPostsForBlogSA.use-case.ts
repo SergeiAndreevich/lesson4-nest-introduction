@@ -1,4 +1,4 @@
-import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
+import {CommandHandler, ICommandHandler, IQueryHandler} from "@nestjs/cqrs";
 import {PaginationQueryDto} from "../../../dto/pagination-query.dto";
 import {BlogsQueryRepository} from "../../blogs/no-sql/blogsQuery.repository";
 import {paginationHelper} from "../../../helpers/paginationQuery.helper";
@@ -11,7 +11,7 @@ import {PostsSQLQueryRepository} from "../postsSQLQuery.reposiroty";
 
 
 
-export class FindPostsForBlogSACommand{
+export class FindPostsForBlogSAQuery{
     constructor(
         public blogId: string,
         public query: PaginationQueryDto,
@@ -19,18 +19,18 @@ export class FindPostsForBlogSACommand{
     ){}
 }
 
-@CommandHandler(FindPostsForBlogSACommand)
-export class FindPostsForBlogSAUseCase implements ICommandHandler<FindPostsForBlogSACommand>{
+@CommandHandler(FindPostsForBlogSAQuery)
+export class FindPostsForBlogSAUseCase implements IQueryHandler<FindPostsForBlogSAQuery>{
     constructor(
         private readonly blogsSQLQueryRepo: BlogsSQLQueryRepository,
         private readonly postsSQLQueryRepo: PostsSQLQueryRepository
     ) {}
-    async execute(command: FindPostsForBlogSACommand):Promise<TypePaginatorObject<TypePostView[]>>{
-        const blog = await this.blogsSQLQueryRepo.findBlogById(command.blogId);
+    async execute(query: FindPostsForBlogSAQuery):Promise<TypePaginatorObject<TypePostView[]>>{
+        const blog = await this.blogsSQLQueryRepo.findBlogById(query.blogId);
         if(!blog){
             throw new BadRequestException({message: 'Blog not found', field: 'blogId'});
         }
-        const pagination = paginationHelper(command.query);
-        return await this.postsSQLQueryRepo.findPostsForBlogSA(command.blogId, pagination, command.userId);
+        const pagination = paginationHelper(query.query);
+        return await this.postsSQLQueryRepo.findPostsForBlogSA(query.blogId, pagination, query.userId);
     }
 }

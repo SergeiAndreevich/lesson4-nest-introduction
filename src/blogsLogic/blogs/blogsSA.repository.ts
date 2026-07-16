@@ -22,8 +22,8 @@ export class BlogsSQLRepository {
 
     async updateBlogById(id: string, dto: UpdateBlogDto) {
         const result = await this.pool.query(`
-        UPDATE blogs SET  name = $1, description = $2, website_url = $3, created_at = NOW()
-        WHERE id = $4`)
+        UPDATE blogs SET name = $1, description = $2, website_url = $3
+        WHERE id = $4`, [dto.name,dto.description, dto.websiteUrl, id]);
         return result.rowCount === 1
     }
     async removeBlogById(id: string){

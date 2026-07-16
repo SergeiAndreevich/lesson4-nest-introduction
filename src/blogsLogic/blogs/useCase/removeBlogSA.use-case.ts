@@ -1,4 +1,4 @@
-import {BadRequestException, Body} from "@nestjs/common";
+import {BadRequestException, Body, NotFoundException} from "@nestjs/common";
 import {CreateBlogDto} from "../dto/create-blog.dto";
 import {BlogsRepository} from "../no-sql/blogs.repository";
 import {Blog} from "../schema/blog.schema";
@@ -23,7 +23,7 @@ export class RemoveBlogSAUseCase implements ICommandHandler<RemoveBlogSACommand>
     async execute(command: RemoveBlogSACommand){
         const deleted = await this.blogsSQLRepo.removeBlogById(command.id);
         if (!deleted) {
-            throw new BadRequestException({message:'Blog was not found or deleted' , field: 'blogId'});
+            throw new NotFoundException({message:'Blog was not found or deleted' , field: 'blogId'});
         }
         return
     }

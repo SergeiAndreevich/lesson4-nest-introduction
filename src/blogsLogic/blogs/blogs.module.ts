@@ -15,15 +15,18 @@ import {FindBlogSAUseCase} from "./useCase/findBlogSA.use-case";
 import {UpdateBlogSAUseCase} from "./useCase/updateBlogSA.use-case";
 import {RemoveBlogSAUseCase} from "./useCase/removeBlogSA.use-case";
 import {DatabaseModule} from "../../../setup/database/database.module";
+import {BlogsSAController} from "./blogsSA.controller";
+import {BlogsSQLRepository} from "./blogsSA.repository";
+import {BlogsSQLQueryRepository} from "./blogsSAQuery.repository";
+import {FindPostsForBlogSAUseCase} from "../posts/useCase/findPostsForBlogSA.use-case";
 
 @Module({
   imports: [MongooseModule.forFeature([
       {name: Blog.name, schema: BlogSchema}]), CqrsModule, DatabaseModule
   ],
-  controllers: [BlogsController],
-  providers: [BlogsService, BlogsRepository, BlogsQueryRepository,
-      CreateNewBlogUseCase, FindAllBlogsUseCase,
-      CreateBlogSAUseCase, CreatePostForBlogSAUseCase, FindAllBlogsSAUseCase, FindBlogSAUseCase, UpdateBlogSAUseCase, RemoveBlogSAUseCase],
-    exports: [BlogsQueryRepository, BlogsRepository],
+  controllers: [BlogsController, BlogsSAController],
+  providers: [BlogsService, BlogsRepository, BlogsQueryRepository, BlogsSQLRepository, BlogsSQLQueryRepository, CreateNewBlogUseCase, FindAllBlogsUseCase,
+      CreateBlogSAUseCase, FindAllBlogsSAUseCase, FindBlogSAUseCase, UpdateBlogSAUseCase, RemoveBlogSAUseCase],
+    exports: [BlogsQueryRepository, BlogsRepository,BlogsSQLRepository, BlogsSQLQueryRepository],
 })
 export class BlogsModule {}

@@ -1,4 +1,4 @@
-import {BadRequestException} from "@nestjs/common";
+import {BadRequestException, NotFoundException} from "@nestjs/common";
 import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
 import {CreatePostForBlogDto} from "../../blogs/dto/create-post-for-blog.dto";
 import {Post} from "../shema/post.schema";
@@ -29,7 +29,7 @@ export class CreatePostForBlogSAUseCase implements ICommandHandler<CreatePostFor
     async execute(command: CreatePostForBlogSACommand){
         const blog = await this.blogsSQLQueryRepo.findBlogById(command.blogId);
         if(!blog){
-            throw new BadRequestException({message: 'Blog not found', field: 'blogId'});
+            throw new NotFoundException({message: 'Blog not found', field: 'blogId'});
         }
         //не забывай про связку с лайками
         const post = createPost(command.createPostForBlogDto, blog.id, blog.name)

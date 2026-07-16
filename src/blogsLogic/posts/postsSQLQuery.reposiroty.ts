@@ -240,8 +240,7 @@ export class PostsSQLQueryRepository{
         // =========================
         // 4. QUERY USERS
         // =========================
-        const postsResult = await this.pool.query<TypePost>(
-            `
+        const postsResult = await this.pool.query<TypePost>(`
         SELECT * FROM posts
         ${whereSQL}
         ORDER BY ${sortField} ${direction}

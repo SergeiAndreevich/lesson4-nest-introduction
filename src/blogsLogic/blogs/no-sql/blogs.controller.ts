@@ -6,7 +6,7 @@ import {CreatePostForBlogDto} from "../dto/create-post-for-blog.dto";
 import {PaginationQueryDto} from "../../../dto/pagination-query.dto";
 import {BlogsQueryRepository} from "./blogsQuery.repository";
 import {CreateNewBlogCommand} from "../useCase/createNewBlog.use-case";
-import {CommandBus} from "@nestjs/cqrs";
+import {CommandBus, QueryBus} from "@nestjs/cqrs";
 import {CreatePostForBlogCommand} from "../../posts/useCase/createPostForBlog.use-case";
 import {PostsQueryRepository} from "../../posts/no-sql/postsQuery.reposiroty";
 import {TypeBlogToView} from "../../../types/blog.types";
@@ -17,12 +17,16 @@ import {FindAllBlogsCommand} from "../useCase/findAllBlogs.use-case";
 import {BasicGuard} from "../../../../setup/guard/basic.guard";
 import {OptionalBearerGuard} from "../../../../setup/guard/optionalBearer.guard";
 import {UserId} from "../../../customDecorators/userId.decorator";
+import {FindBlogSAQuery} from "../useCase/findBlogSA.use-case";
+import {FindAllBlogsSAQuery} from "../useCase/findAllBlogsSA.use-case";
+import {FindPostsForBlogSAQuery} from "../../posts/useCase/findPostsForBlogSA.use-case";
 
 @Controller('blogs')
 export class BlogsController {
   constructor(private readonly blogsService: BlogsService,
               private readonly blogsQueryRepo: BlogsQueryRepository,
-              private readonly commandBus: CommandBus
+              private readonly commandBus: CommandBus,
+              private readonly queryBus: QueryBus,
   ) {}
 
   @Post()
@@ -40,21 +44,27 @@ export class BlogsController {
     return await this.commandBus.execute(new CreatePostForBlogCommand(blogId,dto));
   }
 
+  // HW_18
   @Get()
-  findAll(@Query() query: PaginationQueryDto):Promise<TypePaginatorObject<TypeBlogToView[]>> {
-    return this.commandBus.execute(new FindAllBlogsCommand(query))
+  async findAll(@Query() query: PaginationQueryDto):Promise<TypePaginatorObject<TypeBlogToView[]>> {
+    // return this.commandBus.execute(new FindAllBlogsCommand(query))
+    return await this.queryBus.execute(new FindAllBlogsSAQuery(query))
   }
 
+  // HW_18
   @Get(':id')
-  findBlog(@Param('id') id: string):Promise<TypeBlogToView> {
-    return this.blogsQueryRepo.findBlogByIdOrFail(id);
+  async findBlog(@Param('id') id: string):Promise<TypeBlogToView> {
+    //return this.blogsQueryRepo.findBlogByIdOrFail(id);
+    return await this.queryBus.execute(new FindBlogSAQuery(id))
   }
 
+  // HW_18
   //Вот здесь нужен optionalBearer, тк получаем посты и возможно на каком-то есть наша реакция
   @Get(':blogId/posts')
   @UseGuards(OptionalBearerGuard)
   findPostsForBlog(@Param('blogId') blogId: string, @Query() query: PaginationQueryDto, @UserId() userId?:string):Promise<TypePaginatorObject<TypePostView[]>>{
-    return this.commandBus.execute(new FindPostsForBlogCommand(blogId,query, userId));
+    // return this.commandBus.execute(new FindPostsForBlogCommand(blogId,query, userId));
+    return this.commandBus.execute(new FindPostsForBlogSAQuery(blogId,query, userId));
   }
 
   @Put(':id')

@@ -70,6 +70,7 @@ export class BlogsSQLQueryRepository{
         const sortMap: Record<string, string> = {
             login: 'login COLLATE "C"',
             email: 'email COLLATE "C"',
+            name: 'name COLLATE "C"',
             createdAt: 'created_at',
         };
 
