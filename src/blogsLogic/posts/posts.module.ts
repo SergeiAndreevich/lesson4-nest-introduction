@@ -23,6 +23,8 @@ import {RemovePostSAUseCase} from "./useCase/removePostSA.use-case";
 import {UpdatePostSACommand, UpdatePostSAUseCase} from "./useCase/updatePostSA.use-case";
 import {FindAllPostSAUseCase} from "./useCase/findAllPostsSA.use-case";
 import {FindPostSAQuery, FindPostSAUseCase} from "./useCase/findPostSA.use-case";
+import {RemovePostForBlogSAUseCase} from "./useCase/removePostForBlogSA.use-case";
+import {UpdatePostForBlogSAUseCase} from "./useCase/updatePostForBlogSA.use-case";
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }
@@ -30,7 +32,7 @@ import {FindPostSAQuery, FindPostSAUseCase} from "./useCase/findPostSA.use-case"
   controllers: [PostsController, PostsSAController],
   providers: [PostsService, PostsRepository, PostsQueryRepository, PostsSQLRepository, PostsSQLQueryRepository,
   FindAllPostsUseCase, FindPostsForBlogUseCase, CreateNewPostUseCase, CreatePostForBlogUseCase, ChangePostLikeStatusUseCase,
-      CreatePostForBlogSAUseCase, FindPostsForBlogSAUseCase, FindAllPostSAUseCase, FindPostSAUseCase, RemovePostSAUseCase, UpdatePostSAUseCase
+      CreatePostForBlogSAUseCase, FindPostsForBlogSAUseCase, FindAllPostSAUseCase, FindPostSAUseCase, RemovePostSAUseCase, UpdatePostSAUseCase,UpdatePostForBlogSAUseCase,RemovePostForBlogSAUseCase
   ],
   exports: [PostsRepository,PostsQueryRepository, PostsSQLRepository, PostsSQLQueryRepository],
 })

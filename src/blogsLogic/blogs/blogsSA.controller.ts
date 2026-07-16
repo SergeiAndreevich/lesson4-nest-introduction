@@ -17,6 +17,9 @@ import {FindBlogSAQuery} from "./useCase/findBlogSA.use-case";
 import {UpdateBlogSACommand} from "./useCase/updateBlogSA.use-case";
 import {RemoveBlogSACommand} from "./useCase/removeBlogSA.use-case";
 import { FindPostsForBlogSAQuery} from "../posts/useCase/findPostsForBlogSA.use-case";
+import {RemovePostForBlogSACommand} from "../posts/useCase/removePostForBlogSA.use-case";
+import {UpdatePostForBlogSACommand} from "../posts/useCase/updatePostForBlogSA.use-case";
+import {UpdatePostDto, UpdatePostForBlogDto} from "../posts/dto/update-post.dto";
 
 @Controller('sa/blogs')
 export class BlogsSAController {
@@ -57,6 +60,12 @@ export class BlogsSAController {
     return this.queryBus.execute(new FindPostsForBlogSAQuery(blogId,query, userId));
   }
 
+  @Put(':blogId/posts/:postId')
+  @UseGuards(BasicGuard)
+  @HttpCode(204)
+  async updatePostForBlog(@Param('blogId') blogId: string, @Param('postId') postId: string, @Body() updatePostDto: UpdatePostForBlogDto) {
+    return await this.commandBus.execute(new UpdatePostForBlogSACommand(blogId, postId, updatePostDto))
+  }
   @Put(':id')
   @UseGuards(BasicGuard)
   @HttpCode(204)
@@ -64,10 +73,16 @@ export class BlogsSAController {
     return await this.commandBus.execute(new UpdateBlogSACommand(id, updateBlogDto))
   }
 
+  @Delete(':blogId/posts/:postId')
+  @UseGuards(BasicGuard)
+  @HttpCode(204)
+  async removePostForBlog(@Param('blogId') blogId: string, @Param('postId') postId: string) {
+    return await this.commandBus.execute(new RemovePostForBlogSACommand(blogId, postId))
+  }
   @Delete(':id')
   @UseGuards(BasicGuard)
   @HttpCode(204)
-  async removeBlog(@Param('id') id: string) {
+  async removeBlogById(@Param('id') id: string) {
     return await this.commandBus.execute(new RemoveBlogSACommand(id))
   }
 

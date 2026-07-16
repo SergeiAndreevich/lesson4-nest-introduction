@@ -24,11 +24,13 @@ export enum SortDirection {
 export enum SortFields {
     createdAt = 'createdAt',
     login = 'login',
-    name = 'name'
+    name = 'name',
+    blogName = 'blogName',
 
 }
 export const allowedSortFields: SortFields[] = [
     SortFields.createdAt,
     SortFields.login,
-    SortFields.name
+    SortFields.name,
+    SortFields.blogName,
 ];

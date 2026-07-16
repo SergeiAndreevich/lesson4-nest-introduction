@@ -64,7 +64,7 @@ export class BlogsController {
   @UseGuards(OptionalBearerGuard)
   findPostsForBlog(@Param('blogId') blogId: string, @Query() query: PaginationQueryDto, @UserId() userId?:string):Promise<TypePaginatorObject<TypePostView[]>>{
     // return this.commandBus.execute(new FindPostsForBlogCommand(blogId,query, userId));
-    return this.commandBus.execute(new FindPostsForBlogSAQuery(blogId,query, userId));
+    return this.queryBus.execute(new FindPostsForBlogSAQuery(blogId,query, userId));
   }
 
   @Put(':id')

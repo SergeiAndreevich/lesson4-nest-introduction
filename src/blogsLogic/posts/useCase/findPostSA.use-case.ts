@@ -1,4 +1,4 @@
-import {CommandHandler, ICommandHandler, IQueryHandler} from "@nestjs/cqrs";
+import {CommandHandler, ICommandHandler, IQueryHandler, QueryHandler} from "@nestjs/cqrs";
 import {PaginationQueryDto} from "../../../dto/pagination-query.dto";
 import {CommentsQueryRepository} from "../../comments/commentQuery.repository";
 import {PostsRepository} from "../no-sql/posts.repository";
@@ -13,7 +13,7 @@ export class FindPostSAQuery{
     ){}
 }
 
-@CommandHandler(FindPostSAQuery)
+@QueryHandler(FindPostSAQuery)
 export class FindPostSAUseCase implements IQueryHandler<FindPostSAQuery>{
     constructor(
         private readonly postsSQLQueryRepo: PostsSQLQueryRepository,

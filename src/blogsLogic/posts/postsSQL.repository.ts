@@ -1,5 +1,5 @@
 import {Inject, Injectable, NotFoundException} from "@nestjs/common";
-import {UpdatePostDto} from "./dto/update-post.dto";
+import {UpdatePostDto, UpdatePostForBlogDto} from "./dto/update-post.dto";
 import {PG_CONNECTION} from "../../../setup/database/database.constants";
 import {Pool} from "pg";
 import {TypePost} from "../../types/post.types";
@@ -32,6 +32,14 @@ export class PostsSQLRepository {
         SET title = $1, short_description = $2, content = $3, blog_id = $4, blog_name = $5
         WHERE id = $6
         `,[dto.title, dto.shortDescription, dto.content, dto.blogId, blogName, id]);
+        return result.rowCount === 1
+    }
+    async updatePostForBlogSAById(id: string, blogId:string, dto: UpdatePostForBlogDto, blogName: string):Promise<boolean> {
+        const result = await this.pool.query(`
+        UPDATE posts
+        SET title = $1, short_description = $2, content = $3, blog_id = $4, blog_name = $5
+        WHERE id = $6
+        `,[dto.title, dto.shortDescription, dto.content, blogId, blogName, id]);
         return result.rowCount === 1
     }
 
