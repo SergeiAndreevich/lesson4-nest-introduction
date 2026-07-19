@@ -1,15 +1,16 @@
 import {ReactionType} from "../types/reaction.types";
 import {CommentDocument} from "../blogsLogic/comments/schema/comment.schema";
+import {TypeComment} from "../types/comment.types";
 
-export function mapCommentToView(dto){
+export function mapCommentToView(dto:TypeComment, userLogin: string){
         return{
-            id: dto._id.toString(),
+            id: dto.id,
             content: dto.content,
             commentatorInfo: {
-                userId: dto.commentatorInfo.userId,
-                userLogin: dto.commentatorInfo.userLogin
+                userId: dto.user_id,
+                userLogin: userLogin
             },
-            createdAt: dto.createdAt.toISOString(),
+            createdAt: dto.created_at.toISOString(),
             likesInfo: {
                 likesCount: 0,
                 dislikesCount: 0,

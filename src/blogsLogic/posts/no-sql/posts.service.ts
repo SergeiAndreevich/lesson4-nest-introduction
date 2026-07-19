@@ -6,9 +6,9 @@ import {PostsQueryRepository} from "./postsQuery.reposiroty";
 import {PaginationQueryDto} from "../../../dto/pagination-query.dto";
 import {paginationHelper} from "../../../helpers/paginationQuery.helper";
 import {mapNewPostToView, mapPostToView} from "../../../mappers/post.mapper";
-import {CommentsService} from "../../comments/comments.service";
+import {CommentsService} from "../../comments/no-sql/comments.service";
 import {BlogsQueryRepository} from "../../blogs/no-sql/blogsQuery.repository";
-import {CommentsQueryRepository} from "../../comments/commentQuery.repository";
+import {CommentsQueryRepository} from "../../comments/no-sql/commentQuery.repository";
 
 @Injectable()
 export class PostsService {

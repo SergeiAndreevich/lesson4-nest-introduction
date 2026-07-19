@@ -1,4 +1,4 @@
-import {CommentsRepository} from "../comments.repository";
+import {CommentsRepository} from "../no-sql/comments.repository";
 import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
 import {ReactionInputDto} from "../../../reactionsLogic/dto/reaction-input.dto";
 import {ReactionsRepository} from "../../../reactionsLogic/reactions.repository";

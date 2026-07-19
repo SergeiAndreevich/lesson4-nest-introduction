@@ -1,8 +1,8 @@
 import {Controller, Get, Post, Body, Patch, Param, Delete, Put, UseGuards, HttpCode} from '@nestjs/common';
-import { CommentsService } from './comments.service';
+import { CommentsService } from './no-sql/comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
-import {CommentsQueryRepository} from "./commentQuery.repository";
+import {CommentsQueryRepository} from "./no-sql/commentQuery.repository";
 import {CommandBus} from "@nestjs/cqrs";
 import {BearerGuard} from "../../../setup/guard/bearer.guard";
 import {UserId} from "../../customDecorators/userId.decorator";
@@ -14,7 +14,7 @@ import {RemoveCommentCommand} from "./useCase/removeComment.use-case";
 import {OptionalBearerGuard} from "../../../setup/guard/optionalBearer.guard";
 
 @Controller('comments')
-export class CommentsController {
+export class CommentsSAController {
   constructor(private readonly commentsService: CommentsService,
               private readonly commentsQueryRepo: CommentsQueryRepository,
               private readonly commandBus: CommandBus,) {}

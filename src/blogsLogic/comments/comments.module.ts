@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { CommentsService } from './comments.service';
-import { CommentsController } from './comments.controller';
-import {CommentsRepository} from "./comments.repository";
-import {CommentsQueryRepository} from "./commentQuery.repository";
+import { CommentsService } from './no-sql/comments.service';
+import { CommentsController } from './no-sql/comments.controller';
+import {CommentsRepository} from "./no-sql/comments.repository";
+import {CommentsQueryRepository} from "./no-sql/commentQuery.repository";
 import {MongooseModule} from "@nestjs/mongoose";
 import {Comment, CommentSchema} from "./schema/comment.schema";
 import {ChangeCommentLikeStatusUseCase} from "./useCase/changeCommentLikeStatus.use-case";
@@ -13,12 +13,19 @@ import {PostsModule} from "../posts/posts.module";
 import {ReactionsModule} from "../../reactionsLogic/reactions.module";
 import {CqrsModule} from "@nestjs/cqrs";
 import {FindCommentsForPostUseCase} from "./useCase/findCommentsForPost.use-case";
+import {CreateCommentForPostSAUseCase} from "./useCase/createCommentForPostSA.use-case";
+import {CommentsSQLRepository} from "./commentsSA.repository";
+import {CommentsSQLQueryRepository} from "./commentSAQuery.repository";
+import {DatabaseModule} from "../../../setup/database/database.module";
+import {FindCommentsForPostSAUseCase} from "./useCase/findCommentsForPostSA.use-case";
+import {CommentsSAController} from "./commentsSA.controller";
 
 @Module({
-  imports: [MongooseModule.forFeature([{name: Comment.name, schema: CommentSchema}]), CqrsModule, PostsModule, ReactionsModule],
-  controllers: [CommentsController],
-  providers: [CommentsService, CommentsRepository, CommentsQueryRepository,
-  ChangeCommentLikeStatusUseCase, CreateCommentForPostUseCase,UpdateCommentUseCase, RemoveCommentUseCase, FindCommentsForPostUseCase],
-  exports: [CommentsRepository, CommentsQueryRepository],
+  imports: [MongooseModule.forFeature([{name: Comment.name, schema: CommentSchema}]), CqrsModule, PostsModule, ReactionsModule, DatabaseModule],
+  controllers: [CommentsController, CommentsSAController],
+  providers: [CommentsService, CommentsRepository, CommentsQueryRepository,CommentsSQLRepository, CommentsSQLQueryRepository,
+  ChangeCommentLikeStatusUseCase, CreateCommentForPostUseCase,UpdateCommentUseCase, RemoveCommentUseCase, FindCommentsForPostUseCase,
+  CreateCommentForPostSAUseCase, FindCommentsForPostSAUseCase],
+  exports: [CommentsRepository, CommentsQueryRepository, CommentsSQLRepository, CommentsSQLQueryRepository],
 })
 export class CommentsModule {}

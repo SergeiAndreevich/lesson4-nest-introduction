@@ -1,6 +1,6 @@
 import {CommandHandler, ICommandHandler, IQueryHandler, QueryHandler} from "@nestjs/cqrs";
 import {PaginationQueryDto} from "../../../dto/pagination-query.dto";
-import {CommentsQueryRepository} from "../../comments/commentQuery.repository";
+import {CommentsQueryRepository} from "../../comments/no-sql/commentQuery.repository";
 import {PostsRepository} from "../no-sql/posts.repository";
 import {paginationHelper} from "../../../helpers/paginationQuery.helper";
 import {PostsSQLQueryRepository} from "../postsSQLQuery.reposiroty";

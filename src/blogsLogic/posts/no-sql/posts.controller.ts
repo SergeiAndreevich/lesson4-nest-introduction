@@ -11,7 +11,7 @@ import {FindAllPostsCommand} from "../useCase/findAllPosts.use-case";
 import {TypePaginatorObject} from "../../../types/pagination.types";
 import {CreateCommentDto} from "../../comments/dto/create-comment.dto";
 import {CreateCommentForPostCommand} from "../../comments/useCase/createCommentForPost.use-case";
-import {CommentsQueryRepository} from "../../comments/commentQuery.repository";
+import {CommentsQueryRepository} from "../../comments/no-sql/commentQuery.repository";
 import {BearerGuard} from "../../../../setup/guard/bearer.guard";
 import {UserId} from "../../../customDecorators/userId.decorator";
 import {UserLogin} from "../../../customDecorators/userLogin.decorator";

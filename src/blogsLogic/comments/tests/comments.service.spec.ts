@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CommentsService } from './comments.service';
+import { CommentsService } from '../no-sql/comments.service';
 
 describe('CommentsService', () => {
   let service: CommentsService;

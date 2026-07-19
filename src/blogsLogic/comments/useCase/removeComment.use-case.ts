@@ -1,5 +1,5 @@
 import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
-import {CommentsRepository} from "../comments.repository";
+import {CommentsRepository} from "../no-sql/comments.repository";
 import {BadRequestException, ForbiddenException} from "@nestjs/common";
 
 
