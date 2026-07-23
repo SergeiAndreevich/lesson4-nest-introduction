@@ -20,11 +20,12 @@ import {PostsSQLQueryRepository} from "./postsSQLQuery.reposiroty";
 import {CreatePostForBlogSAUseCase} from "./useCase/createPostForBlogSA.use-case";
 import {FindPostsForBlogSAUseCase} from "./useCase/findPostsForBlogSA.use-case";
 import {RemovePostSAUseCase} from "./useCase/removePostSA.use-case";
-import {UpdatePostSACommand, UpdatePostSAUseCase} from "./useCase/updatePostSA.use-case";
+import {UpdatePostSAUseCase} from "./useCase/updatePostSA.use-case";
 import {FindAllPostSAUseCase} from "./useCase/findAllPostsSA.use-case";
-import {FindPostSAQuery, FindPostSAUseCase} from "./useCase/findPostSA.use-case";
+import {FindPostSAUseCase} from "./useCase/findPostSA.use-case";
 import {RemovePostForBlogSAUseCase} from "./useCase/removePostForBlogSA.use-case";
 import {UpdatePostForBlogSAUseCase} from "./useCase/updatePostForBlogSA.use-case";
+import {ChangePostLikeStatusSAUseCase} from "./useCase/changePostLikeStatusSA.use-case";
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }
@@ -32,7 +33,8 @@ import {UpdatePostForBlogSAUseCase} from "./useCase/updatePostForBlogSA.use-case
   controllers: [PostsController, PostsSAController],
   providers: [PostsService, PostsRepository, PostsQueryRepository, PostsSQLRepository, PostsSQLQueryRepository,
   FindAllPostsUseCase, FindPostsForBlogUseCase, CreateNewPostUseCase, CreatePostForBlogUseCase, ChangePostLikeStatusUseCase,
-      CreatePostForBlogSAUseCase, FindPostsForBlogSAUseCase, FindAllPostSAUseCase, FindPostSAUseCase, RemovePostSAUseCase, UpdatePostSAUseCase,UpdatePostForBlogSAUseCase,RemovePostForBlogSAUseCase
+      CreatePostForBlogSAUseCase, FindPostsForBlogSAUseCase, FindAllPostSAUseCase, FindPostSAUseCase, RemovePostSAUseCase,
+    UpdatePostSAUseCase,UpdatePostForBlogSAUseCase,RemovePostForBlogSAUseCase, ChangePostLikeStatusSAUseCase
   ],
   exports: [PostsRepository,PostsQueryRepository, PostsSQLRepository, PostsSQLQueryRepository],
 })

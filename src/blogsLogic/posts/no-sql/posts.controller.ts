@@ -26,6 +26,10 @@ import {PostsSQLQueryRepository} from "../postsSQLQuery.reposiroty";
 import {paginationHelper} from "../../../helpers/paginationQuery.helper";
 import {FindAllPostSAQuery} from "../useCase/findAllPostsSA.use-case";
 import {FindPostSAQuery} from "../useCase/findPostSA.use-case";
+import {CreateCommentForPostSACommand} from "../../comments/useCase/createCommentForPostSA.use-case";
+import {FindCommentsForPostSAQuery} from "../../comments/useCase/findCommentsForPostSA.use-case";
+import {ChangeCommentLikeStatusSACommand} from "../../comments/useCase/changeCommentLikeStatusSA.use-case";
+import {ChangePostLikeStatusSACommand} from "../useCase/changePostLikeStatusSA.use-case";
 
 @Controller('posts')
 export class PostsController {
@@ -43,11 +47,13 @@ export class PostsController {
     return this.postsQueryRepo.findPostByIdOrFail(postId);
   }
 
+  //HW_19
   @Post(':postId/comments')
   @UseGuards(BearerGuard)
   @HttpCode(201)
   async createCommentForPost(@UserId()userId:string, @UserLogin()userLogin:string, @Param('postId') postId: string, @Body() dto: CreateCommentDto) {
-    return  await this.commandBus.execute(new CreateCommentForPostCommand(userId, userLogin, postId, dto));
+    //return await this.commandBus.execute(new CreateCommentForPostCommand(userId, userLogin, postId, dto));
+    return await this.commandBus.execute(new CreateCommentForPostSACommand(userId,userLogin,postId,dto))
   }
 
   // HW_18
@@ -58,6 +64,7 @@ export class PostsController {
     return this.queryBus.execute(new FindAllPostSAQuery(dto, userId))
   }
 
+  //HW_19
   //Вот здесь нужен optionalBearer, тк получаем посты и возможно на каком-то есть наша реакция
   @Get(':id')
   @UseGuards(OptionalBearerGuard)
@@ -66,18 +73,22 @@ export class PostsController {
     return await this.queryBus.execute(new FindPostSAQuery(id, userId))
   }
 
+  //HW_19
   //Вот здесь нужен optionalBearer, тк получаем посты и возможно на каком-то есть наша реакция
   @Get(':postId/comments')
   @UseGuards(OptionalBearerGuard)
-  findCommentsForPost(@Param('postId') postId: string, @Query() dto: PaginationQueryDto, @UserId() userId?:string) {
-    return this.commandBus.execute(new FindCommentsForPostCommand(postId, dto, userId));
+  async findCommentsForPost(@Param('postId') postId: string, @Query() dto: PaginationQueryDto, @UserId() userId?:string) {
+    //return this.commandBus.execute(new FindCommentsForPostCommand(postId, dto, userId));
+    return await this.queryBus.execute(new FindCommentsForPostSAQuery(postId,dto,userId))
   }
 
+  //HW_19
   @Put(':postId/like-status')
   @UseGuards(BearerGuard)
   @HttpCode(204)
   async changePostLikeStatus(@UserId()userId:string, @UserLogin()userLogin:string, @Param('postId') postId: string, @Body() dto: ReactionInputDto){
-    return this.commandBus.execute(new ChangePostLikeStatusCommand(userId, userLogin, postId, dto));
+    //return this.commandBus.execute(new ChangePostLikeStatusCommand(userId, userLogin, postId, dto));
+    return await this.commandBus.execute(new ChangePostLikeStatusSACommand(userId,userLogin, postId,dto))
   }
 
   @Put(':id')

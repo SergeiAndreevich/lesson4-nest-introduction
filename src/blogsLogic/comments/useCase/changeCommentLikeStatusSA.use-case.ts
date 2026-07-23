@@ -1,0 +1,65 @@
+import {CommentsRepository} from "../no-sql/comments.repository";
+import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
+import {ReactionInputDto} from "../../../reactionsLogic/dto/reaction-input.dto";
+import {ReactionsRepository} from "../../../reactionsLogic/reactions.repository";
+import {ReactionsQueryRepository} from "../../../reactionsLogic/reactionsQuery.repository";
+import {EntitiesForReaction, ReactionType} from "../../../types/reaction.types";
+import {Reaction} from "../../../reactionsLogic/schema/reaction.schema";
+
+export class ChangeCommentLikeStatusSACommand{
+    constructor(
+        public userId: string,
+        public userLogin: string,
+        public commentId: string,
+        public dto: ReactionInputDto
+    ){}
+}
+
+@CommandHandler(ChangeCommentLikeStatusSACommand)
+export class ChangeCommentLikeStatusSAUseCase implements ICommandHandler<ChangeCommentLikeStatusSACommand>{
+    constructor(
+        private readonly reactionsRepo: ReactionsRepository,
+        private readonly commentsRepo: CommentsRepository,
+    ) {}
+    async execute(command: ChangeCommentLikeStatusSACommand){
+        //check comment by commentId
+        const comment = await this.commentsRepo.findCommentByIdOrFail(command.commentId);
+        let likesCount = comment.likesCount;
+        let dislikesCount = comment.dislikesCount;
+        //find reaction
+        const reaction = await this.reactionsRepo.findReactionById_EntityType_UserId_OrNull(
+            command.commentId, EntitiesForReaction.comment, command.userId
+        )
+        //check status
+        const oldStatus = reaction?.status ?? ReactionType.none;
+        const newStatus = command.dto.likeStatus;
+        if (oldStatus === newStatus) return;
+
+        //if new reaction is none
+        if(reaction && newStatus === ReactionType.none) {
+            await this.reactionsRepo.removeReactionByIdOrFail(reaction._id.toString())
+        }
+        //if reaction is toggled
+        if (reaction && newStatus !== ReactionType.none) {
+            await this.reactionsRepo.updateReactionByIdOrFail(reaction._id.toString(), newStatus);
+        }
+
+        //if no reaction
+        if (!reaction && newStatus !== ReactionType.none) {
+            const newReaction = Reaction.createReaction(command.commentId, EntitiesForReaction.comment, command.userId, command.userLogin, command.dto.likeStatus)
+            const newReactionId = await this.reactionsRepo.createReaction(newReaction);
+        }
+
+        //change counters
+        if (oldStatus === ReactionType.like) likesCount--;
+        if (oldStatus === ReactionType.dislike) dislikesCount--;
+
+        if (newStatus === ReactionType.like) likesCount++;
+        if (newStatus === ReactionType.dislike) dislikesCount++;
+
+        //save changes
+        await this.commentsRepo.updateCommentsCounters(command.commentId,likesCount,dislikesCount);
+        return
+    }
+
+}

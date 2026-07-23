@@ -20,13 +20,15 @@ import {FindAllPostSAQuery} from "./useCase/findAllPostsSA.use-case";
 import {CreatePostSACommand} from "./useCase/createPostSA.use-case";
 import {CreateCommentForPostSACommand} from "../comments/useCase/createCommentForPostSA.use-case";
 import {FindCommentsForPostSAQuery} from "../comments/useCase/findCommentsForPostSA.use-case";
+import {PostsSQLQueryRepository} from "./postsSQLQuery.reposiroty";
 
 @Controller('sa/posts')
 export class PostsSAController {
   constructor(private readonly postsService: PostsService,
               private readonly commandBus: CommandBus,
               private readonly queryBus: QueryBus,
-              private readonly postsQueryRepo: PostsQueryRepository,) {}
+              private readonly postsQueryRepo: PostsQueryRepository,
+              private readonly postsSQLQueryRepo: PostsSQLQueryRepository) {}
 
   @Post()
   @UseGuards(BasicGuard)

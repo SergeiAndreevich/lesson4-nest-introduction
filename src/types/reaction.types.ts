@@ -16,12 +16,25 @@ export type TypeLikeDetails = {
 }
 
 export type TypeReaction = {
-    entityId: string,
-    entityType:EntitiesForReaction,
-    userId:string,
+    entity_id: string,
+    entity_type:EntitiesForReaction,
+    user_id:string,
     status: ReactionType,
-    addedAt:Date
+    added_at:Date
 }
+export function createReaction(entityId: string, entityType:EntitiesForReaction, userId: string, status: ReactionType):TypeReaction{
+    return {
+        entity_id: entityId,
+        entity_type: entityType,
+        user_id: userId,
+        status: status,
+        added_at: new Date()
+    }
+}
+export type TypeReactionForView = {
+
+}
+
 export enum EntitiesForReaction {
     blog = 'blog',
     post = 'post',
