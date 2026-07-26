@@ -25,46 +25,35 @@ export class CommentsSQLRepository{
     //хороший вопрос: а как должны быть связаны комментарии и данные о комментаторе
     //мне приходит на ум связка через ключ с таблицей юзеров
 
-    async findCommentByIdOrFail(id:string):Promise<Comment> {
-        if (!Types.ObjectId.isValid(id)) {
-            throw new NotFoundException({ message: 'CommentId must be ObjectId', field: 'commentId' });
-        }
-        const comment = await this.commentModel.findById(id).lean();
-        if(!comment){
-            throw new NotFoundException({message:"Comment not found" , field: 'commentId'});
-        }
-        return comment
+    async findCommentById(id:string):Promise<TypeComment | null> {
+        const result = await this.pool.query(`
+        SELECT * FROM comments
+        WHERE id = $1
+        `,[id]);
+        return result.rows[0] ?? null
     }
 
     async updateComment(commentId: string, dto:UpdateCommentDto): Promise<boolean> {
-        const result = await this.commentModel.updateOne(
-            { _id: commentId },
-            {
-                $set: {
-                    content: dto.content
-                },
-            },
-        );
-
-        return result.matchedCount === 1 && result.modifiedCount === 1;
+        const result = await this.pool.query(`
+        UPDATE comments
+        SET content = $1
+        WHERE id = $2
+        `,[dto.content, commentId]);
+        return result.rowCount === 1
     }
     async updateCommentsCounters(commentId:string, likesCount: number, dislikesCount: number):Promise<boolean>{
-        const result = await this.commentModel.updateOne(
-            { _id: commentId },
-            {
-                $set: {
-                    likesCount: likesCount,
-                    dislikesCount: dislikesCount
-                },
-            },
-        );
-
-        return result.matchedCount === 1 && result.modifiedCount === 1;
+        const result = await this.pool.query(`
+        UPDATE comments
+        SET likes_count = $1, dislikes_count = $2
+        WHERE id = $3
+        `, [likesCount, dislikesCount, commentId]);
+        return result.rowCount === 1
     }
 
-    async removeCommentByCommentId(commentId: string): Promise<boolean> {
-        const result = await this.commentModel.deleteOne({ _id: commentId });
-        return result.deletedCount === 1;
+    async removeCommentSAByCommentId(commentId: string): Promise<boolean> {
+        const result = await this.pool.query(`
+        DELETE FROM comments WHERE id = $1`, [commentId]);
+        return result.rowCount === 1
     }
     async removeAllCommentsForTest(){
         await this.pool.query(`
@@ -72,4 +61,5 @@ export class CommentsSQLRepository{
         `);
 
     }
+
 }

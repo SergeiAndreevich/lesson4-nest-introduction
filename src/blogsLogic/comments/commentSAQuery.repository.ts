@@ -1,7 +1,7 @@
 import {Inject, Injectable, NotFoundException} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {Model, Types} from "mongoose";
-import {mapCommentToFront} from "../../mappers/comment.mapper";
+import {mapCommentSAToFront, mapCommentToFront} from "../../mappers/comment.mapper";
 import {Comment, CommentDocument} from "./schema/comment.schema";
 import {PaginationQueryDto} from "../../dto/pagination-query.dto";
 import {paginationHelper} from "../../helpers/paginationQuery.helper";
@@ -12,50 +12,24 @@ import {IPaginationAndSorting, TypePaginatorObject} from "../../types/pagination
 import {TypePost, TypePostView} from "../../types/post.types";
 import {PG_CONNECTION} from "../../../setup/database/database.constants";
 import {Pool} from "pg";
+import {ReactionsSQLQueryRepository} from "../../reactionsLogic/reactionsSQLQuery.repository";
+import {mapPostSAToFront} from "../../mappers/post.mapper";
 
 @Injectable()
 export class CommentsSQLQueryRepository{
     constructor(
-        @InjectModel(Comment.name) private readonly commentModel: Model<CommentDocument>,
         @Inject(PG_CONNECTION) private readonly pool: Pool,
-        private  readonly reactionsQueryRepo: ReactionsQueryRepository
+        private readonly reactionsSQLQueryRepo: ReactionsSQLQueryRepository
     ) {}
-    async findCommentByIdOrFail(id: string, userId?: string) {
-        if (!Types.ObjectId.isValid(id)) {
-            throw new NotFoundException({ message: 'CommentId must be ObjectId', field: 'commentId' });
-        }
-        const comment = await this.commentModel.findById(id).lean();
-        if(!comment){
-            throw new NotFoundException({message: 'Comment not found', field: 'commentId'});
-        }
-        const myStatus = userId ? await this.reactionsQueryRepo.getMyStatus(EntitiesForReaction.comment, id, userId) : ReactionType.none;
-        return mapCommentToFront(comment, myStatus);
-    }
-    async findCommentsForPost(postId:string, query: IPaginationAndSorting, userId?:string) {
-        const {pageNumber, pageSize, sortBy, sortDirection,
-            searchNameTerm, searchLoginTerm, searchEmailTerm} = query;
-        const filter: any = {postId: postId};
-        const skip = (pageNumber - 1) * pageSize;
-        const comments = await this.commentModel
-            .find(filter)
-            .sort({ [sortBy]: sortDirection })
-            .skip(skip)
-            .limit(pageSize)
-            .lean();
-        const totalCount = await this.commentModel.countDocuments(filter);
+    async findCommentById(id: string):Promise<TypeComment&{login:string} | null> {
+        const result = await this.pool.query<TypeComment & { login: string }>(`
+        SELECT c.*, u.login FROM comments c
+        JOIN users u ON c.user_id = u.id
+        WHERE c.id = $1
+        `, [id]);
+        return result.rows[0] ?? null
 
-        const items: TypeCommentFrontView[] = [];
-        for (const comment of comments) {
-            const myStatus:ReactionType = userId ? await this.reactionsQueryRepo.getMyStatus(EntitiesForReaction.comment, comment._id.toString(),userId) :  ReactionType.none;
-            items.push(mapCommentToFront(comment,myStatus));
-        }
-        return {
-            pagesCount: Math.ceil(totalCount / pageSize),
-            page: pageNumber,
-            pageSize,
-            totalCount,
-            items: items
-        }
+
     }
     async findCommentsForPostSA(postId:string, query: IPaginationAndSorting, userId?:string):Promise<TypePaginatorObject<TypeCommentFrontView[]>> {
         const {
@@ -141,7 +115,7 @@ export class CommentsSQLQueryRepository{
         const countResult = await this.pool.query<{ count: string }>(
             `
         SELECT COUNT(*)
-        FROM comments
+        FROM comments c
         ${whereSQL}
         `,
             values,
@@ -152,23 +126,46 @@ export class CommentsSQLQueryRepository{
         // =========================
         // 6. RETURN PAGINATOR
         // =========================
-        const items = commentsResult.rows.map(row => {
-            return {
-                id: row.id,
-                content: row.content,
-                createdAt: row.created_at.toISOString(),
-                commentatorInfo: {
-                    userId: row.user_id,
-                    userLogin: row.login,
-                },
-                likesInfo: {
-                    likesCount: row.likes_count,
-                    dislikesCount: row.dislikes_count,
-                    myStatus: ReactionType.none,
-                    newestLikes: [],
-                }
-            }
-        });
+        const items = await Promise.all(
+            commentsResult.rows.map(async (comment) => {
+                const [myStatus, newestLikes] = await Promise.all([
+                    userId
+                        ? this.reactionsSQLQueryRepo.getMyStatus(
+                            EntitiesForReaction.comment,
+                            comment.id,
+                            userId,
+                        )
+                        : Promise.resolve(ReactionType.none),
+
+                    this.reactionsSQLQueryRepo.getNewestLikes(
+                        comment.id,
+                        EntitiesForReaction.comment,
+                    ),
+                ]);
+
+                return mapCommentSAToFront(
+                    comment,
+                    myStatus,
+                );
+            }),
+        );
+        // const items = commentsResult.rows.map(row => {
+        //     return {
+        //         id: row.id,
+        //         content: row.content,
+        //         createdAt: row.created_at.toISOString(),
+        //         commentatorInfo: {
+        //             userId: row.user_id,
+        //             userLogin: row.login,
+        //         },
+        //         likesInfo: {
+        //             likesCount: row.likes_count,
+        //             dislikesCount: row.dislikes_count,
+        //             myStatus: ReactionType.none,
+        //             newestLikes: [],
+        //         }
+        //     }
+        // });
 
         return {
             pagesCount: Math.ceil(totalCount / pageSize),

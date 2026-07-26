@@ -30,7 +30,7 @@ export class FindCommentsForPostSAUseCase implements IQueryHandler<FindCommentsF
         if(!post){
             throw new NotFoundException({message: 'Comment has not been created', field: 'comment'});
         }
-        const comments = await this.commentsSQLQueryRepo.findCommentsForPost(post.id,pagination, query.userId);
+        const comments = await this.commentsSQLQueryRepo.findCommentsForPostSA(post.id,pagination, query.userId);
         return comments;
     }
 }

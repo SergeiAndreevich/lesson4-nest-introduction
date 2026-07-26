@@ -12,13 +12,13 @@ import {PG_CONNECTION} from "../../../setup/database/database.constants";
 import {Pool} from "pg";
 import {TypeBlog, TypeBlogToView} from "../../types/blog.types";
 import {mapBlogToViewSA} from "../../mappers/blog.mapper";
+import {ReactionsSQLQueryRepository} from "../../reactionsLogic/reactionsSQLQuery.repository";
 
 @Injectable()
 export class PostsSQLQueryRepository{
     constructor(
-        @InjectModel(Post.name) private readonly postModel: Model<PostDocument>,
         @Inject(PG_CONNECTION) private readonly pool: Pool,
-        private readonly reactionsQueryRepo: ReactionsQueryRepository
+        private readonly reactionsSQLQueryRepo: ReactionsSQLQueryRepository
     ) {}
 
     async findPostById(id: string, userId?: string):Promise<TypePostView> {
@@ -31,23 +31,8 @@ export class PostsSQLQueryRepository{
             throw new NotFoundException({message:'Post not found' , field: 'postId'});
         }
 
-        //const newestLikes = await this.reactionsQueryRepo.getNewestLikes(id, EntitiesForReaction.post);
+        const newestLikes = await this.reactionsSQLQueryRepo.getNewestLikes(id, EntitiesForReaction.post);
 
-        // return {
-        //     id: post.id,
-        //     title: post.title,
-        //     shortDescription: post.short_description,
-        //     content: post.content,
-        //     blogId: post.blog_id,
-        //     blogName: post.blog_name,
-        //     createdAt: post.created_at.toISOString(),
-        //     extendedLikesInfo: {
-        //         likesCount: post.likes_count,
-        //         dislikesCount: post.dislikes_count,
-        //         myStatus: userId ? await this.reactionsQueryRepo.getMyStatus(EntitiesForReaction.post, id, userId) : ReactionType.none,
-        //         newestLikes
-        //     }
-        //};
         return {
             id: post.id,
             title: post.title,
@@ -59,10 +44,25 @@ export class PostsSQLQueryRepository{
             extendedLikesInfo: {
                 likesCount: post.likes_count,
                 dislikesCount: post.dislikes_count,
-                myStatus: ReactionType.none,
-                newestLikes: [],
+                myStatus: userId ? await this.reactionsSQLQueryRepo.getMyStatus(EntitiesForReaction.post, id, userId) : ReactionType.none,
+                newestLikes
             }
-        }
+        };
+        // return {
+        //     id: post.id,
+        //     title: post.title,
+        //     shortDescription: post.short_description,
+        //     content: post.content,
+        //     blogId: post.blog_id,
+        //     blogName: post.blog_name,
+        //     createdAt: post.created_at.toISOString(),
+        //     extendedLikesInfo: {
+        //         likesCount: post.likes_count,
+        //         dislikesCount: post.dislikes_count,
+        //         myStatus: ReactionType.none,
+        //         newestLikes: [],
+        //     }
+        // }
     }
     async findPostsSAByQuery(pagination:IPaginationAndSorting, userId?: string): Promise<TypePaginatorObject<TypePostView[]>> {
         const {
@@ -163,47 +163,47 @@ export class PostsSQLQueryRepository{
         //     items.push(mapPostSAToFront(post,myStatus,newestLikes));
         // })
 
-        // const items = await Promise.all(
-        //     postsResult.rows.map(async (post) => {
-        //         const [myStatus, newestLikes] = await Promise.all([
-        //             userId
-        //                 ? this.reactionsQueryRepo.getMyStatus(
-        //                     EntitiesForReaction.post,
-        //                     post.id,
-        //                     userId,
-        //                 )
-        //                 : Promise.resolve(ReactionType.none),
-        //
-        //             this.reactionsQueryRepo.getNewestLikes(
-        //                 post.id,
-        //                 EntitiesForReaction.post,
-        //             ),
-        //         ]);
-        //
-        //         return mapPostSAToFront(
-        //             post,
-        //             myStatus,
-        //             newestLikes,
-        //         );
-        //     }),
-        // );
-        const items = postsResult.rows.map(row => {
-            return {
-                id: row.id,
-                title: row.title,
-                shortDescription: row.short_description,
-                content: row.content,
-                blogId: row.blog_id,
-                blogName: row.blog_name,
-                createdAt: row.created_at.toISOString(),
-                extendedLikesInfo: {
-                    likesCount: row.likes_count,
-                    dislikesCount: row.dislikes_count,
-                    myStatus: ReactionType.none,
-                    newestLikes: [],
-                }
-            }
-        });
+        const items = await Promise.all(
+            postsResult.rows.map(async (post) => {
+                const [myStatus, newestLikes] = await Promise.all([
+                    userId
+                        ? this.reactionsSQLQueryRepo.getMyStatus(
+                            EntitiesForReaction.post,
+                            post.id,
+                            userId,
+                        )
+                        : Promise.resolve(ReactionType.none),
+
+                    this.reactionsSQLQueryRepo.getNewestLikes(
+                        post.id,
+                        EntitiesForReaction.post,
+                    ),
+                ]);
+
+                return mapPostSAToFront(
+                    post,
+                    myStatus,
+                    newestLikes,
+                );
+            }),
+        );
+        // const items = postsResult.rows.map(row => {
+        //     return {
+        //         id: row.id,
+        //         title: row.title,
+        //         shortDescription: row.short_description,
+        //         content: row.content,
+        //         blogId: row.blog_id,
+        //         blogName: row.blog_name,
+        //         createdAt: row.created_at.toISOString(),
+        //         extendedLikesInfo: {
+        //             likesCount: row.likes_count,
+        //             dislikesCount: row.dislikes_count,
+        //             myStatus: ReactionType.none,
+        //             newestLikes: [],
+        //         }
+        //     }
+        // });
 
         return {
             pagesCount: Math.ceil(totalCount / pageSize),
@@ -306,47 +306,47 @@ export class PostsSQLQueryRepository{
         // =========================
         // 6. RETURN PAGINATOR
         // =========================
-        // const items = await Promise.all(
-        //     postsResult.rows.map(async (post) => {
-        //         const [myStatus, newestLikes] = await Promise.all([
-        //             userId
-        //                 ? this.reactionsQueryRepo.getMyStatus(
-        //                     EntitiesForReaction.post,
-        //                     post.id,
-        //                     userId,
-        //                 )
-        //                 : Promise.resolve(ReactionType.none),
-        //
-        //             this.reactionsQueryRepo.getNewestLikes(
-        //                 post.id,
-        //                 EntitiesForReaction.post,
-        //             ),
-        //         ]);
-        //
-        //         return mapPostSAToFront(
-        //             post,
-        //             myStatus,
-        //             newestLikes,
-        //         );
-        //     }),
-        // );
-        const items = postsResult.rows.map(row => {
-            return {
-                id: row.id,
-                title: row.title,
-                shortDescription: row.short_description,
-                content: row.content,
-                blogId: row.blog_id,
-                blogName: row.blog_name,
-                createdAt: row.created_at.toISOString(),
-                extendedLikesInfo: {
-                    likesCount: row.likes_count,
-                    dislikesCount: row.dislikes_count,
-                    myStatus: ReactionType.none,
-                    newestLikes: [],
-                }
-            }
-        });
+        const items = await Promise.all(
+            postsResult.rows.map(async (post) => {
+                const [myStatus, newestLikes] = await Promise.all([
+                    userId
+                        ? this.reactionsSQLQueryRepo.getMyStatus(
+                            EntitiesForReaction.post,
+                            post.id,
+                            userId,
+                        )
+                        : Promise.resolve(ReactionType.none),
+
+                    this.reactionsSQLQueryRepo.getNewestLikes(
+                        post.id,
+                        EntitiesForReaction.post,
+                    ),
+                ]);
+
+                return mapPostSAToFront(
+                    post,
+                    myStatus,
+                    newestLikes,
+                );
+            }),
+        );
+        // const items = postsResult.rows.map(row => {
+        //     return {
+        //         id: row.id,
+        //         title: row.title,
+        //         shortDescription: row.short_description,
+        //         content: row.content,
+        //         blogId: row.blog_id,
+        //         blogName: row.blog_name,
+        //         createdAt: row.created_at.toISOString(),
+        //         extendedLikesInfo: {
+        //             likesCount: row.likes_count,
+        //             dislikesCount: row.dislikes_count,
+        //             myStatus: ReactionType.none,
+        //             newestLikes: [],
+        //         }
+        //     }
+        // });
 
         return {
             pagesCount: Math.ceil(totalCount / pageSize),

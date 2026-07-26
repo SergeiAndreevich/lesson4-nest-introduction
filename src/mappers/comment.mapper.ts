@@ -36,3 +36,20 @@ export function mapCommentToFront(dto: CommentDocument, myStatus: ReactionType) 
         }
     }
 }
+
+export function mapCommentSAToFront(dto: TypeComment & {login: string}, myStatus: ReactionType) {
+    return{
+        id: dto.id,
+        content: dto.content,
+        commentatorInfo: {
+            userId: dto.user_id,
+            userLogin: dto.login
+        },
+        createdAt: dto.created_at.toISOString(),
+        likesInfo: {
+            likesCount: dto.likes_count,
+            dislikesCount: dto.dislikes_count,
+            myStatus: myStatus
+        }
+    }
+}

@@ -19,13 +19,18 @@ import {CommentsSQLQueryRepository} from "./commentSAQuery.repository";
 import {DatabaseModule} from "../../../setup/database/database.module";
 import {FindCommentsForPostSAUseCase} from "./useCase/findCommentsForPostSA.use-case";
 import {CommentsSAController} from "./commentsSA.controller";
+import {FindCommentSAUseCase} from "./useCase/findComment.use-case";
+import {ChangeCommentLikeStatusSAUseCase} from "./useCase/changeCommentLikeStatusSA.use-case";
+import {UpdateCommentSAUseCase} from "./useCase/updateCommentCommandSA.use-case";
+import {RemoveCommentSAUseCase} from "./useCase/removeCommentSA.use-case";
 
 @Module({
   imports: [MongooseModule.forFeature([{name: Comment.name, schema: CommentSchema}]), CqrsModule, PostsModule, ReactionsModule, DatabaseModule],
   controllers: [CommentsController, CommentsSAController],
   providers: [CommentsService, CommentsRepository, CommentsQueryRepository,CommentsSQLRepository, CommentsSQLQueryRepository,
   ChangeCommentLikeStatusUseCase, CreateCommentForPostUseCase,UpdateCommentUseCase, RemoveCommentUseCase, FindCommentsForPostUseCase,
-  CreateCommentForPostSAUseCase, FindCommentsForPostSAUseCase],
+  CreateCommentForPostSAUseCase, FindCommentsForPostSAUseCase, FindCommentSAUseCase,ChangeCommentLikeStatusSAUseCase,UpdateCommentSAUseCase,RemoveCommentSAUseCase
+  ],
   exports: [CommentsRepository, CommentsQueryRepository, CommentsSQLRepository, CommentsSQLQueryRepository],
 })
 export class CommentsModule {}
