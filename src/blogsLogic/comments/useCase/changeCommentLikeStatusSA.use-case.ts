@@ -3,8 +3,11 @@ import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
 import {ReactionInputDto} from "../../../reactionsLogic/dto/reaction-input.dto";
 import {ReactionsRepository} from "../../../reactionsLogic/reactions.repository";
 import {ReactionsQueryRepository} from "../../../reactionsLogic/reactionsQuery.repository";
-import {EntitiesForReaction, ReactionType} from "../../../types/reaction.types";
+import {createReaction, EntitiesForReaction, ReactionType} from "../../../types/reaction.types";
 import {Reaction} from "../../../reactionsLogic/schema/reaction.schema";
+import {NotFoundException} from "@nestjs/common";
+import {CommentsSQLRepository} from "../commentsSA.repository";
+import {ReactionsSQLRepository} from "../../../reactionsLogic/reactionsSQL.repository";
 
 export class ChangeCommentLikeStatusSACommand{
     constructor(
@@ -18,16 +21,19 @@ export class ChangeCommentLikeStatusSACommand{
 @CommandHandler(ChangeCommentLikeStatusSACommand)
 export class ChangeCommentLikeStatusSAUseCase implements ICommandHandler<ChangeCommentLikeStatusSACommand>{
     constructor(
-        private readonly reactionsRepo: ReactionsRepository,
-        private readonly commentsRepo: CommentsRepository,
+        private readonly reactionsSQLRepo: ReactionsSQLRepository,
+        private readonly commentsSQLRepo: CommentsSQLRepository,
     ) {}
     async execute(command: ChangeCommentLikeStatusSACommand){
         //check comment by commentId
-        const comment = await this.commentsRepo.findCommentByIdOrFail(command.commentId);
-        let likesCount = comment.likesCount;
-        let dislikesCount = comment.dislikesCount;
+        const comment = await this.commentsSQLRepo.findCommentById(command.commentId);
+        if(!comment){
+            throw new NotFoundException({message:'Comment was not found' , field: 'commentId'});
+        }
+        let likesCount = comment.likes_count;
+        let dislikesCount = comment.dislikes_count;
         //find reaction
-        const reaction = await this.reactionsRepo.findReactionById_EntityType_UserId_OrNull(
+        const reaction = await this.reactionsSQLRepo.findReactionById_EntityType_UserId_OrNull(
             command.commentId, EntitiesForReaction.comment, command.userId
         )
         //check status
@@ -37,17 +43,17 @@ export class ChangeCommentLikeStatusSAUseCase implements ICommandHandler<ChangeC
 
         //if new reaction is none
         if(reaction && newStatus === ReactionType.none) {
-            await this.reactionsRepo.removeReactionByIdOrFail(reaction._id.toString())
+            await this.reactionsSQLRepo.removeReaction(comment.id, EntitiesForReaction.comment, command.userId);
         }
         //if reaction is toggled
         if (reaction && newStatus !== ReactionType.none) {
-            await this.reactionsRepo.updateReactionByIdOrFail(reaction._id.toString(), newStatus);
+            await this.reactionsSQLRepo.updateReaction(comment.id, EntitiesForReaction.comment, command.userId, newStatus);
         }
 
         //if no reaction
         if (!reaction && newStatus !== ReactionType.none) {
-            const newReaction = Reaction.createReaction(command.commentId, EntitiesForReaction.comment, command.userId, command.userLogin, command.dto.likeStatus)
-            const newReactionId = await this.reactionsRepo.createReaction(newReaction);
+            const newReaction = createReaction(comment.id,EntitiesForReaction.comment, command.userId, command.dto.likeStatus);
+            const newReactionSQL = await this.reactionsSQLRepo.createReaction(newReaction);
         }
 
         //change counters
@@ -58,7 +64,7 @@ export class ChangeCommentLikeStatusSAUseCase implements ICommandHandler<ChangeC
         if (newStatus === ReactionType.dislike) dislikesCount++;
 
         //save changes
-        await this.commentsRepo.updateCommentsCounters(command.commentId,likesCount,dislikesCount);
+        await this.commentsSQLRepo.updateCommentsCounters(command.commentId,likesCount,dislikesCount);
         return
     }
 
