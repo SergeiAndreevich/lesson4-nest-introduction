@@ -36,7 +36,7 @@ export class FindUserUseCase implements IQueryHandler<FindUserQuery>{
 
     ) {}
     async execute(query: FindUserQuery){
-        const user = await this.usersSQLQueryRepo.findUserById(query.userId);
+        const user = await this.usersSQLQueryRepo.findUserByIdORM(query.userId);
         if(!user){
             throw new NotFoundException({message: 'User not found', field: 'userId'});
         }

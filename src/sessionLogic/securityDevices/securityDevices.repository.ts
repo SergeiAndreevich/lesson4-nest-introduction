@@ -1,19 +1,18 @@
 import {Inject, Injectable} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {Model} from "mongoose";
-import {Session, SessionDocument} from "./schema/session.schema";
-import {factory} from "ts-jest/dist/transformers/hoist-jest";
+import {Session as MongooseSession, SessionDocument} from "./schema/session.schema";
 import {PG_CONNECTION} from "../../../setup/database/database.constants";
 import {Pool} from "pg";
 import {TypeSession} from "../../types/session.types";
 import {InjectRepository} from "@nestjs/typeorm";
-import {User} from "../auth/Entity/user.entity";
 import {Repository} from "typeorm";
+import {Session} from "./Entity/session.entity";
 
 @Injectable()
 export class SecurityDevicesRepository{
     constructor(
-        @InjectModel(Session.name) private readonly sessionModel: Model<SessionDocument>,
+        @InjectModel(MongooseSession.name) private readonly sessionModel: Model<SessionDocument>,
         @Inject(PG_CONNECTION) private readonly pool: Pool,
         @InjectRepository(Session) private readonly sessionRepo: Repository<Session>,
     ) {}
@@ -58,6 +57,9 @@ export class SecurityDevicesRepository{
         `, [userId, deviceId]);
         return result.rows[0] ?? null
     }
+    async findSessionForRefreshORM(userId: string, deviceId:string): Promise<Session | null>{
+        return this.sessionRepo.findOne({where: { user: {id:userId}, device_id: deviceId}})
+    }
 
     async findSessionForLogout(userId: string, deviceId:string) : Promise<TypeSession | null>{
         // const session= await this.sessionModel.findOne({userId: userId,deviceId: deviceId}).lean<Session>();
@@ -67,6 +69,9 @@ export class SecurityDevicesRepository{
         `, [userId, deviceId]);
         return result.rows[0] ?? null
     }
+    async findSessionForLogoutORM(userId: string, deviceId:string) : Promise<Session | null>{
+        return this.sessionRepo.findOne({where: { user: {id:userId}, device_id: deviceId}})
+    }
 
     async closeSession(userId: string, deviceId: string){
         // const result = await this.sessionModel.deleteOne({userId: userId, deviceId: deviceId });
@@ -75,6 +80,14 @@ export class SecurityDevicesRepository{
         const result = await this.pool.query(`
         DELETE FROM sessions WHERE user_id = $1 AND device_id=$2`, [userId, deviceId]);
         return result.rowCount === 1;
+    }
+    async closeSessionORM(userId: string, deviceId: string): Promise<boolean> {
+        const result = await this.sessionRepo.delete({
+            user: {id: userId},
+            device_id: deviceId,
+        });
+
+        return result.affected === 1;
     }
 
     async closeAllSessionsBesidesThisOne(userId:string, deviceId:string){

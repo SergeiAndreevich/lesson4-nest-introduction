@@ -43,23 +43,44 @@ export class PasswordRecoverySQLRepository {
         `, [recoveryCode]);
         return result.rows[0] ?? null
     }
+    async findUserIdByCodeORM(recoveryCode: string):Promise<string | null>{
+        const result = await this.passwordRecoveryRepo.findOne({where: {recovery_code: recoveryCode, is_confirmed: false}});
+        if(result){
+            return result.user_id
+        }
+        return null
+    }
 
     async updateRecoveryCode(userId: string, recoveryCode: string): Promise<boolean>{
         const result = await this.pool.query(`
         UPDATE password_recoveries
-        SET recovery_code = $1, created_at = NOW(), is_confirmed = FALSE
+        SET recovery_code = $1, is_confirmed = FALSE
         WHERE user_id = $2
         `, [recoveryCode, userId]);
         return result.rowCount === 1
     }
+    async updateRecoveryCodeORM(userId: string, recoveryCode: string): Promise<boolean>{
+        const result = await this.passwordRecoveryRepo.update(
+            {user_id: userId}, {recovery_code: recoveryCode, is_confirmed: false},
+        );
+        return result.affected === 1;
+    }
     async confirmPassword(userId: string, client?: PoolClient): Promise<boolean> {
         const result = await this.pool.query(`
         UPDATE password_recoveries
-        SET  created_at = NOW(), is_confirmed = TRUE
+        SET  is_confirmed = TRUE
         WHERE user_id = $1
         `, [userId]);
         return result.rowCount === 1
-
+    }
+    async confirmPasswordORM(userId: string, manager?: EntityManager): Promise<boolean> {
+        const repository = manager
+            ? manager.getRepository(PasswordRecovery)
+            : this.passwordRecoveryRepo;
+        const result = await repository.update(
+            {user_id: userId},{is_confirmed: true},
+        )
+        return result.affected === 1;
     }
 }
 

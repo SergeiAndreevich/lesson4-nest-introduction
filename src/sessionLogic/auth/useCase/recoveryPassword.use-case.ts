@@ -29,8 +29,6 @@ export class RecoveryPasswordCommand{
 export class RecoveryPasswordUseCase implements ICommandHandler<RecoveryPasswordCommand>{
     constructor(
         private readonly usersSQLQueryRepo: UsersQuerySqlRepository,
-        private readonly usersSQLRepo: UsersSQLRepository,
-        private readonly emailConfirmationSQLRepo:EmailConfirmationSQLRepository,
         private readonly passwordRecoverySQLRepo: PasswordRecoverySQLRepository,
         private readonly emailSenderHelper: EmailService,
 
@@ -38,14 +36,14 @@ export class RecoveryPasswordUseCase implements ICommandHandler<RecoveryPassword
     async execute(command: RecoveryPasswordCommand){
         const dto = command.dto;
         //нашли юзера по почте
-        const user = await this.usersSQLQueryRepo.findUserByEmail(dto.email);
+        const user = await this.usersSQLQueryRepo.findUserByEmailORM(dto.email);
         if(!user){
             throw new NotFoundException({message: 'No user', field: 'email'});
         }
         //создали код восстановления
         const confirmationCode = uuidv4();
         //обновили записи в БД для конкретного юзера (сбросили isConfirmed, обновили код и время)
-        const isUpdated = await this.passwordRecoverySQLRepo.updateRecoveryCode(user.id, confirmationCode);
+        const isUpdated = await this.passwordRecoverySQLRepo.updateRecoveryCodeORM(user.id, confirmationCode);
         if(!isUpdated){
             throw new BadRequestException({message: 'User has not been updated', field: 'emailCode'});
         }

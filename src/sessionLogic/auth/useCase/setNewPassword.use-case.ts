@@ -16,6 +16,7 @@ import {CodeInputDto} from "../dto/code-input.dto";
 import {NewPasswordInputDto} from "../dto/new-password-input.dto";
 import {PG_CONNECTION} from "../../../../setup/database/database.constants";
 import {Pool} from "pg";
+import {DataSource} from "typeorm";
 
 
 export class SetNewPasswordCommand{
@@ -29,40 +30,53 @@ export class SetNewPasswordUseCase implements ICommandHandler<SetNewPasswordComm
     constructor(
         private readonly usersSQLRepo: UsersSQLRepository,
         private readonly passwordRecoverySQLRepo: PasswordRecoverySQLRepository,
-        @Inject(PG_CONNECTION) private readonly pool: Pool
+        @Inject(PG_CONNECTION) private readonly pool: Pool,
+        private readonly dataSource: DataSource,
 
     ){}
     async execute(command: SetNewPasswordCommand){
         //newPassword and recoveryCode
         const dto = command.dto;
         //нашли юзера по коду, значит точно код совпадает
-        const userId = await this.passwordRecoverySQLRepo.findUserIdByCode(dto.recoveryCode);
+        const userId = await this.passwordRecoverySQLRepo.findUserIdByCodeORM(dto.recoveryCode);
         if(!userId){
             throw new BadRequestException({message: 'User not found', field: 'code'});
         }
-        //обновляем поля в password_recoveries и users
-        const client = await this.pool.connect();
-        try{
-            //начинаем транзакцию
-            await client.query("BEGIN");
-            //создаем юзера
-            const isUpdated = await this.passwordRecoverySQLRepo.confirmPassword(userId, client);
-            //не знаю насколько корректно так писать
-            if(!isUpdated){
-                throw new BadRequestException({message:'User has not been updated' , field: 'email'});
+        //обновляем поля в password_recoveries и users (RAW-SQL)
+        // const client = await this.pool.connect();
+        // try{
+        //     //начинаем транзакцию
+        //     await client.query("BEGIN");
+        //     //создаем юзера
+        //     const isUpdated = await this.passwordRecoverySQLRepo.confirmPassword(userId, client);
+        //     //не знаю насколько корректно так писать
+        //     if(!isUpdated){
+        //         throw new BadRequestException({message:'User has not been updated' , field: 'email'});
+        //     }
+        //     const updatedUser = await this.usersSQLRepo.setNewPassword(userId, dto.newPassword, client);
+        //     if(!updatedUser){
+        //         throw new BadRequestException({message:'User has not been updated' , field: 'email'});
+        //     }
+        //     await client.query("COMMIT");
+        // }catch(e){
+        //     await client.query("ROLLBACK");
+        //     throw e;
+        // }
+        // finally{
+        //     client.release();
+        // }
+        await this.dataSource.transaction(
+            async (manager) => {
+                const isUpdated = await this.passwordRecoverySQLRepo.confirmPasswordORM(userId,manager);
+                if(!isUpdated){
+                    throw new BadRequestException({message:'PasswordRecoveries has not been updated' , field: 'userId'});
+                }
+                const updatedUser = await this.usersSQLRepo.setNewPasswordORM(userId, dto.newPassword, manager);
+                if(!updatedUser){
+                    throw new BadRequestException({message:'User has not been updated' , field: 'userId'});
+                }
             }
-            const updatedUser = await this.usersSQLRepo.setNewPassword(userId, dto.newPassword, client);
-            if(!updatedUser){
-                throw new BadRequestException({message:'User has not been updated' , field: 'email'});
-            }
-            await client.query("COMMIT");
-        }catch(e){
-            await client.query("ROLLBACK");
-            throw e;
-        }
-        finally{
-            client.release();
-        }
+        )
 
         return
     }

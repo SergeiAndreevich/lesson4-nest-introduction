@@ -50,6 +50,15 @@ export class UsersSQLRepository {
         `, [userId, newPassword]);
         return result.rowCount === 1
     }
+    async setNewPasswordORM(userId: string, newPassword: string, manager?: EntityManager): Promise<boolean> {
+        const repository = manager
+            ? manager.getRepository(User)
+            : this.userRepo;
+        const result = await repository.update(
+            {id: userId},{password: newPassword}
+        );
+        return result.affected === 1
+    }
 
     async removeUserById(id: string): Promise<boolean> {
         const result = await this.pool.query(`

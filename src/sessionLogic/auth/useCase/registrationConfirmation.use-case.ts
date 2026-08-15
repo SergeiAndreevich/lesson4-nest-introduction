@@ -25,10 +25,7 @@ export class RegistrationConfirmationCommand{
 @CommandHandler(RegistrationConfirmationCommand)
 export class RegistrationConfirmationUseCase implements ICommandHandler<RegistrationConfirmationCommand>{
     constructor(
-        private readonly usersSQLQueryRepo: UsersQuerySqlRepository,
-        private readonly usersSQLRepo: UsersSQLRepository,
         private readonly emailConfirmationSQLRepo:EmailConfirmationSQLRepository,
-        private readonly passwordRecoverySQLRepo: PasswordRecoverySQLRepository,
     ){}
     async execute(command: RegistrationConfirmationCommand){
         const dto = command.dto;
@@ -36,7 +33,7 @@ export class RegistrationConfirmationUseCase implements ICommandHandler<Registra
         if (!validate(dto.code)) {
             throw new BadRequestException({message: 'No code or invalid code', field: 'code'});
         }
-        const user = await this.emailConfirmationSQLRepo.findUserByEmailCode(dto.code);
+        const user = await this.emailConfirmationSQLRepo.findUserByEmailCodeORM(dto.code);
         if(!user){
             throw new BadRequestException({message: 'User not found', field: 'code'});
         }
@@ -44,7 +41,7 @@ export class RegistrationConfirmationUseCase implements ICommandHandler<Registra
         if(user["is_confirmed"] === true || user["expires_at"] < new Date()) {
             throw new BadRequestException({message: 'Incorrect confirmation info', field: 'code'});
         }
-        const isConfirmed = await this.emailConfirmationSQLRepo.confirmEmail(user.user_id);
+        const isConfirmed = await this.emailConfirmationSQLRepo.confirmEmailORM(user.user_id);
         if(!isConfirmed){
             throw new BadRequestException({message:'User has not been updated' , field: 'email'});
         }

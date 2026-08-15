@@ -50,7 +50,7 @@ export class RefreshAccessUseCase implements ICommandHandler<RefreshAccessComman
         const userLogin = decodedRefresh.userLogin;
         const deviceId = decodedRefresh.deviceId;
         let sessionVersion = decodedRefresh.sessionVersion;
-        const session = await this.sessionsRepo.findSessionForRefresh(userId, deviceId);
+        const session = await this.sessionsRepo.findSessionForRefreshORM(userId, deviceId);
         if(!session){
             throw new UnauthorizedException({field: 'userId or deviceId is failed', message: 'No session found'})
         }
@@ -80,13 +80,13 @@ export class RefreshAccessUseCase implements ICommandHandler<RefreshAccessComman
         //     });
         // }
         //еще новее логика. Удаляю сессию, затем создаю новую
-        await this.sessionsRepo.closeSession(userId,deviceId);
+        await this.sessionsRepo.closeSessionORM(userId,deviceId);
         //создаю новую сессию
         //const createdSession = Session.createSession( userId, deviceId,session.ip,session.device_name, new Date(),
         const createdSession = createSession( uuidv4(), userId, deviceId,session.ip,session.device_name, new Date(),
             addSeconds(new Date(), REFRESH_TOKEN_TTL_SEC), newSessionVersion);
         //записываю новую сессию в БД
-        await this.sessionsRepo.createSession(createdSession);
+        await this.sessionsRepo.createSessionORM(createdSession);
 
         //создаем новые аксес рефреш токены
         const newAccessToken = this.jwtService.sign({userId: userId, userLogin: userLogin}, {secret: ACCESS_SECRET, expiresIn: `${ACCESS_TOKEN_TTL_SEC}s`});

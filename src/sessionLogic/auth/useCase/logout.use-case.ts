@@ -45,7 +45,7 @@ export class LogoutUseCase implements ICommandHandler<LogoutCommand>{
         //const session = await this.sessionsRepo.findSession(userId,deviceId, sessionVersion);
 
         //по двум полям ищем. главное найти сессию
-        const session = await this.sessionsRepo.findSessionForLogout(userId,deviceId);
+        const session = await this.sessionsRepo.findSessionForLogoutORM(userId,deviceId);
 
         if (!session) {
             //console.log('LOGOUT SESSION FAIL____________', session, sessionVersion)
@@ -62,7 +62,7 @@ export class LogoutUseCase implements ICommandHandler<LogoutCommand>{
         //     throw new UnauthorizedException({field: 'session expiration time', message: 'Session expired'})
         // }
         // вносим изменения в БД, т.е. протухаем существующий токен
-        await this.sessionsRepo.closeSession(userId, deviceId);
+        await this.sessionsRepo.closeSessionORM(userId, deviceId);
 
         // //проверяем статус того че пришло из БД
         // if(!result){

@@ -46,6 +46,12 @@ export class EmailConfirmationSQLRepository {
 
         return result.rowCount === 1;
     }
+    async confirmEmailORM(userId: string){
+        const result = await this.emailConfirmationRepo.update(
+            {user_id: userId},{is_confirmed: true}
+        )
+        return result.affected === 1;
+    }
     async setNewEmailConfirmationCode(userId: string, newCode: string):Promise<boolean>{
         const result = await this.pool.query(`
         UPDATE email_confirmations
@@ -53,6 +59,12 @@ export class EmailConfirmationSQLRepository {
         WHERE user_id = $2
         `, [newCode, userId]);
         return result.rowCount === 1
+    }
+    async setNewEmailConfirmationCodeORM(userId: string, newCode: string):Promise<boolean>{
+        const result = await this.emailConfirmationRepo.update(
+            {user_id: userId},{confirmation_code: newCode}
+        );
+        return result.affected === 1
     }
 
     async findUserById(userId: string){
@@ -62,11 +74,17 @@ export class EmailConfirmationSQLRepository {
         `, [userId]);
         return result.rows[0] ??  null
     }
+    async findUserByIdORM(userId: string){
+        return this.emailConfirmationRepo.findOne({where: {user_id: userId}})
+    }
     async findUserByEmailCode(code: string){
         const result = await this.pool.query(`
         SELECT * FROM email_confirmations WHERE confirmation_code = $1
         `,[code]);
         return result.rows[0] ??  null
+    }
+    async findUserByEmailCodeORM(code: string){
+        return this.emailConfirmationRepo.findOne({where: {confirmation_code: code}})
     }
 }
 

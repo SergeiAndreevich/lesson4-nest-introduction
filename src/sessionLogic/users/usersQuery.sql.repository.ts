@@ -22,6 +22,9 @@ export class UsersQuerySqlRepository{
         );
         return result.rows[0] ??  null
     }
+    async findUserByIdORM(id:string):Promise<User | null> {
+        return this.userRepo.findOne({where: {id: id}})
+    }
     async findUserByLogin(login:string): Promise<TypeUser | null> {
         const result = await this.pool.query<TypeUser>(
             `SELECT * FROM users WHERE login = $1`,

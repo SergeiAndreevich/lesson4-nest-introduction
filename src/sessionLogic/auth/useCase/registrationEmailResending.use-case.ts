@@ -28,27 +28,28 @@ export class RegistrationEmailResendingCommand{
 export class RegistrationEmailResendingUseCase implements ICommandHandler<RegistrationEmailResendingCommand>{
     constructor(
         private readonly usersSQLQueryRepo: UsersQuerySqlRepository,
-        private readonly usersSQLRepo: UsersSQLRepository,
         private readonly emailConfirmationSQLRepo:EmailConfirmationSQLRepository,
-        private readonly passwordRecoverySQLRepo: PasswordRecoverySQLRepository,
         private readonly emailSenderHelper: EmailService,
     ){}
     async execute(command: RegistrationEmailResendingCommand){
         //пришел email. Пользователь говорит: скинь на эту почту код подтверждения ещё раз
         const dto = command.dto;
         //ищу юзера по почте, есть ли вообще такая почта
-        const user = await this.usersSQLQueryRepo.findUserByEmail(dto.email);
+        const user = await this.usersSQLQueryRepo.findUserByEmailORM(dto.email);
         if(!user) {
             throw new BadRequestException({message:'User not found' , field: 'email'});
         }
         //проверяю, чтобы почта уже не была подтверждена
-        const emailConfirmationUser = await this.emailConfirmationSQLRepo.findUserById(user.id);
+        const emailConfirmationUser = await this.emailConfirmationSQLRepo.findUserByIdORM(user.id);
+        if(!emailConfirmationUser) {
+            throw new BadRequestException({message:'User not found' , field: 'userId'});
+        }
         if(emailConfirmationUser["is_confirmed"] === true) {
             throw new BadRequestException({message:'User already confirmed' , field: 'email'});
         }
         //генерирую новый код подтверждения, обновляю поле в БД и отправляю письмо со ссылкой
         const newCode = uuidv4();
-        const isUpdated = await this.emailConfirmationSQLRepo.setNewEmailConfirmationCode(user.id, newCode);
+        const isUpdated = await this.emailConfirmationSQLRepo.setNewEmailConfirmationCodeORM(user.id, newCode);
         if(!isUpdated){
             throw new BadRequestException({message:'User has not been updated' , field: 'email'});
         }
