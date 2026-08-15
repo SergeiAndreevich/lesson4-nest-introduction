@@ -39,6 +39,14 @@ export class UsersQuerySqlRepository{
         );
         return result.rows[0] ??  null
     }
+    async findUserByLoginOrEmailORM(loginOrEmail: string ): Promise<User | null> {
+        return this.userRepo.findOne({
+            where: [
+                { login: loginOrEmail },
+                { email: loginOrEmail },
+            ],
+        });
+    }
     async findUserByEmail(email: string) {
         const result = await this.pool.query<TypeUser>(
             `SELECT * FROM users WHERE email = $1`,
@@ -47,7 +55,7 @@ export class UsersQuerySqlRepository{
         return result.rows[0] ??  null
     }
     async findUserByEmailORM(email: string):Promise<User | null> {
-        return  this.userRepo.findOne({where: {email}});
+        return this.userRepo.findOne({where: {email}});
     }
     async findAllUsersByQuery(
         pagination: IPaginationAndSorting

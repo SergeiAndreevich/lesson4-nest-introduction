@@ -1,6 +1,7 @@
-import {Column, Entity, OneToOne, PrimaryColumn} from "typeorm";
+import {Column, Entity, OneToMany, OneToOne, PrimaryColumn} from "typeorm";
 import {EmailConfirmation} from "./emailConfirmation.entity";
 import {PasswordRecovery} from "./passwordRecovery.entity";
+import {Session} from "../../securityDevices/Entity/session.entity";
 
 @Entity('users')
 export class User {
@@ -38,4 +39,7 @@ export class User {
 
     @OneToOne(() => PasswordRecovery,p => p.user)
     passwordRecovery: PasswordRecovery;
+
+    @OneToMany(() => Session, session => session.user)
+    sessions: Session[];
 }

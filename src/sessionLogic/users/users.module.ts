@@ -6,7 +6,7 @@ import {UsersRepository} from "./no-sql/users.repository";
 import {UsersQueryRepository} from "./no-sql/usersQuery.repository";
 import {JwtGlobalModule} from "../../../setup/guard/jwt.module";
 import {NotificationsModule} from "../../helpers/emailHelper/notification.module";
-import {User, UserSchema} from "./schema/user.schema";
+import {User as MongoosUser, UserSchema} from "./schema/user.schema";
 import {DatabaseModule} from "../../../setup/database/database.module";
 import {UsersSQLRepository} from "./users.sql.repository";
 import {UsersQuerySqlRepository} from "./usersQuery.sql.repository";
@@ -17,12 +17,18 @@ import {RemoveUserSAUseCase} from "./useCase/removeUserSA.use-case";
 import {FindUsersByQuerySAUseCase} from "./useCase/findUsersByQuerySA.use-case";
 import {EmailConfirmationSQLRepository} from "./email-confirmation.sql.repository";
 import {PasswordRecoverySQLRepository} from "./password-recovery.sql.repository";
+import {TypeOrmModule} from "@nestjs/typeorm";
+import {PasswordRecovery} from "../auth/Entity/passwordRecovery.entity";
+import {EmailConfirmation} from "../auth/Entity/emailConfirmation.entity";
+import {User} from "../auth/Entity/user.entity";
+import {Session} from "../securityDevices/Entity/session.entity";
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+  imports: [
+    MongooseModule.forFeature([{ name: MongoosUser.name, schema: UserSchema }]),
     JwtGlobalModule,
     NotificationsModule,
-    DatabaseModule,CqrsModule
+    DatabaseModule,CqrsModule, TypeOrmModule.forFeature([User, PasswordRecovery, EmailConfirmation, Session])
   ],
   providers: [UsersService, UsersRepository, UsersQueryRepository,
     UsersSQLRepository, UsersQuerySqlRepository, EmailConfirmationSQLRepository, PasswordRecoverySQLRepository,

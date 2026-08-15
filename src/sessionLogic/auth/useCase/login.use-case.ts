@@ -46,7 +46,7 @@ export class LoginUseCase implements ICommandHandler<LoginCommand>{
         const dto = command.dto;
         //ищем юзера по логину или почте, проверяя ИЛИ в обоих полях (так как юзер может логиниться введя
         // либо пару логин/пароль либо почта/пароль)
-        const user = await this.usersSQLQueryRepo.findUserByLoginOrEmail(dto.loginOrEmail);
+        const user = await this.usersSQLQueryRepo.findUserByLoginOrEmailORM(dto.loginOrEmail);
         if(!user){
             throw new UnauthorizedException({message: 'User not found', field: 'loginOrEmail'});
         }
@@ -68,7 +68,7 @@ export class LoginUseCase implements ICommandHandler<LoginCommand>{
             user.id.toString(), deviceId,command.ip,command.userAgent, new Date(),
             addSeconds(new Date(), REFRESH_TOKEN_TTL_SEC), sessionVersion);
         //засовываем сессию в БД
-        await this.sessionsRepo.createSession(session);
+        await this.sessionsRepo.createSessionORM(session);
         //отдаём пользователю готовые AT и RT
         return  {accessToken: accessToken, refreshToken: refreshToken}
 

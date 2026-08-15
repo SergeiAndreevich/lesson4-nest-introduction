@@ -6,12 +6,16 @@ import {factory} from "ts-jest/dist/transformers/hoist-jest";
 import {PG_CONNECTION} from "../../../setup/database/database.constants";
 import {Pool} from "pg";
 import {TypeSession} from "../../types/session.types";
+import {InjectRepository} from "@nestjs/typeorm";
+import {User} from "../auth/Entity/user.entity";
+import {Repository} from "typeorm";
 
 @Injectable()
 export class SecurityDevicesRepository{
     constructor(
         @InjectModel(Session.name) private readonly sessionModel: Model<SessionDocument>,
-        @Inject(PG_CONNECTION) private readonly pool: Pool
+        @Inject(PG_CONNECTION) private readonly pool: Pool,
+        @InjectRepository(Session) private readonly sessionRepo: Repository<Session>,
     ) {}
 
     async createSession(session:TypeSession): Promise<TypeSession>{
@@ -23,6 +27,10 @@ export class SecurityDevicesRepository{
         RETURNING *
         `, [session.id, session.user_id, session.device_id, session.ip, session.device_name, session.last_activity, session.expires_at, session.version]);
         return result.rows[0]
+    }
+    async createSessionORM(session:TypeSession): Promise<Session>{
+        const newSession = this.sessionRepo.create(session);
+        return this.sessionRepo.save(newSession)
     }
 
     async findSessionByDeviceId(deviceId:string):Promise<TypeSession | null>{

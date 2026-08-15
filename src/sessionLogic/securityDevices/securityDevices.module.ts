@@ -9,10 +9,13 @@ import {Session, SessionSchema} from "./schema/session.schema";
 import {SecurityDevicesRepository} from "./securityDevices.repository";
 import {SecurityDevicesQueryRepository} from "./securityDevicesQuery.repository";
 import {DatabaseModule} from "../../../setup/database/database.module";
+import {TypeOrmModule} from "@nestjs/typeorm";
+import {User} from "../auth/Entity/user.entity";
 
 
 @Module({
-    imports: [MongooseModule.forFeature([{name: Session.name, schema: SessionSchema}]),CqrsModule, DatabaseModule],
+    imports: [MongooseModule.forFeature([{name: Session.name, schema: SessionSchema}]),CqrsModule, DatabaseModule,
+    TypeOrmModule.forFeature([Session])],
     controllers: [SessionsController],
     providers: [FindAllActiveSessionsForUserUseCase, CloseAllSessionsForUserExcludeCurrentUseCase, CloseSessionForCurrentUserUseCase,
         SecurityDevicesRepository, SecurityDevicesQueryRepository],

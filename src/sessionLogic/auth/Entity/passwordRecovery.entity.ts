@@ -3,13 +3,13 @@ import {User} from "./user.entity";
 
 @Entity('password_recoveries')
 export class PasswordRecovery {
-    @PrimaryColumn({ name: 'user_id' })
+    @PrimaryColumn({ name: 'user_id', type: 'uuid' })
     user_id: string;
 
-    @Column()
+    @Column({type: 'varchar', length: 255})
     recovery_code: string;
 
-    @Column()
+    @Column({type: 'timestamp'})
     expires_at: Date;
 
     @Column()
