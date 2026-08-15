@@ -2,12 +2,17 @@ import {Inject, Injectable} from "@nestjs/common";
 import {PG_CONNECTION} from "../../../setup/database/database.constants";
 import {Pool, PoolClient} from "pg";
 import {TypeEmailConfirmation, TypePasswordRecovery} from "../../types/user.types";
+import {InjectRepository} from "@nestjs/typeorm";
+import {EmailConfirmation} from "../auth/Entity/emailConfirmation.entity";
+import {EntityManager, Repository} from "typeorm";
+import {PasswordRecovery} from "../auth/Entity/passwordRecovery.entity";
 
 
 @Injectable()
 export class PasswordRecoverySQLRepository {
     constructor(
-        @Inject(PG_CONNECTION) private readonly pool: Pool
+        @Inject(PG_CONNECTION) private readonly pool: Pool,
+        @InjectRepository(PasswordRecovery) private readonly passwordRecoveryRepo: Repository<PasswordRecovery>,
     ) {}
     async createPasswordRecoveryFields(dto:TypePasswordRecovery, client?: PoolClient):Promise<TypePasswordRecovery>{
         const db = client ?? this.pool;
@@ -17,6 +22,19 @@ export class PasswordRecoverySQLRepository {
         RETURNING *
         `, [dto.userId, dto.recovery_code, dto.expires_at, dto.is_confirmed]);
         return result.rows[0]
+    }
+    async createPasswordRecoveryFieldsORM(dto:TypePasswordRecovery, manager?: EntityManager):Promise<PasswordRecovery>{
+        const repository = manager
+            ? manager.getRepository(PasswordRecovery)
+            : this.passwordRecoveryRepo;
+        const passwordRecovery = repository.create({
+            user_id: dto.userId,
+            recovery_code: dto.recovery_code,
+            expires_at: dto.expires_at,
+            is_confirmed: dto.is_confirmed,
+        });
+
+        return repository.save(passwordRecovery);
     }
 
     async findUserIdByCode(recoveryCode: string):Promise<string | null>{

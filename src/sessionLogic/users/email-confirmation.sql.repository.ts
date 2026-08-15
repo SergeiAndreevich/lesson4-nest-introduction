@@ -2,12 +2,17 @@ import {Inject, Injectable} from "@nestjs/common";
 import {PG_CONNECTION} from "../../../setup/database/database.constants";
 import {Pool, PoolClient} from "pg";
 import {TypeEmailConfirmation} from "../../types/user.types";
+import {InjectRepository} from "@nestjs/typeorm";
+import {EntityManager, Repository} from "typeorm";
+import {EmailConfirmation} from "../auth/Entity/emailConfirmation.entity";
 
 
 @Injectable()
 export class EmailConfirmationSQLRepository {
     constructor(
-        @Inject(PG_CONNECTION) private readonly pool: Pool
+        @Inject(PG_CONNECTION) private readonly pool: Pool,
+        @InjectRepository(EmailConfirmation) private readonly emailConfirmationRepo: Repository<EmailConfirmation>,
+
     ) {}
 
     async createFirstEmailConfirmation(dto:TypeEmailConfirmation, client?: PoolClient):Promise<TypeEmailConfirmation>{
@@ -18,6 +23,19 @@ export class EmailConfirmationSQLRepository {
         RETURNING *
         `, [dto.userId, dto.confirmation_code, dto.expires_at, dto.is_confirmed]);
         return result.rows[0]
+    }
+    async createFirstEmailConfirmationORM(dto:TypeEmailConfirmation, manager?: EntityManager):Promise<EmailConfirmation>{
+        const repository = manager
+            ? manager.getRepository(EmailConfirmation)
+            : this.emailConfirmationRepo;
+        const confirmation = repository.create({
+            user_id: dto.userId,
+            confirmation_code: dto.confirmation_code,
+            expires_at: dto.expires_at,
+            is_confirmed: dto.is_confirmed,
+        });
+
+        return repository.save(confirmation);
     }
     async confirmEmail(userId: string){
         const result = await this.pool.query(`

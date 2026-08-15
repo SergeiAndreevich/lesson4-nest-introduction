@@ -21,6 +21,7 @@ import {PasswordRecoverySQLRepository} from "../../users/password-recovery.sql.r
 import {EmailService} from "../../../helpers/emailHelper/mailNotification.service";
 import {PG_CONNECTION} from "../../../../setup/database/database.constants";
 import {Pool} from "pg";
+import {DataSource} from "typeorm";
 
 
 export class RegistrationCommand{
@@ -37,51 +38,77 @@ export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>
         private readonly emailConfirmationSQLRepo:EmailConfirmationSQLRepository,
         private readonly passwordRecoverySQLRepo: PasswordRecoverySQLRepository,
         private readonly emailSenderHelper: EmailService,
-        @Inject(PG_CONNECTION) private readonly pool: Pool
+        @Inject(PG_CONNECTION) private readonly pool: Pool,
+        private readonly dataSource: DataSource,
 
     ) {}
     async execute(command: RegistrationCommand){
         const dto = command.dto;
         //проверили на существование таких данных в БД
-        const userByLogin = await this.usersSQLQueryRepo.findUserByLogin(dto.login);
+        const userByLogin = await this.usersSQLQueryRepo.findUserByLoginORM(dto.login);
         if(userByLogin){
             throw new BadRequestException({message: 'User already exists', field: 'login'});
         }
-        const userByEmail = await this.usersSQLQueryRepo.findUserByEmail(dto.email);
+        const userByEmail = await this.usersSQLQueryRepo.findUserByEmailORM(dto.email);
         if(userByEmail){
             throw new BadRequestException({message: 'User already exists', field: 'email'});
         }
-        //создаём экземпляр юзера и засовываем в БД
-        const client = await this.pool.connect();
-        try {
-            //начинаем транзакцию
-            await client.query("BEGIN");
-            //создаем юзера
-            const createdUser = await this.usersSQLRepo.createUser(createUserSQL(dto.login, dto.email, dto.password), client);
-            //для юзера создаем код подтверждения почты
-            const emailConfirmation = await this.emailConfirmationSQLRepo.createFirstEmailConfirmation(createEmailConfirmation(createdUser.id), client);
-            //создаем заготовку под восстановление пароля для юзера
-            await this.passwordRecoverySQLRepo.createPasswordRecoveryFields(createPasswordRecovery(createdUser.id), client);
+        //создаём экземпляр юзера и засовываем в БД (ЭТО БЫЛ КУСОК КОДА ПРИ RawSql-Запросах)
+        // const client = await this.pool.connect();
+        // try {
+        //     //начинаем транзакцию
+        //     await client.query("BEGIN");
+        //     //создаем юзера
+        //     const createdUser = await this.usersSQLRepo.createUser(createUserSQL(dto.login, dto.email, dto.password), client);
+        //     //для юзера создаем код подтверждения почты
+        //     const emailConfirmation = await this.emailConfirmationSQLRepo.createFirstEmailConfirmation(createEmailConfirmation(createdUser.id), client);
+        //     //создаем заготовку под восстановление пароля для юзера
+        //     await this.passwordRecoverySQLRepo.createPasswordRecoveryFields(createPasswordRecovery(createdUser.id), client);
+        //
+        //     await client.query("COMMIT");
+        //     //отсылаем email с кодом подтверждения
+        //     // try {
+        //     //     await this.emailSenderHelper.sendConfirmationEmail(
+        //     //         createdUser.email,
+        //     //         emailConfirmation.confirmation_code,
+        //     //     );
+        //     //
+        //     //     console.log("EMAIL SENT");
+        //     // } catch (error) {
+        //     //     console.log(error);
+        //     // }
+        // }catch(e){
+        //     await client.query("ROLLBACK");
+        //     throw e;
+        // }
+        // finally{
+        //     client.release();
+        // }
+        const createdUser = await this.dataSource.transaction(
+            async (manager) => {
 
-            await client.query("COMMIT");
-            //отсылаем email с кодом подтверждения
-            // try {
-            //     await this.emailSenderHelper.sendConfirmationEmail(
-            //         createdUser.email,
-            //         emailConfirmation.confirmation_code,
-            //     );
-            //
-            //     console.log("EMAIL SENT");
-            // } catch (error) {
-            //     console.log(error);
-            // }
-        }catch(e){
-            await client.query("ROLLBACK");
-            throw e;
-        }
-        finally{
-            client.release();
-        }
+                const user = await this.usersSQLRepo.createUserORM(
+                    createUserSQL(
+                        dto.login,
+                        dto.email,
+                        dto.password,
+                    ),
+                    manager,
+                );
+
+                await this.emailConfirmationSQLRepo.createFirstEmailConfirmationORM(
+                    createEmailConfirmation(user.id),
+                    manager,
+                );
+
+                await this.passwordRecoverySQLRepo.createPasswordRecoveryFieldsORM(
+                    createPasswordRecovery(user.id),
+                    manager,
+                );
+
+                return user;
+            },
+        );
         return
     }
 }

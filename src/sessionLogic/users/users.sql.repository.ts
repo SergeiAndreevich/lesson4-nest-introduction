@@ -2,12 +2,16 @@ import {Inject, Injectable} from "@nestjs/common";
 import {PG_CONNECTION} from "../../../setup/database/database.constants";
 import {Pool, PoolClient} from "pg";
 import {TypeUser} from "../../types/user.types";
+import {InjectRepository} from "@nestjs/typeorm";
+import {User} from "../auth/Entity/user.entity";
+import {EntityManager, Repository} from "typeorm";
 
 
 @Injectable()
 export class UsersSQLRepository {
     constructor(
-        @Inject(PG_CONNECTION) private readonly pool: Pool
+        @Inject(PG_CONNECTION) private readonly pool: Pool,
+        @InjectRepository(User) private readonly userRepo: Repository<User>,
     ) {}
 
     //При записи данных в постгре может быть только два результата: успешно записалось и ошибка. Ошибки могут быть разные, но суть в том
@@ -23,6 +27,20 @@ export class UsersSQLRepository {
         `, [user.id, user.login, user.email, user.password, user.createdAt]);
 
         return result.rows[0];
+    }
+    async createUserORM(user: TypeUser,manager?: EntityManager):Promise<User> {
+        const repository = manager
+            ? manager.getRepository(User)
+            : this.userRepo;
+        const newUser = repository.create({
+           id: user.id,
+           login: user.login,
+           email: user.email,
+           password: user.password,
+           created_at: user.createdAt,
+       });
+
+        return repository.save(newUser);
     }
 
     async setNewPassword(userId: string, newPassword: string, client?: PoolClient): Promise<boolean> {

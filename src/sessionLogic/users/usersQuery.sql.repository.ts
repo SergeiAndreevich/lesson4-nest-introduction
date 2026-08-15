@@ -3,12 +3,16 @@ import {PG_CONNECTION} from "../../../setup/database/database.constants";
 import {Pool} from "pg";
 import {TypeUser, TypeUserToView} from "../../types/user.types";
 import {IPaginationAndSorting, TypePaginatorObject} from "../../types/pagination.types";
+import {InjectRepository} from "@nestjs/typeorm";
+import {User} from "../auth/Entity/user.entity";
+import {Repository} from "typeorm";
 
 
 @Injectable()
 export class UsersQuerySqlRepository{
     constructor(
-        @Inject(PG_CONNECTION) private readonly pool:Pool
+        @Inject(PG_CONNECTION) private readonly pool:Pool,
+        @InjectRepository(User) private readonly userRepo: Repository<User>,
     ) {}
 
     async findUserById(id:string):Promise<TypeUser | null> {
@@ -25,6 +29,9 @@ export class UsersQuerySqlRepository{
         );
         return result.rows[0] ??  null
     }
+    async findUserByLoginORM(login:string): Promise<User | null> {
+        return this.userRepo.findOne({where: {login: login}});
+    }
     async findUserByLoginOrEmail(loginOrEmail: string ) {
         const result = await this.pool.query<TypeUser>(
             `SELECT * FROM users WHERE login = $1 OR email = $2`,
@@ -38,6 +45,9 @@ export class UsersQuerySqlRepository{
             [email],
         );
         return result.rows[0] ??  null
+    }
+    async findUserByEmailORM(email: string):Promise<User | null> {
+        return  this.userRepo.findOne({where: {email}});
     }
     async findAllUsersByQuery(
         pagination: IPaginationAndSorting
