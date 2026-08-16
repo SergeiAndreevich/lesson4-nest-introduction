@@ -16,7 +16,7 @@ export class CloseAllSessionsForUserExcludeCurrentUseCase implements ICommandHan
         private readonly sessionsRepo: SecurityDevicesRepository,
     ) {}
     async execute(command: CloseAllSessionsForUserExcludeCurrentCommand){
-        const currentSession = await this.sessionsRepo.findSessionByDeviceIdAndUserId(command.deviceId, command.userId);
+        const currentSession = await this.sessionsRepo.findSessionByDeviceIdAndUserIdORM(command.deviceId, command.userId);
 
         if (!currentSession) {
             throw new UnauthorizedException({
@@ -24,7 +24,7 @@ export class CloseAllSessionsForUserExcludeCurrentUseCase implements ICommandHan
                 message: 'Session not found'
             });
         }
-        await this.sessionsRepo.closeAllSessionsBesidesThisOne(command.userId, command.deviceId);
+        await this.sessionsRepo.closeAllSessionsBesidesThisOneORM(command.userId, command.deviceId);
         return
     }
 }

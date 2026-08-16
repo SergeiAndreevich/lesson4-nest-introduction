@@ -6,7 +6,7 @@ import {PG_CONNECTION} from "../../../setup/database/database.constants";
 import {Pool} from "pg";
 import {TypeSession} from "../../types/session.types";
 import {InjectRepository} from "@nestjs/typeorm";
-import {Repository} from "typeorm";
+import {Not, Repository} from "typeorm";
 import {Session} from "./Entity/session.entity";
 
 @Injectable()
@@ -40,6 +40,9 @@ export class SecurityDevicesRepository{
         `,[deviceId]);
         return result.rows[0] ?? null
     }
+    async findSessionByDeviceIdORM(deviceId:string):Promise<Session | null>{
+        return this.sessionRepo.findOne({where: {device_id: deviceId}})
+    }
     async findSessionByDeviceIdAndUserId(deviceId:string, userId: string):Promise<TypeSession | null>{
         // const session= await this.sessionModel.findOne({deviceId: deviceId, userId: userId}).lean<Session>();
         // return session
@@ -47,6 +50,9 @@ export class SecurityDevicesRepository{
         SELECT * FROM sessions WHERE device_id=$1 AND user_id=$2
         `, [deviceId, userId]);
         return result.rows[0] ?? null
+    }
+    async findSessionByDeviceIdAndUserIdORM(deviceId:string, userId: string):Promise<Session | null>{
+        return this.sessionRepo.findOne({where:{device_id: deviceId,  user:{ id: userId }}})
     }
 
     async findSessionForRefresh(userId: string, deviceId:string): Promise<TypeSession | null>{
@@ -101,6 +107,10 @@ export class SecurityDevicesRepository{
         WHERE user_id = $1 AND device_id <> $2
         `,[userId, deviceId]);
         return result.rowCount !== null
+    }
+    async closeAllSessionsBesidesThisOneORM(userId:string, deviceId:string){
+        await this.sessionRepo.delete({user: {id: userId}, device_id: Not(deviceId)})
+        //должна быть операция удаления, но если всего одна сессия и из неё удаляют все остальные (которых нет) то и возвращать нечего
     }
     async removeSession(sessionId:string){
         const result = await this.sessionModel.deleteOne({_id:sessionId});

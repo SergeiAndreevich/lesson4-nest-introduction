@@ -15,7 +15,7 @@ export class FindAllActiveSessionsForUserUseCase implements IQueryHandler<FindAl
         private readonly sessionsQueryRepo: SecurityDevicesQueryRepository
     ) {}
     async execute(query: FindAllActiveSessionsForUserQuery){
-        const sessionsList = await this.sessionsQueryRepo.findAllSessions(query.userId);
+        const sessionsList = await this.sessionsQueryRepo.findAllSessionsORM(query.userId);
         return sessionsList
     }
 }
