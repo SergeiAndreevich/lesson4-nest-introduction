@@ -20,11 +20,11 @@ export class RemoveUserSAUseCase implements ICommandHandler<RemoveUserSACommand>
         private readonly usersSQLQueryRepo: UsersQuerySqlRepository
     ) {}
     async execute(command: RemoveUserSACommand){
-        const user = await this.usersSQLQueryRepo.findUserById(command.id);
+        const user = await this.usersSQLQueryRepo.findUserByIdORM(command.id);
         if(!user){
             throw new NotFoundException({message: 'User not found', field: 'userId'});
         }
-        const deleted = await this.usersSQLRepo.removeUserById(command.id);
+        const deleted = await this.usersSQLRepo.removeUserByIdORM(command.id);
         if (!deleted) {
             //if deletedCount = 0
             throw new BadRequestException({message: 'User was not deleted', field: 'userId'});

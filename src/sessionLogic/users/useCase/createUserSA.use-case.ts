@@ -22,18 +22,18 @@ export class CreateUserSAUseCase implements ICommandHandler<CreateUserSACommand>
     ) {}
     async execute(command: CreateUserSACommand){
         //проверка на существование логина и почты
-        const userByLogin = await this.usersSQLQueryRepo.findUserByLogin(command.dto.login);
+        const userByLogin = await this.usersSQLQueryRepo.findUserByLoginORM(command.dto.login);
         if(userByLogin){
             throw new BadRequestException({message: 'User already exists', field: 'login'});
         }
-        const userByEmail = await this.usersSQLQueryRepo.findUserByEmail(command.dto.email);
+        const userByEmail = await this.usersSQLQueryRepo.findUserByEmailORM(command.dto.email);
         if(userByEmail){
             throw new BadRequestException({message: 'User already exists', field: 'email'});
         }
         //создание экземпляра юзера
         const userData:TypeUser = createUserSQL(command.dto.login, command.dto.email, command.dto.password);
         //запись в БД, возвращает созданного юзера
-        const createdUser = await this.usersSQLRepo.createUser(userData);
+        const createdUser = await this.usersSQLRepo.createUserORM(userData);
         //мапим юзера для фронта
         return mapUserToView(createdUser)
     }

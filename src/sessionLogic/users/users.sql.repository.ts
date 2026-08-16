@@ -65,6 +65,10 @@ export class UsersSQLRepository {
         DELETE FROM users WHERE id = $1`, [id]);
         return result.rowCount === 1;
     }
+    async removeUserByIdORM(id: string): Promise<boolean> {
+        const result = await this.userRepo.delete(id);
+        return result.affected === 1;
+    }
     async removeAllUsersForTest(): Promise<void> {
         await this.pool.query(`
         TRUNCATE TABLE users CASCADE;

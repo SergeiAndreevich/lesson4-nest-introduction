@@ -6,6 +6,7 @@ import {IPaginationAndSorting, TypePaginatorObject} from "../../types/pagination
 import {InjectRepository} from "@nestjs/typeorm";
 import {User} from "../auth/Entity/user.entity";
 import {Repository} from "typeorm";
+import {mapUserToView} from "../../mappers/user.mapper";
 
 
 @Injectable()
@@ -157,5 +158,64 @@ export class UsersQuerySqlRepository{
             totalCount,
             items: usersResult.rows,
         };
+    }
+    async findAllUsersByQueryORM(pagination: IPaginationAndSorting): Promise<TypePaginatorObject<TypeUserToView[]>> {
+        const {
+            pageNumber,
+            pageSize,
+            sortBy,
+            sortDirection,
+            searchLoginTerm,
+            searchEmailTerm,
+        } = pagination;
+        const offset = (pageNumber - 1) * pageSize;
+
+        //QueryBuilder
+        const qb = this.userRepo
+            .createQueryBuilder('user');
+
+        //WHERE
+        const conditions: string[] = [];
+        if (searchLoginTerm) {
+            conditions.push('user.login ILIKE :loginTerm');
+            qb.setParameter('loginTerm', `%${searchLoginTerm}%`);
+        }
+        if (searchEmailTerm) {
+            conditions.push('user.email ILIKE :emailTerm');
+            qb.setParameter('emailTerm', `%${searchEmailTerm}%`);
+        }
+        if (conditions.length > 0) {
+            qb.where(conditions.join(' OR '));
+        }
+
+        // SORT
+        const sortMap: Record<string, string> = {
+            login: 'user.login',
+            email: 'user.email',
+            createdAt: 'user.created_at',
+        };
+        const sortField =
+            sortMap[sortBy] ?? 'user.created_at';
+
+        const direction =
+            sortDirection === 'asc'
+                ? 'ASC'
+                : 'DESC';
+
+        qb.orderBy(sortField, direction);
+
+        // PAGINATION + COUNT
+        const [users, totalCount] = await qb
+            .skip(offset)
+            .take(pageSize)
+            .getManyAndCount();
+
+        return {
+            pagesCount: Math.ceil(totalCount / pageSize),
+            page: pageNumber,
+            pageSize,
+            totalCount,
+            items: users.map(u=> mapUserToView(u)),
+        }
     }
 }
