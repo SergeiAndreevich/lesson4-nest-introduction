@@ -1,11 +1,5 @@
 import {BadRequestException, Inject, UnauthorizedException} from "@nestjs/common";
 import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
-import {JwtService} from "@nestjs/jwt";
-import {SecurityDevicesRepository} from "../../securityDevices/securityDevices.repository";
-import {JwtPayload} from "../../../types/session.types";
-import {REFRESH_SECRET} from "../../../../setup/globalVariables";
-import {User} from "../../users/schema/user.schema";
-import {mapUserToView} from "../../../mappers/user.mapper";
 import {UsersQuerySqlRepository} from "../../users/usersQuery.sql.repository";
 import {UsersSQLRepository} from "../../users/users.sql.repository";
 import {CreateAuthDto} from "../dto/create-auth.dto";
@@ -13,8 +7,6 @@ import {
     createEmailConfirmation,
     createPasswordRecovery,
     createUserSQL,
-    TypeEmailConfirmation,
-    TypeUser
 } from "../../../types/user.types";
 import {EmailConfirmationSQLRepository} from "../../users/email-confirmation.sql.repository";
 import {PasswordRecoverySQLRepository} from "../../users/password-recovery.sql.repository";
@@ -96,7 +88,7 @@ export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>
                     manager,
                 );
 
-                await this.emailConfirmationSQLRepo.createFirstEmailConfirmationORM(
+                const emailConfirmation = await this.emailConfirmationSQLRepo.createFirstEmailConfirmationORM(
                     createEmailConfirmation(user.id),
                     manager,
                 );
@@ -105,7 +97,17 @@ export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>
                     createPasswordRecovery(user.id),
                     manager,
                 );
-
+                    //отсылаем email с кодом подтверждения
+                    // try {
+                    //     await this.emailSenderHelper.sendConfirmationEmail(
+                    //         user.email,
+                    //         emailConfirmation.confirmation_code,
+                    //     );
+                    //
+                    //     console.log("EMAIL SENT");
+                    // } catch (error) {
+                    //     console.log(error);
+                    // }
                 return user;
             },
         );

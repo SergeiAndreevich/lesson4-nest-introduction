@@ -27,7 +27,7 @@ export class SecurityDevicesRepository{
         `, [session.id, session.user_id, session.device_id, session.ip, session.device_name, session.last_activity, session.expires_at, session.version]);
         return result.rows[0]
     }
-    async createSessionORM(session:TypeSession): Promise<Session>{
+    async createSessionORM(session:Session):Promise<Session>{
         const newSession = this.sessionRepo.create(session);
         return this.sessionRepo.save(newSession)
     }
@@ -41,7 +41,10 @@ export class SecurityDevicesRepository{
         return result.rows[0] ?? null
     }
     async findSessionByDeviceIdORM(deviceId:string):Promise<Session | null>{
-        return this.sessionRepo.findOne({where: {device_id: deviceId}})
+        return this.sessionRepo.findOne({where:
+                {device_id: deviceId},
+                relations: {user: true}
+        })
     }
     async findSessionByDeviceIdAndUserId(deviceId:string, userId: string):Promise<TypeSession | null>{
         // const session= await this.sessionModel.findOne({deviceId: deviceId, userId: userId}).lean<Session>();
@@ -77,6 +80,22 @@ export class SecurityDevicesRepository{
     }
     async findSessionForLogoutORM(userId: string, deviceId:string) : Promise<Session | null>{
         return this.sessionRepo.findOne({where: { user: {id:userId}, device_id: deviceId}})
+    }
+
+    async updateRefreshSessionORM(userId: string, deviceId: string, version:number,expiresAt: Date): Promise<boolean>{
+        const result = await this.sessionRepo.update(
+            {
+                user: {id: userId},
+                device_id: deviceId,
+                version: version
+            },
+            {
+               version: version + 1,
+               expires_at: expiresAt,
+               last_activity: new Date(),
+            }
+        )
+        return (result.affected ?? 0) === 1;
     }
 
     async closeSession(userId: string, deviceId: string){

@@ -1,4 +1,6 @@
 import {Prop} from "@nestjs/mongoose";
+import {User} from "../sessionLogic/auth/Entity/user.entity";
+import {Session} from "../sessionLogic/securityDevices/Entity/session.entity";
 
 export type TypeSessionToFront ={
     ip: string,
@@ -43,5 +45,18 @@ export function createSession( id:string, userId: string, deviceId: string, ip: 
         last_activity: lastActivity,
         expires_at: expiresAt,
         version: version
+    }
+}
+export function createSessionORM( id:string, deviceId: string, ip: string, deviceName: string,
+                               lastActivity: Date, expiresAt: Date, version: number, user: User): Session{
+    return{
+        id: id,
+        device_id: deviceId,
+        ip: ip,
+        device_name: deviceName,
+        last_activity: lastActivity,
+        expires_at: expiresAt,
+        version: version,
+        user: user
     }
 }

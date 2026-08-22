@@ -5,16 +5,17 @@ import {FindAllActiveSessionsForUserUseCase} from "./useCase/findAllActiveSessio
 import {CqrsModule} from "@nestjs/cqrs";
 import {CloseAllSessionsForUserExcludeCurrentUseCase} from "./useCase/closeAllSessionsForUserExcludeCurrent.use-case";
 import {CloseSessionForCurrentUserUseCase} from "./useCase/closeSessionForCurrentUser.use-case";
-import {Session, SessionSchema} from "./schema/session.schema";
+import {Session as MongooseSession, SessionSchema} from "./schema/session.schema";
 import {SecurityDevicesRepository} from "./securityDevices.repository";
 import {SecurityDevicesQueryRepository} from "./securityDevicesQuery.repository";
 import {DatabaseModule} from "../../../setup/database/database.module";
 import {TypeOrmModule} from "@nestjs/typeorm";
 import {User} from "../auth/Entity/user.entity";
+import {Session} from "./Entity/session.entity";
 
 
 @Module({
-    imports: [MongooseModule.forFeature([{name: Session.name, schema: SessionSchema}]),CqrsModule, DatabaseModule,
+    imports: [MongooseModule.forFeature([{name: MongooseSession.name, schema: SessionSchema}]),CqrsModule, DatabaseModule,
     TypeOrmModule.forFeature([Session])],
     controllers: [SessionsController],
     providers: [FindAllActiveSessionsForUserUseCase, CloseAllSessionsForUserExcludeCurrentUseCase, CloseSessionForCurrentUserUseCase,

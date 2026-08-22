@@ -2,24 +2,16 @@ import {BadRequestException, ForbiddenException, UnauthorizedException} from "@n
 import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
 import {JwtService} from "@nestjs/jwt";
 import {SecurityDevicesRepository} from "../../securityDevices/securityDevices.repository";
-import {createSession, JwtPayload} from "../../../types/session.types";
+import {createSession, createSessionORM, JwtPayload} from "../../../types/session.types";
 import {
     ACCESS_SECRET,
     ACCESS_TOKEN_TTL_SEC,
     REFRESH_SECRET,
     REFRESH_TOKEN_TTL_SEC
 } from "../../../../setup/globalVariables";
-import {User} from "../../users/schema/user.schema";
-import {mapUserToView} from "../../../mappers/user.mapper";
 import {UsersQuerySqlRepository} from "../../users/usersQuery.sql.repository";
-import {UsersSQLRepository} from "../../users/users.sql.repository";
-import {CreateAuthDto} from "../dto/create-auth.dto";
-import {createUserSQL} from "../../../types/user.types";
-import {EmailConfirmationSQLRepository} from "../../users/email-confirmation.sql.repository";
-import {PasswordRecoverySQLRepository} from "../../users/password-recovery.sql.repository";
 import {LoginInputDto} from "../dto/login-input.dto";
 import {v4 as uuidv4} from "uuid";
-import {Session} from "../../securityDevices/schema/session.schema";
 import {addSeconds} from "date-fns";
 
 
@@ -64,9 +56,9 @@ export class LoginUseCase implements ICommandHandler<LoginCommand>{
             {userId: user.id.toString(), userLogin: user.login, deviceId: deviceId, sessionVersion: sessionVersion},{secret: REFRESH_SECRET,expiresIn: `${REFRESH_TOKEN_TTL_SEC}s`});
         //создаём сессию, в которой автоматически создается свойство "протух: false"
         //const session = Session.createSession(
-        const session = createSession( uuidv4(),
-            user.id.toString(), deviceId,command.ip,command.userAgent, new Date(),
-            addSeconds(new Date(), REFRESH_TOKEN_TTL_SEC), sessionVersion);
+        const session = createSessionORM( uuidv4(),
+            deviceId,command.ip,command.userAgent, new Date(),
+            addSeconds(new Date(), REFRESH_TOKEN_TTL_SEC), sessionVersion, user);
         //засовываем сессию в БД
         await this.sessionsRepo.createSessionORM(session);
         //отдаём пользователю готовые AT и RT
