@@ -3,7 +3,7 @@ import {CreateBlogDto} from "../dto/create-blog.dto";
 import {BlogsRepository} from "../no-sql/blogs.repository";
 import {Blog} from "../schema/blog.schema";
 import {CommandHandler, ICommandHandler} from "@nestjs/cqrs";
-import {createBlog, TypeBlog} from "../../../types/blog.types";
+import {createBlog, createBlogSQL, TypeBlog, TypeBlogSQL} from "../../../types/blog.types";
 import {mapBlogToViewSA} from "../../../mappers/blog.mapper";
 import {BlogsSQLRepository} from "../blogsSA.repository";
 
@@ -20,8 +20,9 @@ export class CreateBlogSAUseCase implements ICommandHandler<CreateBlogSACommand>
         private readonly blogsSQLRepo: BlogsSQLRepository,
     ) {}
     async execute(command: CreateBlogSACommand){
-        const blog:TypeBlog = createBlog(command.createBlogDto)
-        const createdBlog = await this.blogsSQLRepo.createBlog(blog);
+        //const blog:TypeBlog = createBlog(command.createBlogDto)
+        const blog: TypeBlogSQL = createBlogSQL(command.createBlogDto.name,command.createBlogDto.description,command.createBlogDto.websiteUrl);
+        const createdBlog = await this.blogsSQLRepo.createBlogSQL(blog);
         return mapBlogToViewSA(createdBlog)
     }
 }

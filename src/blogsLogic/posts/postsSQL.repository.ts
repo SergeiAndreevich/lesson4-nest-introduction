@@ -2,12 +2,18 @@ import {Inject, Injectable, NotFoundException} from "@nestjs/common";
 import {UpdatePostDto, UpdatePostForBlogDto} from "./dto/update-post.dto";
 import {PG_CONNECTION} from "../../../setup/database/database.constants";
 import {Pool} from "pg";
-import {TypePost} from "../../types/post.types";
+import {TypePost, TypePostSQL} from "../../types/post.types";
+import {TypeBlogSQL} from "../../types/blog.types";
+import {InjectRepository} from "@nestjs/typeorm";
+import {Post} from "../posts/Entity/post.entity";
+import {Repository} from "typeorm";
 
 @Injectable()
 export class PostsSQLRepository {
     constructor(
-        @Inject(PG_CONNECTION) private readonly pool: Pool
+        @Inject(PG_CONNECTION) private readonly pool: Pool,
+        @InjectRepository(Post) private readonly postRepo: Repository<Post>,
+
     ) {}
     async createPostSA(post: TypePost): Promise<TypePost> {
         const result = await this.pool.query(`
@@ -16,6 +22,21 @@ export class PostsSQLRepository {
         RETURNING *
         `,[post.id,post.title,post.short_description,post.content,post.blog_id,post.blog_name,post.created_at,post.likes_count,post.dislikes_count]);
         return result.rows[0]
+    }
+    async createPostSQL(post: TypePostSQL): Promise<TypePostSQL> {
+        const newPost = this.postRepo.create({
+            id: post.id,
+            title: post.title,
+            short_description: post.short_description,
+            content: post.content,
+            blog_id: post.blog_id,
+            blog_name: post.blog_name,
+            created_at: post.created_at,
+            likes_count: post.likes_count,
+            dislikes_count: post.dislikes_count,
+            blog: {id: post.blog_id}
+        });
+        return this.postRepo.save(newPost)
     }
 
     async findPostSAById(id: string): Promise<TypePost | null> {

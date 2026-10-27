@@ -30,3 +30,23 @@ export function createBlog(dto:CreateBlogDto) {
         is_membership: false
     }
 }
+
+export type TypeBlogSQL = {
+    id: string,
+    name: string,
+    description: string,
+    website_url: string,
+    created_at: Date,
+    is_membership: boolean
+}
+
+export function createBlogSQL(name: string, description: string, websiteUrl: string) {
+    return {
+        id: uuidv4(),
+        name: name,
+        description: description,
+        website_url: websiteUrl,
+        created_at: new Date(),
+        is_membership: false
+    }
+}

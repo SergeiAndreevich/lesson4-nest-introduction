@@ -2,22 +2,29 @@ import {Inject, Injectable, NotFoundException, Post} from "@nestjs/common";
 import {PG_CONNECTION} from "../../../setup/database/database.constants";
 import {Pool} from "pg";
 import {TypeUserToView} from "../../types/user.types";
-import {TypeBlog, TypeBlogToView} from "../../types/blog.types";
+import {TypeBlog, TypeBlogSQL, TypeBlogToView} from "../../types/blog.types";
 import {mapBlogToView, mapBlogToViewSA} from "../../mappers/blog.mapper";
 import {IPaginationAndSorting, TypePaginatorObject} from "../../types/pagination.types";
+import {InjectRepository} from "@nestjs/typeorm";
+import {Blog} from "./Entity/blog.entity";
+import {Repository} from "typeorm";
 
 
 
 @Injectable()
 export class BlogsSQLQueryRepository{
     constructor(
-        @Inject(PG_CONNECTION) private readonly pool: Pool
+        @Inject(PG_CONNECTION) private readonly pool: Pool,
+        @InjectRepository(Blog) private readonly blogRepo: Repository<Blog>,
     ) {}
     async findBlogById(id: string):Promise<TypeBlog | null> {
         const result = await this.pool.query(`
         SELECT * FROM blogs WHERE id = $1
         `,[id]);
         return result.rows[0] ?? null
+    }
+    async findBlogByIdORM(id: string):Promise<TypeBlogSQL | null> {
+        return this.blogRepo.findOne({where: {id: id}})
     }
 
     async findBlogsByQuery(

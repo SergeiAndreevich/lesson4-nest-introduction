@@ -36,8 +36,33 @@ export type TypePost = {
     likes_count: number;
     dislikes_count: number;
 }
+export type TypePostSQL = {
+    id: string;
+    title: string;
+    short_description: string;
+    content: string;
+    blog_id: string;
+    blog_name: string;
+    created_at:  Date;
+    likes_count: number;
+    dislikes_count: number;
+}
 
 export function createPost(dto: CreatePostForBlogDto, blogId: string, blogName: string): TypePost{
+    return{
+        id: uuidv4(),
+        title: dto.title,
+        short_description: dto.shortDescription,
+        content: dto.content,
+        blog_id: blogId,
+        blog_name: blogName,
+        created_at:  new Date(),
+        likes_count: 0,
+        dislikes_count: 0
+    }
+}
+
+export function createPostSQL(dto: CreatePostForBlogDto, blogId: string, blogName: string): TypePostSQL{
     return{
         id: uuidv4(),
         title: dto.title,
