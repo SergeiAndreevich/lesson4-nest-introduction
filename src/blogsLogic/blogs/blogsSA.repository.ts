@@ -24,7 +24,7 @@ export class BlogsSQLRepository {
         `, [blog.id, blog.name, blog.description, blog.website_url,  blog.created_at, blog.is_membership]);
         return result.rows[0]
     }
-    async createBlogSQL(blog: TypeBlogSQL):Promise<TypeBlogSQL> {
+    async createBlogORM(blog: TypeBlogSQL):Promise<TypeBlogSQL> {
         const newBlog = this.blogRepo.create({
             id: blog.id,
             name: blog.name,
@@ -43,10 +43,26 @@ export class BlogsSQLRepository {
         WHERE id = $4`, [dto.name,dto.description, dto.websiteUrl, id]);
         return result.rowCount === 1
     }
+    async updateBlogByIdORM(id: string, dto: UpdateBlogDto): Promise<boolean> {
+        const result = await this.blogRepo.update(
+            { id },
+            {
+                name: dto.name,
+                description: dto.description,
+                website_url: dto.websiteUrl,
+            },
+        );
+
+        return result.affected === 1;
+    }
     async removeBlogById(id: string){
         const result = await this.pool.query(`
         DELETE FROM blogs WHERE id = $1`, [id]);
         return result.rowCount === 1;
+    }
+    async removeBlogByIdORM(id: string): Promise<boolean> {
+        const result = await this.blogRepo.delete({ id });
+        return result.affected === 1;
     }
     async removeAllBlogsForTest(){
         await this.pool.query(`

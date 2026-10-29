@@ -4,7 +4,7 @@ import {Model} from "mongoose";
 import {IPaginationAndSorting, TypePaginatorObject} from "../../types/pagination.types";
 import {TypePost, TypePostView} from "../../types/post.types";
 import {mapPostSAToFront, mapPostToFront} from "../../mappers/post.mapper";
-import {Post, PostDocument} from "./shema/post.schema";
+import {PostDocument} from "./shema/post.schema";
 import {ReactionsQueryRepository} from "../../reactionsLogic/reactionsQuery.repository";
 import {EntitiesForReaction, ReactionType, TypeLikeDetails} from "../../types/reaction.types";
 import {Types} from 'mongoose';
@@ -13,12 +13,16 @@ import {Pool} from "pg";
 import {TypeBlog, TypeBlogToView} from "../../types/blog.types";
 import {mapBlogToViewSA} from "../../mappers/blog.mapper";
 import {ReactionsSQLQueryRepository} from "../../reactionsLogic/reactionsSQLQuery.repository";
+import {InjectRepository} from "@nestjs/typeorm";
+import {Post} from "./Entity/post.entity";
+import {Repository} from "typeorm";
 
 @Injectable()
 export class PostsSQLQueryRepository{
     constructor(
         @Inject(PG_CONNECTION) private readonly pool: Pool,
-        private readonly reactionsSQLQueryRepo: ReactionsSQLQueryRepository
+        private readonly reactionsSQLQueryRepo: ReactionsSQLQueryRepository,
+        @InjectRepository(Post) private readonly postRepo: Repository<Post>
     ) {}
 
     async findPostById(id: string, userId?: string):Promise<TypePostView> {
@@ -63,6 +67,33 @@ export class PostsSQLQueryRepository{
         //         newestLikes: [],
         //     }
         // }
+    }
+    async findPostByIdORM(id: string, userId?: string):Promise<TypePostView> {
+        const post = await this.postRepo.findOne({
+            where: { id },
+            relations: { blog: true },
+        });
+        if(!post){
+            throw new NotFoundException({message:'Post not found' , field: 'postId'});
+        }
+
+        const newestLikes = await this.reactionsSQLQueryRepo.getNewestLikes(id, EntitiesForReaction.post);
+
+        return {
+            id: post.id,
+            title: post.title,
+            shortDescription: post.short_description,
+            content: post.content,
+            blogId: post.blog_id,
+            blogName: post.blog_name,
+            createdAt: post.created_at.toISOString(),
+            extendedLikesInfo: {
+                likesCount: post.likes_count,
+                dislikesCount: post.dislikes_count,
+                myStatus: userId ? await this.reactionsSQLQueryRepo.getMyStatus(EntitiesForReaction.post, id, userId) : ReactionType.none,
+                newestLikes
+            }
+        }
     }
     async findPostsSAByQuery(pagination:IPaginationAndSorting, userId?: string): Promise<TypePaginatorObject<TypePostView[]>> {
         const {
@@ -356,5 +387,67 @@ export class PostsSQLQueryRepository{
             items: items,
         };
     }
+    async findPostsForBlogSAORM(blogId: string, pagination: IPaginationAndSorting, userId?:string):Promise<TypePaginatorObject<TypePostView[]>>{
+        const {
+            pageNumber,
+            pageSize,
+            sortBy,
+            sortDirection,
+            searchNameTerm,
+            searchLoginTerm,
+            searchEmailTerm,
+        } = pagination;
+        // 1. Формируем запрос постов конкретного блога
+        const queryBuilder = this.postRepo
+            .createQueryBuilder('post')
+            .innerJoin('post.blog', 'blog')
+            .where('blog.id = :blogId', { blogId });
 
+        // 2. Белый список полей для сортировки
+        const sortMap: Record<string, string> = {
+            title: 'post.title COLLATE "C"',
+            shortDescription: 'post.short_description COLLATE "C"',
+            content: 'post.content COLLATE "C"',
+            blogName: 'post.blog_name COLLATE "C"',
+            createdAt: 'post.created_at',
+        };
+        const sortField = sortMap[sortBy] ?? 'post.created_at';
+        const direction = sortDirection === 'asc' ? 'ASC' : 'DESC';
+        queryBuilder
+            .orderBy(sortField, direction)
+            .skip((pageNumber - 1) * pageSize)
+            .take(pageSize);
+        // 3. Получаем посты и общее количество
+        const [posts, totalCount] = await queryBuilder.getManyAndCount();
+        // 4. Получаем информацию о реакциях для каждого поста
+        const items = await Promise.all(
+            posts.map(async (post) => {
+                const [myStatus, newestLikes] = await Promise.all([
+                    userId
+                        ? this.reactionsSQLQueryRepo.getMyStatus(
+                            EntitiesForReaction.post,
+                            post.id,
+                            userId,
+                        )
+                        : Promise.resolve(ReactionType.none),
+
+                    this.reactionsSQLQueryRepo.getNewestLikes(
+                        post.id,
+                        EntitiesForReaction.post,
+                    ),
+                ]);
+
+                return mapPostSAToFront(post, myStatus, newestLikes);
+            }),
+        );
+        // 5. Возвращаем пагинатор
+        return {
+            pagesCount: Math.ceil(totalCount / pageSize),
+            page: pageNumber,
+            pageSize,
+            totalCount,
+            items,
+        }
+
+    }
 }

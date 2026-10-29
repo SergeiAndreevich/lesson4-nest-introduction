@@ -18,7 +18,7 @@ export function mapBlogToViewSA(blog: TypeBlog):TypeBlogToView{
         name: blog.name,
         description: blog.description,
         websiteUrl: blog.website_url,
-        createdAt: blog.created_at.toISOString(),
+        createdAt: new Date(blog.created_at).toISOString(),
         isMembership: blog.is_membership
     }
 }

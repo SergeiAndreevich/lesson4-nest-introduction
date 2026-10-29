@@ -23,7 +23,7 @@ export class PostsSQLRepository {
         `,[post.id,post.title,post.short_description,post.content,post.blog_id,post.blog_name,post.created_at,post.likes_count,post.dislikes_count]);
         return result.rows[0]
     }
-    async createPostSQL(post: TypePostSQL): Promise<TypePostSQL> {
+    async createPostSAORM(post: TypePostSQL): Promise<TypePostSQL> {
         const newPost = this.postRepo.create({
             id: post.id,
             title: post.title,
@@ -63,7 +63,21 @@ export class PostsSQLRepository {
         `,[dto.title, dto.shortDescription, dto.content, blogId, blogName, id]);
         return result.rowCount === 1
     }
-
+    async updatePostForBlogSAByIdORM(id: string, blogId:string, dto: UpdatePostForBlogDto, blogName: string):Promise<boolean> {
+        const result = await this.postRepo
+            .createQueryBuilder()
+            .update(Post)
+            .set({
+                title: dto.title,
+                short_description: dto.shortDescription,
+                content: dto.content,
+                blog_name: blogName,
+            })
+            .where('id = :id', { id })
+            .andWhere('blog_id = :blogId', { blogId })
+            .execute();
+        return result.affected === 1;
+    }
     async updatePostSACounters(postId:string, likesCount: number, dislikesCount: number) {
         const result = await this.pool.query(`
         UPDATE posts
@@ -77,6 +91,17 @@ export class PostsSQLRepository {
         const result = await this.pool.query(`
         DELETE FROM posts WHERE id = $1`, [id]);
         return result.rowCount === 1
+    }
+    async removePostSAByIdORM(id: string, blogId: string): Promise<boolean> {
+        const result = await this.postRepo
+            .createQueryBuilder()
+            .delete()
+            .from(Post)
+            .where('id = :id', { id })
+            .andWhere('blog_id = :blogId', { blogId })
+            .execute();
+
+        return result.affected === 1;
     }
     async removeAllPostsForTest(){
         await this.pool.query(`

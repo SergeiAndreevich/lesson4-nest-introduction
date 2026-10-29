@@ -21,6 +21,6 @@ export class FindAllBlogsSAUseCase implements IQueryHandler<FindAllBlogsSAQuery>
     ) {}
     async execute(query: FindAllBlogsSAQuery):Promise<TypePaginatorObject<TypeBlogToView[]>>{
         const pagination:IPaginationAndSorting = paginationHelper(query.dto);
-        return await this.blogsSQLQueryRepo.findBlogsByQuery(pagination)
+        return await this.blogsSQLQueryRepo.findBlogsByQueryORM(pagination)
     }
 }

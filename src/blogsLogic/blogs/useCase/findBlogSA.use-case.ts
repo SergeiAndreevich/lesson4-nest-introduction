@@ -22,7 +22,7 @@ export class FindBlogSAUseCase implements IQueryHandler<FindBlogSAQuery>{
         private readonly blogsSQLQueryRepo: BlogsSQLQueryRepository,
     ) {}
     async execute(query: FindBlogSAQuery):Promise<TypeBlogToView>{
-        const blog = await this.blogsSQLQueryRepo.findBlogById(query.id);
+        const blog = await this.blogsSQLQueryRepo.findBlogByIdORM(query.id);
         if(!blog){
             throw new NotFoundException({message: 'Blog not found', field: 'blogId'});
         }

@@ -22,7 +22,7 @@ export class CreateBlogSAUseCase implements ICommandHandler<CreateBlogSACommand>
     async execute(command: CreateBlogSACommand){
         //const blog:TypeBlog = createBlog(command.createBlogDto)
         const blog: TypeBlogSQL = createBlogSQL(command.createBlogDto.name,command.createBlogDto.description,command.createBlogDto.websiteUrl);
-        const createdBlog = await this.blogsSQLRepo.createBlogSQL(blog);
+        const createdBlog = await this.blogsSQLRepo.createBlogORM(blog);
         return mapBlogToViewSA(createdBlog)
     }
 }

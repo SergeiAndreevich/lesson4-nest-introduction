@@ -24,11 +24,11 @@ export class UpdateBlogSAUseCase implements ICommandHandler<UpdateBlogSACommand>
         private readonly blogsSQLQueryRepo: BlogsSQLQueryRepository
     ) {}
     async execute(command: UpdateBlogSACommand){
-        const blog = await this.blogsSQLQueryRepo.findBlogById(command.id);
+        const blog = await this.blogsSQLQueryRepo.findBlogByIdORM(command.id);
         if(!blog){
             throw new NotFoundException({message:'Blog was not found' , field: 'blogId'});
         }
-        const updated = await this.blogsSQLRepo.updateBlogById(command.id, command.dto);
+        const updated = await this.blogsSQLRepo.updateBlogByIdORM(command.id, command.dto);
         if (!updated) {
             throw new BadRequestException({message:'Blog was not updated' , field: 'blogId'});
         }

@@ -128,4 +128,49 @@ export class BlogsSQLQueryRepository{
             items: blogsResult.rows.map(i=>mapBlogToViewSA(i)),
         };
     }
+    async findBlogsByQueryORM(pagination:IPaginationAndSorting):Promise<TypePaginatorObject<TypeBlogToView[]>>{
+        const {
+            pageNumber,
+            pageSize,
+            sortBy,
+            sortDirection,
+            searchNameTerm,
+            searchLoginTerm,
+            searchEmailTerm,
+        } = pagination;
+        // 1. Создаём QueryBuilder для Entity Blog
+        const queryBuilder = this.blogRepo.createQueryBuilder('blog');
+        // 2. Поиск по названию
+        if (searchNameTerm) {
+            queryBuilder.where('blog.name ILIKE :searchNameTerm', {
+                searchNameTerm: `%${searchNameTerm}%`,
+            });
+        }
+        // 3. Белый список полей для сортировки
+        const sortMap: Record<string, string> = {
+            id: 'blog.id',
+            name: 'blog.name',
+            description: 'blog.description',
+            websiteUrl: 'blog.website_url',
+            createdAt: 'blog.created_at',
+            isMembership: 'blog.is_membership',
+        };
+        const sortField = sortMap[sortBy] ?? 'blog.created_at';
+        const direction = sortDirection === 'asc' ? 'ASC' : 'DESC';
+        queryBuilder.orderBy(sortField, direction);
+
+        // 4. Пагинация и получение общего количества
+        queryBuilder
+            .skip((pageNumber - 1) * pageSize)
+            .take(pageSize);
+        const [blogs, totalCount] = await queryBuilder.getManyAndCount();
+        // 5. Формируем ответ
+        return {
+            pagesCount: Math.ceil(totalCount / pageSize),
+            page: pageNumber,
+            pageSize,
+            totalCount,
+            items: blogs.map(blog => mapBlogToViewSA(blog)),
+        }
+    }
 }

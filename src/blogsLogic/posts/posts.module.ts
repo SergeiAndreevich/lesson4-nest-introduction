@@ -26,10 +26,12 @@ import {FindPostSAUseCase} from "./useCase/findPostSA.use-case";
 import {RemovePostForBlogSAUseCase} from "./useCase/removePostForBlogSA.use-case";
 import {UpdatePostForBlogSAUseCase} from "./useCase/updatePostForBlogSA.use-case";
 import {ChangePostLikeStatusSAUseCase} from "./useCase/changePostLikeStatusSA.use-case";
+import {TypeOrmModule} from "@nestjs/typeorm";
+import {Post as PostEntity} from "../posts/Entity/post.entity";
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }
-  ]), CqrsModule, BlogsModule, ReactionsModule, DatabaseModule],
+  ]), CqrsModule, BlogsModule, ReactionsModule, DatabaseModule, TypeOrmModule.forFeature([PostEntity])],
   controllers: [PostsController, PostsSAController],
   providers: [PostsService, PostsRepository, PostsQueryRepository, PostsSQLRepository, PostsSQLQueryRepository,
   FindAllPostsUseCase, FindPostsForBlogUseCase, CreateNewPostUseCase, CreatePostForBlogUseCase, ChangePostLikeStatusUseCase,

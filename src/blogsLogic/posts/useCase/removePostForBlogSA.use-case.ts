@@ -19,15 +19,15 @@ export class RemovePostForBlogSAUseCase implements ICommandHandler<RemovePostFor
         private readonly blogsSQLQueryRepo: BlogsSQLQueryRepository
     ) {}
     async execute(command: RemovePostForBlogSACommand){
-        const blog = await this.blogsSQLQueryRepo.findBlogById(command.blogId);
+        const blog = await this.blogsSQLQueryRepo.findBlogByIdORM(command.blogId);
         if(!blog){
             throw new NotFoundException({message:'Blog was not found' , field: 'blogId'});
         }
-        const post = await this.postsSQLQueryRepository.findPostById(command.postId);
-        if (!post) {
-            throw new NotFoundException({message:'Post was not found' , field: 'postId'});
-        }
-        const deleted = await this.postsSQLRepo.removePostSAById(command.postId);
+        // const post = await this.postsSQLQueryRepository.findPostByIdORM(command.postId);
+        // if (!post) {
+        //     throw new NotFoundException({message:'Post was not found' , field: 'postId'});
+        // }
+        const deleted = await this.postsSQLRepo.removePostSAByIdORM(command.postId, command.blogId);
         if (!deleted) {
             throw new BadRequestException({message:'Post was not deleted' , field: 'postId'});
         }

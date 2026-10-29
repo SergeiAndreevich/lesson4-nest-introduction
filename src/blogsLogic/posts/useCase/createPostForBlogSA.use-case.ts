@@ -33,7 +33,7 @@ export class CreatePostForBlogSAUseCase implements ICommandHandler<CreatePostFor
         }
         //не забывай про связку с лайками
         const post = createPostSQL(command.createPostForBlogDto, blog.id, blog.name)
-        const createdPost = await this.postsSQLRepo.createPostSA(post);
+        const createdPost = await this.postsSQLRepo.createPostSAORM(post);
         return await this.postsSQLQueryRepo.findPostById(createdPost.id)
     }
 }

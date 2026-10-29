@@ -26,11 +26,11 @@ export class FindPostsForBlogSAUseCase implements IQueryHandler<FindPostsForBlog
         private readonly postsSQLQueryRepo: PostsSQLQueryRepository
     ) {}
     async execute(query: FindPostsForBlogSAQuery):Promise<TypePaginatorObject<TypePostView[]>>{
-        const blog = await this.blogsSQLQueryRepo.findBlogById(query.blogId);
+        const blog = await this.blogsSQLQueryRepo.findBlogByIdORM(query.blogId);
         if(!blog){
             throw new NotFoundException({message: 'Blog not found', field: 'blogId'});
         }
         const pagination = paginationHelper(query.query);
-        return await this.postsSQLQueryRepo.findPostsForBlogSA(query.blogId, pagination, query.userId);
+        return await this.postsSQLQueryRepo.findPostsForBlogSAORM(query.blogId, pagination, query.userId);
     }
 }

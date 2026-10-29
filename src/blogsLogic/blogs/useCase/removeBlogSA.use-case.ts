@@ -21,7 +21,7 @@ export class RemoveBlogSAUseCase implements ICommandHandler<RemoveBlogSACommand>
         private readonly blogsSQLRepo: BlogsSQLRepository,
     ) {}
     async execute(command: RemoveBlogSACommand){
-        const deleted = await this.blogsSQLRepo.removeBlogById(command.id);
+        const deleted = await this.blogsSQLRepo.removeBlogByIdORM(command.id);
         if (!deleted) {
             throw new NotFoundException({message:'Blog was not found or deleted' , field: 'blogId'});
         }

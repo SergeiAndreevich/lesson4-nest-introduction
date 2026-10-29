@@ -19,10 +19,16 @@ import {BlogsSAController} from "./blogsSA.controller";
 import {BlogsSQLRepository} from "./blogsSA.repository";
 import {BlogsSQLQueryRepository} from "./blogsSAQuery.repository";
 import {FindPostsForBlogSAUseCase} from "../posts/useCase/findPostsForBlogSA.use-case";
+import {TypeOrmModule} from "@nestjs/typeorm";
+import {User} from "../../sessionLogic/auth/Entity/user.entity";
+import {PasswordRecovery} from "../../sessionLogic/auth/Entity/passwordRecovery.entity";
+import {EmailConfirmation} from "../../sessionLogic/auth/Entity/emailConfirmation.entity";
+import {Session} from "../../sessionLogic/securityDevices/Entity/session.entity";
+import {Blog as BlogEntity} from "./Entity/blog.entity";
 
 @Module({
   imports: [MongooseModule.forFeature([
-      {name: Blog.name, schema: BlogSchema}]), CqrsModule, DatabaseModule
+      {name: Blog.name, schema: BlogSchema}]), CqrsModule, DatabaseModule,TypeOrmModule.forFeature([BlogEntity])
   ],
   controllers: [BlogsController, BlogsSAController],
   providers: [BlogsService, BlogsRepository, BlogsQueryRepository, BlogsSQLRepository, BlogsSQLQueryRepository, CreateNewBlogUseCase, FindAllBlogsUseCase,
